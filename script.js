@@ -78,6 +78,7 @@ function startStop() {
       let urlVars = getUrlVars();
 
       if (data.testState === 4) {
+        console.log('hello');
         $.post('backend/record.php', {
           id: urlVars.id,
           dlStatus: data.dlStatus,

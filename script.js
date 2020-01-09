@@ -93,9 +93,11 @@ function startStop() {
             UI_DATA = data;
             let urlVars = getUrlVars();
 
+            console.log(urlVars);
+
             if (data.testState === 4) {
                 $.post("backend/record.php", {
-                    id: urlVars.id,
+                    id: urlVars.id || -1,
                     dlStatus: data.dlStatus,
                     ulStatus: data.ulStatus,
                     pingStatus: data.pingStatus,

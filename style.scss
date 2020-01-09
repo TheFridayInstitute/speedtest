@@ -129,6 +129,11 @@ body {
     display: block;
     margin: 0 auto;
 }
+
+#ipArea {
+    margin: 2em;
+}
+
 @media all and (max-width: 40em) {
     body {
         font-size: 0.8em;

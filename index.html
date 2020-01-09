@@ -19,27 +19,12 @@
         <title>Speedtest</title>
     </head>
     <body>
-        <h1>Speedtest</h1>
         <div id="testWrapper">
-            <div id="startStopBtn" onclick="startStop()"></div>
             <div id="test">
                 <div class="testGroup">
                     <div class="testArea2">
                         <div class="testName">Ping</div>
-                        <div
-                            id="pingText"
-                            class="meterText"
-                            style="color:#AA6060"
-                        ></div>
-                        <div class="unit">ms</div>
-                    </div>
-                    <div class="testArea2">
-                        <div class="testName">Jitter</div>
-                        <div
-                            id="jitText"
-                            class="meterText"
-                            style="color:#AA6060"
-                        ></div>
+                        <div id="pingText" class="meterText"></div>
                         <div class="unit">ms</div>
                     </div>
                 </div>
@@ -57,6 +42,7 @@
                         <div class="unit">Mbps</div>
                     </div>
                 </div>
+                <div id="startStopBtn" onclick="startStop()"></div>
                 <div id="ipArea">
                     <span id="ip"></span>
                 </div>

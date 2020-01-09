@@ -1,0 +1,136 @@
+:root {
+    --background-color-primary: rgba(51, 51, 51);
+    --font-color-primary: #fff;
+    --color-primary: #fff;
+    --color-secondary: #2ece2e;
+    --font-family-primary: "Helvetica";
+    --meter-fill-color: #8f60aa;
+    --meter-fill-color-secondary: #f77230;
+}
+
+html,
+body {
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: var(--background-color-primary);
+    color: var(--font-color-primary);
+}
+body {
+    text-align: center;
+    font-family: var(--font-family-primary);
+}
+
+#startStopBtn {
+    text-transform: uppercase;
+    margin: 0 auto;
+    color: var(--font-color-primary);
+    background-color: var(--color-secondary);
+
+    border-radius: 0.3em;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    width: 8em;
+    height: 3em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 rgba(0, 0, 0, 0.1);
+}
+#startStopBtn:hover {
+    box-shadow: 0 0 2em rgba(0, 0, 0, 0.1), inset 0 0 1em rgba(0, 0, 0, 0.1);
+}
+#startStopBtn.running {
+    background-color: #ff3030;
+    border-color: #ff6060;
+    color: #ffffff;
+}
+#startStopBtn:before {
+    content: "Start";
+}
+#startStopBtn.running:before {
+    content: "Stop";
+}
+#test {
+    margin-top: 2em;
+    margin-bottom: 12em;
+}
+.testArea {
+    text-transform: uppercase;
+    display: inline-block;
+    width: 16em;
+    height: 12.5em;
+    position: relative;
+    box-sizing: border-box;
+}
+.testArea2 {
+    text-transform: uppercase;
+    display: inline-block;
+    width: 14em;
+    height: 7em;
+    position: relative;
+    box-sizing: border-box;
+    text-align: center;
+}
+.testArea .testName {
+    position: absolute;
+    top: 0.1em;
+    left: 0;
+    width: 100%;
+    font-size: 1.4em;
+    z-index: 9;
+}
+.testArea2 .testName {
+    display: block;
+    text-align: center;
+    font-size: 1.4em;
+}
+.testArea .meterText {
+    position: absolute;
+    bottom: 1.55em;
+    left: 0;
+    width: 100%;
+    font-size: 2.5em;
+    z-index: 9;
+}
+.testArea2 .meterText {
+    display: inline-block;
+    font-size: 2.5em;
+}
+.meterText:empty:before {
+    content: "0";
+}
+
+.secondary {
+    color: var(--font-color-secondary);
+}
+
+.testArea .unit {
+    position: absolute;
+    bottom: 2em;
+    left: 0;
+    width: 100%;
+    z-index: 9;
+}
+.testArea2 .unit {
+    display: inline-block;
+}
+.testArea canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+.testGroup {
+    display: block;
+    margin: 0 auto;
+}
+@media all and (max-width: 40em) {
+    body {
+        font-size: 0.8em;
+    }
+}

@@ -53,10 +53,16 @@ body {
 #startStopBtn.running:before {
     content: "Stop";
 }
-#test {
-    margin-top: 2em;
-    margin-bottom: 12em;
+
+#testWrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    margin: 5rem;
 }
+
 .testArea {
     text-transform: uppercase;
     display: inline-block;

@@ -1,6 +1,6 @@
 function getAllUrlParams(url) {
     // get query string from url (optional) or window
-    var queryString = url ? url.split("?")[1] : window.location.search.slice(1);
+    var queryString = url ? url.split("?")[1] : window.location.href;
     // we'll store the parameters here
     var obj = {};
     // if query string exists
@@ -140,9 +140,8 @@ function startStop() {
         document.getElementById("startStopBtn").className = "running";
         s.onupdate = function(data) {
             UI_DATA = data;
-            let urlParams = getAllUrlParams();
 
-            console.log(urlParams);
+            let urlParams = getAllUrlParams(window.location.href);
 
             if (data.testState === 4) {
                 $.post("backend/record.php", {
@@ -196,9 +195,9 @@ function updateUI(forced) {
     document.getElementById("pingText").textContent = format(
         Math.round(UI_DATA.pingStatus)
     );
-    document.getElementById("jitText").textContent = format(
-        UI_DATA.jitterStatus
-    );
+    // document.getElementById("jitText").textContent = format(
+    //     UI_DATA.jitterStatus
+    // );
 }
 function oscillate() {
     return 1 + 0.02 * Math.sin(Date.now() / 100);
@@ -225,7 +224,7 @@ function initUI() {
     document.getElementById("dlText").textContent = "";
     document.getElementById("ulText").textContent = "";
     document.getElementById("pingText").textContent = "";
-    document.getElementById("jitText").textContent = "";
+    // document.getElementById("jitText").textContent = "";
     document.getElementById("ip").textContent = "";
 }
 

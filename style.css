@@ -7,8 +7,8 @@
   --font-family-primary: "Helvetica";
   --meter-fill-color: #8f60aa;
   --meter-fill-color-secondary: #f77230;
-  --gauge-width: 40em;
-  --gauge-height: 30em;
+  --gauge-width: 35em;
+  --gauge-height: 25em;
   --ncsu-font: UniversCondensed;
 }
 
@@ -45,7 +45,7 @@ body {
   -ms-grid-column: 2;
   -ms-grid-column-span: 2;
   grid-area: h;
-  font-size: 6em;
+  font-size: 5em;
   font-weight: bold;
   margin: 0;
   padding: 0;
@@ -83,8 +83,6 @@ body {
   font-style: italic;
   font-weight: 100;
   background-color: var(--background-color-secondary);
-  position: absolute;
-  width: 100%;
 }
 
 #test {

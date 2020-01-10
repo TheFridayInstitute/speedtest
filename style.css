@@ -190,8 +190,6 @@ body {
 }
 
 .testArea .testName {
-  position: absolute;
-  top: 0.1em;
   left: 0;
   width: 100%;
   font-size: 2em;
@@ -311,6 +309,13 @@ body {
     margin: 0;
     padding: 0;
     height: 50%;
+    font-size: 1em;
+  }
+  .testGroup .testArea2 .meterText {
+    font-size: 1.5em;
+  }
+  .testGroup #ipArea {
+    margin: auto 0;
   }
   .testArea {
     padding: 0;

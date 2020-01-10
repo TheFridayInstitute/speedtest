@@ -203,7 +203,7 @@ body {
     transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
-@media all and (max-width: 80em) {
+@media all and (max-width: 1400px) {
     html,
     body {
         font-size: 0.9em;
@@ -215,7 +215,7 @@ body {
     }
 }
 
-@media all and (max-width: 60em) {
+@media all and (max-width: 768px) {
     html,
     body {
         font-size: 0.6em;
@@ -224,6 +224,15 @@ body {
     .testGroup {
         margin: 0;
         padding: 0;
+
+        .testArea2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+
+            padding: 0;
+            height: 75%;
+        }
     }
 
     .testArea {

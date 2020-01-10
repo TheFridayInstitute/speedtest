@@ -1,39 +1,65 @@
 :root {
   --background-color-primary: rgba(51, 51, 51);
+  --background-color-secondary: rgb(51, 51, 51);
   --font-color-primary: #fff;
   --color-primary: #fff;
-  --color-secondary: #2ece2e;
+  --color-secondary: #f77230;
   --font-family-primary: "Helvetica";
   --meter-fill-color: #8f60aa;
   --meter-fill-color-secondary: #f77230;
+  --gauge-width: 40em;
+  --gauge-height: 30em;
+  --ncsu-font: UniversCondensed;
 }
 
 html,
 body {
-  border: none;
+  position: relative;
   padding: 0;
   margin: 0;
   background: var(--background-color-primary);
   color: var(--font-color-primary);
-}
-
-body {
+  height: 100%;
   text-align: center;
   font-family: var(--font-family-primary);
+  font-weight: 300;
 }
 
-#startStopBtn {
-  text-transform: uppercase;
-  margin: 0 auto;
-  color: var(--font-color-primary);
-  background-color: var(--color-secondary);
-  border-radius: 0.3em;
-  -webkit-transition: all 0.3s;
-  transition: all 0.3s;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  width: 8em;
-  height: 3em;
+.header {
+  display: -ms-grid;
+  display: grid;
+      grid-template-areas: "l h h .";
+  -ms-grid-columns: 1fr 2fr 2fr 1fr;
+      grid-template-columns: 1fr 2fr 2fr 1fr;
+  -webkit-column-gap: 1em;
+          column-gap: 1em;
+  -ms-grid-rows: 1fr;
+      grid-template-rows: 1fr;
+  background-color: var(--background-color-secondary);
+  position: relative;
+  padding: 1em;
+}
+
+.header .title {
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  -ms-grid-column-span: 2;
+  grid-area: h;
+  font-size: 8em;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.header img.ncsu-logo {
+  width: 100%;
+}
+
+.header .brick {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: l;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -43,32 +69,57 @@ body {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  cursor: pointer;
-  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 rgba(0, 0, 0, 0.1);
+  width: 10em;
 }
 
-#startStopBtn:hover {
-  -webkit-box-shadow: 0 0 2em rgba(0, 0, 0, 0.1), inset 0 0 1em rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0 2em rgba(0, 0, 0, 0.1), inset 0 0 1em rgba(0, 0, 0, 0.1);
+.footer {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 2em;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  font-style: italic;
+  font-weight: 100;
+  background-color: var(--background-color-secondary);
+  position: absolute;
+  width: 100%;
+}
+
+#test {
+  padding: 2em;
+}
+
+#startStopBtn {
+  text-transform: uppercase;
+  margin: 0 auto;
+  color: var(--font-color-primary);
+  background-color: var(--color-secondary);
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  width: 10em;
+  height: 2.5em;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  font-size: 2em;
+  cursor: pointer;
 }
 
 #startStopBtn.running {
-  background-color: #ff3030;
-  border-color: #ff6060;
-  color: #ffffff;
-}
-
-#startStopBtn:before {
-  content: "Start";
-}
-
-#startStopBtn.running:before {
-  content: "Stop";
+  background-color: var(--meter-fill-color);
 }
 
 #testWrapper {
-  position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -81,17 +132,19 @@ body {
           justify-content: center;
   -ms-flex-line-pack: center;
       align-content: center;
-  margin: 5rem;
+  height: 100%;
 }
 
 .testArea {
+  font-weight: normal;
+  font-size: 1em;
   text-transform: uppercase;
-  display: inline-block;
-  width: 16em;
-  height: 12.5em;
+  margin: 1em;
+  width: var(--gauge-width);
+  height: var(--gauge-height);
   position: relative;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  -webkit-box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
+          box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
 }
 
 .testArea2 {
@@ -99,10 +152,11 @@ body {
   display: inline-block;
   width: 14em;
   height: 7em;
-  position: relative;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   text-align: center;
+  font-size: 1em;
+  position: relative;
 }
 
 .testArea .testName {
@@ -110,7 +164,7 @@ body {
   top: 0.1em;
   left: 0;
   width: 100%;
-  font-size: 1.4em;
+  font-size: 2em;
   z-index: 9;
 }
 
@@ -122,10 +176,10 @@ body {
 
 .testArea .meterText {
   position: absolute;
-  bottom: 1.55em;
+  bottom: 2em;
   left: 0;
   width: 100%;
-  font-size: 2.5em;
+  font-size: 4em;
   z-index: 9;
 }
 
@@ -138,13 +192,9 @@ body {
   content: "0";
 }
 
-.secondary {
-  color: var(--font-color-secondary);
-}
-
 .testArea .unit {
   position: absolute;
-  bottom: 2em;
+  bottom: 5em;
   left: 0;
   width: 100%;
   z-index: 9;
@@ -164,17 +214,66 @@ body {
 }
 
 .testGroup {
-  display: block;
-  margin: 0 auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
 }
 
-#ipArea {
-  margin: 2em;
+.gauge-numbers {
+  font-weight: 100;
+  font-size: 1.5em;
+  font-family: var(--font-family-primary);
+  position: absolute;
+  -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+  transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
 @media all and (max-width: 40em) {
+  html,
   body {
-    font-size: 0.8em;
+    font-size: 0.5em;
   }
+  .testArea .meterText {
+    bottom: 5em;
+  }
+}
+
+.hvr-underline-from-left {
+  display: inline-block;
+  vertical-align: middle;
+  -webkit-transform: perspective(1px) translateZ(0);
+  transform: perspective(1px) translateZ(0);
+  -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+          box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+  position: relative;
+  overflow: hidden;
+}
+
+.hvr-underline-from-left:before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  background: white;
+  height: 4px;
+  -webkit-transition-property: right;
+  transition-property: right;
+  -webkit-transition-duration: 0.3s;
+          transition-duration: 0.3s;
+  -webkit-transition-timing-function: ease-out;
+          transition-timing-function: ease-out;
+}
+
+.hvr-underline-from-left:hover:before,
+.hvr-underline-from-left:focus:before,
+.hvr-underline-from-left:active:before {
+  right: 0;
 }
 /*# sourceMappingURL=style.css.map */

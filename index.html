@@ -14,41 +14,78 @@
             crossorigin="anonymous"
         />
 
+        <link
+            href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+            rel="stylesheet"
+            integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+            crossorigin="anonymous"
+        />
+
+        <link
+            href="https://cdn.ncsu.edu/brand-assets/fonts/include.css"
+            rel="stylesheet"
+        />
+
         <link rel="shortcut icon" href="favicon.ico" />
         <link rel="stylesheet" href="style.css" />
 
         <title>speedtest.fi</title>
     </head>
     <body>
-        <div id="testWrapper">
-            <div id="test">
-                <div class="testGroup">
-                    <div class="testArea2">
-                        <div class="testName">Ping</div>
-                        <div id="pingText" class="meterText"></div>
-                        <div class="unit">ms</div>
-                    </div>
+        <div class="header">
+            <div class="brick">
+                <img
+                    src="https://www.fi.ncsu.edu/wp-content/themes/hillsborough/assets/img/ncstate-brick-2x2-red.png"
+                    class="ncsu-logo"
+                    alt="NC State"
+                />
+            </div>
+            <div class="title">
+                speedtest.fi
+            </div>
+        </div>
+
+        <div id="test">
+            <div class="testGroup">
+                <div class="testArea2">
+                    <div class="testName">Ping</div>
+                    <div id="pingText" class="meterText"></div>
+                    <div class="unit">ms</div>
                 </div>
-                <div class="testGroup">
-                    <div class="testArea">
-                        <div class="testName">Download</div>
-                        <canvas id="dlMeter" class="meter"></canvas>
-                        <div id="dlText" class="meterText"></div>
-                        <div class="unit">Mbps</div>
+
+                <div class="testArea2" id="ipArea">
+                    <div class="testName">
+                        IP <i class="fa fa-globe" aria-hidden="true"></i>
                     </div>
-                    <div class="testArea">
-                        <div class="testName">Upload</div>
-                        <canvas id="ulMeter" class="meter"></canvas>
-                        <div id="ulText" class="meterText"></div>
-                        <div class="unit">Mbps</div>
+                    <div class="meterText">
+                        <div id="ip">
+                            0.0.0.0
+                        </div>
                     </div>
-                </div>
-                <div id="startStopBtn" onclick="startStop()"></div>
-                <div id="ipArea">
-                    <span id="ip"></span>
                 </div>
             </div>
-            <div>Provided by LibreSpeed</div>
+            <div class="testGroup">
+                <div class="testArea" id="dl-meter-container">
+                    <div class="testName">Download</div>
+                    <canvas id="dlMeter" class="meter"></canvas>
+                    <div id="dlText" class="meterText"></div>
+                    <div class="unit">Mbps</div>
+                </div>
+                <div class="testArea" id="ul-meter-container">
+                    <div class="testName">Upload</div>
+                    <canvas id="ulMeter" class="meter"></canvas>
+                    <div id="ulText" class="meterText"></div>
+                    <div class="unit">Mbps</div>
+                </div>
+            </div>
+            <div class="hvr-underline-from-left" id="startStopBtn">Go</div>
+        </div>
+
+        <div class="footer">
+            <div class="providers">
+                Provided by LibreSpeed - powered by MCNC - developed by the
+                Friday Institute
+            </div>
         </div>
 
         <script
@@ -58,6 +95,6 @@
         ></script>
 
         <script type="text/javascript" src="speedtest.js"></script>
-        <script type="text/javascript" src="script.js"></script>
+        <script type="module" src="script.js"></script>
     </body>
 </html>

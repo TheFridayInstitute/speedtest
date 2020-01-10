@@ -1,24 +1,86 @@
 :root {
     --background-color-primary: rgba(51, 51, 51);
+    --background-color-secondary: rgb(51, 51, 51);
     --font-color-primary: #fff;
     --color-primary: #fff;
-    --color-secondary: #2ece2e;
+    --color-secondary: #f77230;
     --font-family-primary: "Helvetica";
     --meter-fill-color: #8f60aa;
     --meter-fill-color-secondary: #f77230;
+    --gauge-width: 40em;
+    --gauge-height: 30em;
+    --ncsu-font: UniversCondensed;
 }
 
 html,
 body {
-    border: none;
+    position: relative;
     padding: 0;
     margin: 0;
     background: var(--background-color-primary);
     color: var(--font-color-primary);
-}
-body {
+    height: 100%;
     text-align: center;
     font-family: var(--font-family-primary);
+    font-weight: 300;
+}
+
+.header {
+    display: grid;
+    grid-template-areas: "l h h .";
+    grid-template-columns: 1fr 2fr 2fr 1fr;
+    column-gap: 1em;
+    grid-template-rows: 1fr;
+    background-color: var(--background-color-secondary);
+    position: relative;
+    padding: 1em;
+
+    .title {
+        grid-area: h;
+        font-size: 8em;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+       
+        // background: linear-gradient(
+        //     to right,
+        //     var(--meter-fill-color),
+        //     var(--meter-fill-color-secondary)
+        // );
+        // -webkit-background-clip: text;
+        // -webkit-text-fill-color: transparent;
+        // color: black;
+    }
+
+    img.ncsu-logo {
+        width: 100%;
+    }
+
+    .brick {
+        grid-area: l;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        width: 10em;
+    }
+}
+
+.footer {
+    display: flex;
+    padding: 2em;
+    justify-content: center;
+    font-style: italic;
+    font-weight: 100;
+    background-color: var(--background-color-secondary);
+    position: absolute;
+    // height: 100%;
+    width: 100%;
+}
+
+#test {
+    padding: 2em;
 }
 
 #startStopBtn {
@@ -27,65 +89,61 @@ body {
     color: var(--font-color-primary);
     background-color: var(--color-secondary);
 
-    border-radius: 0.3em;
     transition: all 0.3s;
     box-sizing: border-box;
-    width: 8em;
-    height: 3em;
+    width: 10em;
+    height: 2.5em;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 2em;
 
     cursor: pointer;
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 rgba(0, 0, 0, 0.1);
 }
-#startStopBtn:hover {
-    box-shadow: 0 0 2em rgba(0, 0, 0, 0.1), inset 0 0 1em rgba(0, 0, 0, 0.1);
-}
+
 #startStopBtn.running {
-    background-color: #ff3030;
-    border-color: #ff6060;
-    color: #ffffff;
-}
-#startStopBtn:before {
-    content: "Start";
-}
-#startStopBtn.running:before {
-    content: "Stop";
+    background-color: var(--meter-fill-color);
 }
 
 #testWrapper {
-    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-content: center;
-    margin: 5rem;
+    height: 100%;
 }
 
 .testArea {
+    font-weight: normal;
+    font-size: 1em;
     text-transform: uppercase;
-    display: inline-block;
-    width: 16em;
-    height: 12.5em;
+    margin: 1em;
+    width: var(--gauge-width);
+    height: var(--gauge-height);
     position: relative;
-    box-sizing: border-box;
+    box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
 }
+
 .testArea2 {
     text-transform: uppercase;
     display: inline-block;
     width: 14em;
     height: 7em;
-    position: relative;
     box-sizing: border-box;
     text-align: center;
+    font-size: 1em;
+    position: relative;
+
+   
+
+   
 }
 .testArea .testName {
     position: absolute;
     top: 0.1em;
     left: 0;
     width: 100%;
-    font-size: 1.4em;
+    font-size: 2em;
     z-index: 9;
 }
 .testArea2 .testName {
@@ -95,10 +153,10 @@ body {
 }
 .testArea .meterText {
     position: absolute;
-    bottom: 1.55em;
+    bottom: 2em;
     left: 0;
     width: 100%;
-    font-size: 2.5em;
+    font-size: 4em;
     z-index: 9;
 }
 .testArea2 .meterText {
@@ -109,13 +167,9 @@ body {
     content: "0";
 }
 
-.secondary {
-    color: var(--font-color-secondary);
-}
-
 .testArea .unit {
     position: absolute;
-    bottom: 2em;
+    bottom: 5em;
     left: 0;
     width: 100%;
     z-index: 9;
@@ -132,16 +186,55 @@ body {
     z-index: 1;
 }
 .testGroup {
-    display: block;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-#ipArea {
-    margin: 2em;
+.gauge-numbers {
+    font-weight: 100;
+    font-size: 1.5em;
+    font-family: var(--font-family-primary);
+    position: absolute;
+    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
 @media all and (max-width: 40em) {
+    html,
     body {
-        font-size: 0.8em;
+        font-size: 0.5em;
     }
+
+    .testArea .meterText {
+        bottom: 5em;
+    }
+}
+
+.hvr-underline-from-left {
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-transform: perspective(1px) translateZ(0);
+    transform: perspective(1px) translateZ(0);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+    position: relative;
+    overflow: hidden;
+}
+.hvr-underline-from-left:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 100%;
+    bottom: 0;
+    background: white;
+    height: 4px;
+
+    transition-property: right;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+.hvr-underline-from-left:hover:before,
+.hvr-underline-from-left:focus:before,
+.hvr-underline-from-left:active:before {
+    right: 0;
 }

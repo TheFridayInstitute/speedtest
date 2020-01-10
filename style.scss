@@ -37,7 +37,7 @@ body {
 
     .title {
         grid-area: h;
-        font-size: 8em;
+        font-size: 6em;
         font-weight: bold;
         margin: 0;
         padding: 0;
@@ -203,14 +203,39 @@ body {
     transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
-@media all and (max-width: 40em) {
+@media all and (max-width: 80em) {
     html,
     body {
-        font-size: 0.5em;
+        font-size: 0.9em;
     }
 
-    .testArea .meterText {
-        bottom: 5em;
+    .testArea {
+        width: calc(var(--gauge-width) / 1.2);
+        height: calc(var(--gauge-height) / 1.2);
+    }
+}
+
+@media all and (max-width: 60em) {
+    html,
+    body {
+        font-size: 0.6em;
+    }
+
+    .testGroup {
+        margin: 0;
+        padding: 0;
+    }
+
+    .testArea {
+        padding: 0;
+        .meterText {
+            bottom: 4em;
+        }
+    }
+
+    .testArea {
+        width: calc(var(--gauge-width) / 2);
+        height: calc(var(--gauge-height) / 2);
     }
 }
 

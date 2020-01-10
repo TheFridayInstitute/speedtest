@@ -21,27 +21,35 @@ window.requestAnimationFrame =
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
 
+let initGaugeNumbers = function() {
+    let gaugeNumbers = range(0, 70, 10);
+    let shift = -90;
+
+    setGaugeNumbers(
+        document.getElementById("dl-meter-container"),
+        gaugeNumbers,
+        0,
+        shift
+    );
+    setGaugeNumbers(
+        document.getElementById("ul-meter-container"),
+        gaugeNumbers,
+        0,
+        shift
+    );
+};
+
 document.getElementById("startStopBtn").addEventListener("click", function(e) {
     UI_DATA = startStop();
 
     toggleOnce(document.getElementById("startStopBtn"), function() {
-        let gaugeNumbers = range(0, 70, 10);
-        let shift = -90;
-
-        setGaugeNumbers(
-            document.getElementById("dl-meter-container"),
-            gaugeNumbers,
-            0,
-            shift
-        );
-        setGaugeNumbers(
-            document.getElementById("ul-meter-container"),
-            gaugeNumbers,
-            0,
-            shift
-        );
+        // initGaugeNumbers();
     });
 });
+
+// window.addEventListener("resize", function(e) {
+//     initGaugeNumbers();
+// });
 
 function startStop() {
     let data = null;

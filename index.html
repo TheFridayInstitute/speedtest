@@ -13,30 +13,16 @@
         /> -->
 
         <style>
-            :root {
-                --background-color-primary: rgba(51, 51, 51);
-                --background-color-secondary: rgb(51, 51, 51);
-                --font-color-primary: #fff;
-                --color-primary: #fff;
-                --color-secondary: #f77230;
-                --font-family-primary: "Helvetica";
-                --meter-fill-color: #8f60aa;
-                --meter-fill-color-secondary: #f77230;
-                --gauge-width: 40em;
-                --gauge-height: 30em;
-                --ncsu-font: UniversCondensed;
-            }
-
             html,
             body {
                 position: relative;
                 padding: 0;
                 margin: 0;
-                background: var(--background-color-primary);
-                color: var(--font-color-primary);
+                background: rgba(51, 51, 51);
+                color: #fff;
                 height: 100%;
                 text-align: center;
-                font-family: var(--font-family-primary);
+                font-family: "Helvetica";
                 font-weight: 300;
             }
 
@@ -50,7 +36,7 @@
                 column-gap: 1em;
                 -ms-grid-rows: 1fr;
                 grid-template-rows: 1fr;
-                background-color: var(--background-color-secondary);
+                background-color: rgba(51, 51, 51);
                 position: relative;
                 padding: 1em;
             }
@@ -97,7 +83,7 @@
                 justify-content: center;
                 font-style: italic;
                 font-weight: 100;
-                background-color: var(--background-color-secondary);
+                background-color: rgba(51, 51, 51);
                 position: absolute;
                 width: 100%;
             }
@@ -109,8 +95,8 @@
             #startStopBtn {
                 text-transform: uppercase;
                 margin: 0 auto;
-                color: var(--font-color-primary);
-                background-color: var(--color-secondary);
+                color: #fff;
+                background-color: #f77230;
                 -webkit-transition: all 0.3s;
                 transition: all 0.3s;
                 -webkit-box-sizing: border-box;
@@ -131,7 +117,7 @@
             }
 
             #startStopBtn.running {
-                background-color: var(--meter-fill-color);
+                background-color: #8f60aa;
             }
 
             #testWrapper {
@@ -155,8 +141,8 @@
                 font-size: 1em;
                 text-transform: uppercase;
                 margin: 1em;
-                width: var(--gauge-width);
-                height: var(--gauge-height);
+                width: 40em;
+                height: 30em;
                 position: relative;
                 -webkit-box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
                 box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
@@ -249,7 +235,7 @@
             .gauge-numbers {
                 font-weight: 100;
                 font-size: 1.5em;
-                font-family: var(--font-family-primary);
+                font-family: "Helvetica";
                 position: absolute;
                 -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
                 transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
@@ -261,8 +247,8 @@
                     font-size: 0.9em;
                 }
                 .testArea {
-                    width: calc(var(--gauge-width) / 1.2);
-                    height: calc(var(--gauge-height) / 1.2);
+                    width: 33em;
+                    height: 25em;
                 }
             }
 
@@ -282,8 +268,8 @@
                     bottom: 4em;
                 }
                 .testArea {
-                    width: calc(var(--gauge-width) / 2);
-                    height: calc(var(--gauge-height) / 2);
+                    width: 20em;
+                    height: 15em;
                 }
             }
 

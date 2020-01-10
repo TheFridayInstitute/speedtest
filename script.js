@@ -23,7 +23,7 @@ var UI_DATA = null;
 
 let initGaugeNumbers = function() {
     let gaugeNumbers = range(0, 70, 10);
-    let shift = -90;
+    let shift = -150;
 
     setGaugeNumbers(
         document.getElementById("dl-meter-container"),
@@ -54,15 +54,13 @@ document.getElementById("startStopBtn").addEventListener("click", function(e) {
 function startStop() {
     let data = null;
     if (speedtestObj.getState() == 3) {
-        // speedtest is running, abort
         speedtestObj.abort();
         data = null;
         document.getElementById("startStopBtn").classList.remove("running");
-        document.getElementById("startStopBtn").innerHTML = "Go";
+        document.getElementById("startStopBtn").innerHTML = "Start";
 
         initUI();
     } else {
-        // test is not running, begin
         document.getElementById("startStopBtn").classList.add("running");
         document.getElementById("startStopBtn").innerHTML = "Stop";
         speedtestObj.onupdate = function(data) {
@@ -82,7 +80,8 @@ function startStop() {
         };
 
         speedtestObj.onend = function(aborted) {
-            document.getElementById("startStopBtn").className = "";
+            document.getElementById("startStopBtn").innerHTML = "Start";
+            document.getElementById("startStopBtn").classList.remove("running");
             updateUI(true);
         };
 
@@ -92,16 +91,14 @@ function startStop() {
 }
 
 let meterBackgroundColor = "#80808080";
-
-let progColor = "#fff";
+let progressBarColor = "#fff";
 
 let downloadColorStops = [
     ["0", "#8343ab"],
     ["0.5", "#d359ff"],
     ["1.0", "#f71e6a"]
 ];
-
-let downloadColor = generateGradient(
+let dlProgressColor = generateGradient(
     document.getElementById("dlMeter"),
     0,
     0,
@@ -115,7 +112,7 @@ let uploadColorStops = [
     ["0.5", "#FF8000"],
     ["1.0", "#FF0000"]
 ];
-let uploadProgressColor = generateGradient(
+let ulProgressColor = generateGradient(
     document.getElementById("ulMeter"),
     0,
     0,
@@ -129,19 +126,50 @@ function initUI() {
         document.getElementById("dlMeter"),
         0,
         meterBackgroundColor,
-        downloadColor,
+        dlProgressColor,
         0
     );
     drawMeter(
         document.getElementById("ulMeter"),
         0,
         meterBackgroundColor,
-        uploadProgressColor,
+        ulProgressColor,
         0
     );
-    document.getElementById("dlText").textContent = "";
-    document.getElementById("ulText").textContent = "";
-    document.getElementById("pingText").textContent = "";
+    document.getElementById("dlText").innerHTML = "";
+    document.getElementById("ulText").innerHTML = "";
+    document.getElementById("pingText").innerHTML = "";
+}
+
+function drawGaugeWrapper(
+    status,
+    gaugeEl,
+    gaugeTextEl,
+    gaugeAmount,
+    gaugeProgress,
+    backgroundColor,
+    arcProgressColor,
+    barProgressColor
+) {
+    gaugeAmount = Number(gaugeAmount);
+    gaugeProgress = Number(gaugeProgress);
+
+    if (status === 1 && gaugeAmount === 0) {
+        gaugeTextEl.innerHTML = "...";
+    } else {
+        gaugeTextEl.innerHTML = gaugeAmount.toPrecision(3);
+    }
+    let gaugeMbpsAmount = mbpsToAmount(
+        gaugeAmount * (status == 1 ? oscillate() : 1)
+    );
+    drawMeter(
+        gaugeEl,
+        gaugeMbpsAmount,
+        backgroundColor,
+        arcProgressColor,
+        gaugeProgress,
+        barProgressColor
+    );
 }
 
 function updateUI(forced) {
@@ -149,57 +177,38 @@ function updateUI(forced) {
 
     if (UI_DATA == null) return;
 
-    var status = UI_DATA.testState;
     let ip = String(UI_DATA.clientIp);
 
     if (ip.length < 100 && ip.length > 0) {
         ip = ip.split("-")[0]; // CHANGE THIS LATER!!
-        document.getElementById("ip").textContent = ip;
+        document.getElementById("ip").innerHTML = ip;
     }
 
-    document.getElementById("dlText").textContent =
-        status == 1 && UI_DATA.dlStatus == 0 ? "..." : UI_DATA.dlStatus;
-
-    let dlAmount = mbpsToAmount(
-        Number(UI_DATA.dlStatus * (status == 1 ? oscillate() : 1))
-    );
-
-    drawMeter(
+    drawGaugeWrapper(
+        UI_DATA.testState,
         document.getElementById("dlMeter"),
-        dlAmount,
+        document.getElementById("dlText"),
+        UI_DATA.dlStatus,
+        UI_DATA.dlProgress,
         meterBackgroundColor,
-        downloadColor,
-        Number(UI_DATA.dlProgress),
-        progColor
+        dlProgressColor,
+        progressBarColor
     );
 
-    document.getElementById("ulText").textContent =
-        status == 3 && UI_DATA.ulStatus == 0 ? "..." : UI_DATA.ulStatus;
-
-    let ulAmount = mbpsToAmount(
-        Number(UI_DATA.ulStatus * (status == 3 ? oscillate() : 1))
-    );
-
-    console.log(dlAmount, ulAmount);
-
-    drawMeter(
+    drawGaugeWrapper(
+        UI_DATA.testState,
         document.getElementById("ulMeter"),
-        ulAmount,
+        document.getElementById("ulText"),
+        UI_DATA.ulStatus,
+        UI_DATA.ulProgress,
         meterBackgroundColor,
-        uploadProgressColor,
-        Number(UI_DATA.ulProgress),
-        progColor
+        ulProgressColor,
+        progressBarColor
     );
 
-    document.getElementById("pingText").textContent = Math.round(
+    document.getElementById("pingText").innerHTML = Math.round(
         UI_DATA.pingStatus
     );
-
-    // if (status !== 3) {
-    //     if (UI_DATA.dlStatus !== 0) {
-    //         document.getElementById("dlText2").textContent = UI_DATA.dlStatus;
-    //     }
-    // }
 }
 
 function frame() {

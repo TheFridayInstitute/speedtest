@@ -10,6 +10,15 @@ export {
     toggleOnce
 };
 
+function clamp(x, lowerLimit, upperLimit) {
+    if (x < lowerLimit) {
+        return lowerLimit;
+    } else if (x > upperLimit) {
+        return upperLimit;
+    }
+    return x;
+}
+
 function range(start, end, step = 1) {
     const len = Math.floor((end - start) / step) + 1;
     return Array(len)
@@ -115,6 +124,7 @@ function drawMeter(
     ctx.beginPath();
     ctx.strokeStyle = progressColor;
     ctx.lineWidth = 12 * sizScale;
+
     ctx.arc(
         c.width / 2,
         c.height - 58 * sizScale,
@@ -123,7 +133,7 @@ function drawMeter(
         amount * Math.PI * 1.2 - Math.PI * 1.1
     );
 
-    ctx.shadowBlur = 1;
+    ctx.shadowBlur = 20;
     ctx.shadowColor = "red";
 
     ctx.stroke();
@@ -140,6 +150,7 @@ function drawMeter(
 }
 
 function mbpsToAmount(s) {
+    // return clamp(s, 0, 100);
     return 1 - 1 / Math.pow(1.3, Math.sqrt(s));
 }
 

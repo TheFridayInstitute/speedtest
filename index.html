@@ -33,57 +33,62 @@
     </head>
     <body>
         <div
-            class="main-content container-fluid d-flex flex-column justify-content-center"
+            class="outer-content container-fluid d-flex justify-content-center"
         >
-            <div class="header">
+            <div class="main-content container-fluid">
+                <!-- <div class="header">
                 <div class="title">
                     speedtest.fi
                 </div>
+            </div> -->
+
+                <div
+                    class="hvr-underline-from-left"
+                    id="startStopBtn"
+                    style="grid-area: button"
+                >
+                    Go
+                </div>
+
+                <div
+                    class="container-fluid center testArea2"
+                    style="grid-area: ping"
+                >
+                    <div class="testName">Latency</div>
+                    <div id="pingText" class="meterText"></div>
+                    <div class="unit">ms</div>
+                </div>
+
+                <div
+                    class="container-fluid testArea"
+                    id="dl-meter-container"
+                    style="grid-area: download"
+                >
+                    <div class="testName">Download</div>
+                    <canvas id="dlMeter" class="meter"></canvas>
+                    <div id="dlText" class="meterText"></div>
+                    <div class="unit">Mbps</div>
+                </div>
+
+                <div
+                    class="container-fluid testArea"
+                    id="ul-meter-container"
+                    style="grid-area: upload"
+                >
+                    <div class="testName">Upload</div>
+                    <canvas id="ulMeter" class="meter"></canvas>
+                    <div id="ulText" class="meterText"></div>
+                    <div class="unit">Mbps</div>
+                </div>
             </div>
-
-            <div id="test">
-                <div class="testGroup">
-                    <div class="testArea2">
-                        <div class="testName">Ping</div>
-                        <div id="pingText" class="meterText"></div>
-                        <div class="unit">ms</div>
-                    </div>
-
-                    <div class="testArea2" id="ipArea">
-                        <div class="testName">
-                            IP <i class="fa fa-globe" aria-hidden="true"></i>
-                        </div>
-                        <div class="meterText">
-                            <div id="ip">
-                                154.154.154.154
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="testGroup">
-                    <div class="testArea" id="dl-meter-container">
-                        <div class="testName">Download</div>
-                        <canvas id="dlMeter" class="meter"></canvas>
-                        <div id="dlText" class="meterText"></div>
-                        <div class="unit">Mbps</div>
-                    </div>
-                    <div class="testArea" id="ul-meter-container">
-                        <div class="testName">Upload</div>
-                        <canvas id="ulMeter" class="meter"></canvas>
-                        <div id="ulText" class="meterText"></div>
-                        <div class="unit">Mbps</div>
-                    </div>
-                </div>
-                <div class="" id="startStopBtn">Go</div>
-            </div>
-
-            <footer class="footer navbar-fixed-bottom">
-                <div class="providers">
-                    Provided by LibreSpeed - powered by MCNC - developed by the
-                    Friday Institute
-                </div>
-            </footer>
         </div>
+
+        <!-- <footer class="footer navbar-fixed-bottom">
+            <div class="providers">
+                Provided by LibreSpeed - powered by MCNC - developed by the
+                Friday Institute
+            </div>
+        </footer> -->
 
         <script
             src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"

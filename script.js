@@ -142,12 +142,12 @@ function updateUI(forced) {
     if (UI_DATA == null) return;
 
     var status = UI_DATA.testState;
+    // let ip = String(UI_DATA.clientIp);
+    let ip = "75.177.182.41 - Charter Communications Inc, US";
 
-    if (
-        String(UI_DATA.clientIp).length < 100 &&
-        String(UI_DATA.clientIp).length > 0
-    ) {
-        document.getElementById("ip").textContent = UI_DATA.clientIp;
+    if (ip.length < 100 && ip.length > 0) {
+        ip = ip.split("-")[0];
+        document.getElementById("ip").textContent = ip;
     }
 
     document.getElementById("dlText").textContent =

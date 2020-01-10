@@ -42,7 +42,7 @@ body {
         margin: 0;
         padding: 0;
         width: 100%;
-       
+
         // background: linear-gradient(
         //     to right,
         //     var(--meter-fill-color),
@@ -133,10 +133,6 @@ body {
     text-align: center;
     font-size: 1em;
     position: relative;
-
-   
-
-   
 }
 .testArea .testName {
     position: absolute;
@@ -162,6 +158,14 @@ body {
 .testArea2 .meterText {
     display: inline-block;
     font-size: 2.5em;
+
+    #ip {
+        // font-size: 0.5em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: 100%;
+        text-align: left;
+    }
 }
 .meterText:empty:before {
     content: "0";

@@ -138,6 +138,7 @@ function drawMeter(
 
     ctx.stroke();
     if (typeof progressAmount !== "undefined") {
+        ctx.shadowBlur = 0;
         ctx.fillStyle = progressBarColor;
         ctx.fillRect(
             c.width * 0.3,

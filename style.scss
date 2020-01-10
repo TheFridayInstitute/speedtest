@@ -5,7 +5,7 @@
     --color-primary: #fff;
     --color-secondary: #34c83c;
     --color-secondary-dark: #2ead34;
-    --font-family-primary: "Helvetica";
+    --font-family-primary: verdana, geneva, sans-serif;
     --meter-fill-color: #8f60aa;
     --meter-fill-color-secondary: #f77230;
     --meter-fill-color-secondary-dark: #d1622b;
@@ -24,19 +24,14 @@ body {
 }
 
 .outer-content {
-    background: linear-gradient(
-        to right,
-        var(--meter-fill-color),
-        var(--meter-fill-color-secondary)
-    );
-    padding: 0.2em;
+    padding: 0;
     margin: 0;
     height: 100%;
+    background: var(--background-color-primary);
 }
 
 .main-content {
     height: 100%;
-    border-radius: 0.3em;
     position: relative;
     padding: 0;
 
@@ -121,30 +116,18 @@ body {
 }
 
 #startStopBtn {
-    text-transform: uppercase;
+    // text-transform: uppercase;
     margin: auto;
-    margin-bottom: 1em;
-
-    color: black;
-    background-color: var(--color-secondary);
-
-    transition: all 0.3s;
-    box-sizing: border-box;
     width: 10em;
     height: 2.5em;
+    font-weight: normal;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2em;
-    border-bottom: solid 5px var(--color-secondary-dark);
-    border-radius: 0.3em;
-
-    cursor: pointer;
 }
 
 #startStopBtn.running {
     background-color: var(--ncsu-red);
-    border-bottom: solid 5px var(--ncsu-red-dark);
 }
 
 #startStopBtn:active {
@@ -162,7 +145,7 @@ body {
     position: relative;
 
     border-radius: 0.3em;
-    box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
+    box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.3);
 
     .testName {
         font-size: 2em;
@@ -179,6 +162,7 @@ body {
     }
 
     .unit {
+        text-transform: capitalize;
         position: absolute;
         bottom: 5em;
         left: 0;
@@ -220,6 +204,7 @@ body {
     }
 
     .unit {
+        text-transform: lowercase;
         display: inline-block;
         margin: 0;
         padding: 0;
@@ -317,4 +302,42 @@ body {
         width: calc(var(--gauge-width) / 1.4);
         height: calc(var(--gauge-height) / 1.4);
     }
+}
+
+.qualtrics-btn {
+    // border-top-width: initial;
+    // border-right-width: initial;
+    // border-bottom-width: initial;
+    // border-left-width: initial;
+    // border-top-style: none;
+    // border-right-style: none;
+    // border-bottom-style: none;
+    // border-left-style: none;
+    // border-top-color: initial;
+    // border-right-color: initial;
+    // border-bottom-color: initial;
+    // border-left-color: initial;
+    // border-image-source: initial;
+    // border-image-slice: initial;
+    // border-image-width: initial;
+    // border-image-outset: initial;
+    // border-image-repeat: initial;
+    color: rgb(0, 0, 0);
+    font-size: 20px;
+    // padding-top: 8px;
+    // padding-right: 20px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    // cursor: pointer;
+    // margin-top: 0px;
+    text-align: center;
+    // text-decoration: none;
+    // -webkit-appearance: none;
+    // transition-duration: 0.3s;
+    // transition-timing-function: initial;
+    // transition-delay: initial;
+    // transition-property: background;
+    background-color: rgb(46, 206, 46);
 }

@@ -237,7 +237,11 @@ body {
     .testArea {
         padding: 0;
         .meterText {
-            bottom: 4em;
+            bottom: 2.5em;
+        }
+
+        .unit {
+            bottom: 2em;
         }
     }
 

@@ -275,7 +275,10 @@ body {
     padding: 0;
   }
   .testArea .meterText {
-    bottom: 4em;
+    bottom: 2.5em;
+  }
+  .testArea .unit {
+    bottom: 2em;
   }
   .testArea {
     width: calc(var(--gauge-width) / 2);

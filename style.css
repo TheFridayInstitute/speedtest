@@ -142,12 +142,6 @@ body {
   background-color: var(--ncsu-red);
 }
 
-#startStopBtn:active {
-  -webkit-transform: translateY(4px);
-  transform: translateY(4px);
-  border-bottom: none;
-}
-
 .testArea {
   font-weight: normal;
   text-transform: uppercase;
@@ -305,7 +299,7 @@ body {
     padding: 0;
   }
   .testArea .meterText {
-    bottom: 1em;
+    bottom: 2em;
   }
   .testArea .unit {
     bottom: 2em;

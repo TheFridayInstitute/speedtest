@@ -7,22 +7,29 @@
   --font-family-primary: "Helvetica";
   --meter-fill-color: #8f60aa;
   --meter-fill-color-secondary: #f77230;
-  --gauge-width: 35em;
-  --gauge-height: 25em;
+  --meter-fill-color-secondary-dark: #d1622b;
+  --gauge-width: 25em;
+  --gauge-height: 20em;
   --ncsu-font: UniversCondensed;
 }
 
 html,
 body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.main-content {
   position: relative;
   padding: 0;
   margin: 0;
   background: var(--background-color-primary);
   color: var(--font-color-primary);
-  height: 100%;
   text-align: center;
   font-family: var(--font-family-primary);
   font-weight: 300;
+  height: 100%;
 }
 
 .header {
@@ -50,6 +57,12 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 .header img.ncsu-logo {
@@ -76,23 +89,35 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  padding: 2em;
+  padding: 1em;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
   font-style: italic;
   font-weight: 100;
-  background-color: var(--background-color-secondary);
+  bottom: 0;
 }
 
 #test {
   padding: 2em;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 #startStopBtn {
   text-transform: uppercase;
-  margin: 0 auto;
-  color: var(--font-color-primary);
+  margin: auto;
+  margin-top: 1em;
+  --hsl-color: hsl(var(--font-color-primary));
+  color: var(--hsl-color);
   background-color: var(--color-secondary);
   -webkit-transition: all 0.3s;
   transition: all 0.3s;
@@ -110,11 +135,18 @@ body {
       -ms-flex-align: center;
           align-items: center;
   font-size: 2em;
+  border-bottom: solid 5px var(--meter-fill-color-secondary-dark);
   cursor: pointer;
 }
 
 #startStopBtn.running {
   background-color: var(--meter-fill-color);
+}
+
+#startStopBtn:active {
+  -webkit-transform: translateY(4px);
+  transform: translateY(4px);
+  border-bottom: none;
 }
 
 #testWrapper {
@@ -207,6 +239,8 @@ body {
 
 .testArea2 .unit {
   display: inline-block;
+  margin: 0;
+  padding: 0;
 }
 
 .testArea canvas {
@@ -238,21 +272,23 @@ body {
   transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
-@media all and (max-width: 1400px) {
+@media all and (max-width: 768px) {
   html,
   body {
     font-size: 0.9em;
   }
-  .testArea {
-    width: calc(var(--gauge-width) / 1.2);
-    height: calc(var(--gauge-height) / 1.2);
+  .main-content {
+    padding: 0;
+    margin: 0;
   }
-}
-
-@media all and (max-width: 768px) {
-  html,
-  body {
-    font-size: 0.6em;
+  .header {
+    margin: 0;
+    font-size: 0.5em;
+    top: 0;
+  }
+  #test {
+    padding: 0;
+    margin-top: 0;
   }
   .testGroup {
     margin: 0;
@@ -262,61 +298,33 @@ body {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+            flex-direction: row;
     -webkit-box-align: center;
         -ms-flex-align: center;
             align-items: center;
     -webkit-box-pack: space-evenly;
         -ms-flex-pack: space-evenly;
             justify-content: space-evenly;
+    margin: 0;
     padding: 0;
-    height: 75%;
+    height: 50%;
   }
   .testArea {
     padding: 0;
   }
   .testArea .meterText {
-    bottom: 2.5em;
+    bottom: 1em;
   }
   .testArea .unit {
     bottom: 2em;
   }
   .testArea {
-    width: calc(var(--gauge-width) / 2);
-    height: calc(var(--gauge-height) / 2);
+    font-size: 0.8em;
+    width: calc(var(--gauge-width) / 1.4);
+    height: calc(var(--gauge-height) / 1.4);
   }
-}
-
-.hvr-underline-from-left {
-  display: inline-block;
-  vertical-align: middle;
-  -webkit-transform: perspective(1px) translateZ(0);
-  transform: perspective(1px) translateZ(0);
-  -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0);
-          box-shadow: 0 0 1px rgba(0, 0, 0, 0);
-  position: relative;
-  overflow: hidden;
-}
-
-.hvr-underline-from-left:before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: 0;
-  right: 100%;
-  bottom: 0;
-  background: white;
-  height: 4px;
-  -webkit-transition-property: right;
-  transition-property: right;
-  -webkit-transition-duration: 0.3s;
-          transition-duration: 0.3s;
-  -webkit-transition-timing-function: ease-out;
-          transition-timing-function: ease-out;
-}
-
-.hvr-underline-from-left:hover:before,
-.hvr-underline-from-left:focus:before,
-.hvr-underline-from-left:active:before {
-  right: 0;
 }
 /*# sourceMappingURL=style.css.map */

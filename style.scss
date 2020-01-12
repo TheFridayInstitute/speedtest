@@ -1,5 +1,6 @@
 :root {
-    --background-color-primary: rgba(51, 51, 51, 0.9);
+    --background-color-primary: rgba(51, 51, 51, 1);
+    --background-color-primary-dark: rgb(37, 37, 37);
     --background-color-secondary: rgb(51, 51, 51);
     --font-color-primary: #fff;
     --color-primary: #fff;
@@ -14,6 +15,7 @@
     --ncsu-font: UniversCondensed;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
+    --border-radius-primary: 0.5em;
 }
 
 html,
@@ -24,57 +26,56 @@ body {
 }
 
 .outer-content {
-    padding: 0;
-    margin: 0;
-    height: 100%;
     background: var(--background-color-primary);
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .main-content {
-    height: 100%;
-    position: relative;
-    padding: 0;
+    align-items: center;
 
     background: var(--background-color-primary);
 
     color: var(--font-color-primary);
-    text-align: center;
+
+    display: grid;
     font-family: var(--font-family-primary);
     font-weight: 300;
 
-    display: grid;
-
     grid-template-areas:
         "ping ping"
-        "download upload"
+        "download download"
         "button button";
 
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 2fr 1fr;
-
-    align-items: center;
+    height: 100%;
+    padding: 0;
+    position: relative;
+    text-align: center;
 }
 
 .header {
+    background-color: var(--background-color-secondary);
+    column-gap: 1em;
     display: grid;
     grid-template-areas: "l h h .";
     grid-template-columns: 1fr 2fr 2fr 1fr;
-    column-gap: 1em;
     grid-template-rows: 1fr;
-    background-color: var(--background-color-secondary);
-    position: relative;
-    padding: 1em;
     margin-bottom: 5em;
+    padding: 1em;
+    position: relative;
 
     .title {
-        grid-area: h;
+        display: flex;
         font-size: 8em;
         font-weight: bold;
+        grid-area: h;
+        justify-content: center;
         margin: 0;
         padding: 0;
         width: 100%;
-        display: flex;
-        justify-content: center;
 
         // background: linear-gradient(
         //     to right,
@@ -91,39 +92,47 @@ body {
     }
 
     .brick {
-        grid-area: l;
-        display: flex;
-        justify-content: center;
         align-items: center;
+        display: flex;
+        grid-area: l;
+        justify-content: center;
 
         width: 10em;
     }
 }
 
 .info-container {
-    // border: 2px solid;
-
+    // background-color: white;
+    border-radius: var(--border-radius-primary);
+    height: 100%;
     width: calc(var(--gauge-width) * 2 + 2em);
-}
-
-.footer {
-    display: flex;
-    padding: 1em;
-    justify-content: center;
-    font-style: italic;
-    font-weight: 100;
-    bottom: 0;
-}
-
-#startStopBtn {
-    // text-transform: uppercase;
-    margin: auto;
-    width: 10em;
-    height: 2.5em;
-    font-weight: normal;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.footer {
+    bottom: 0;
+    display: flex;
+    font-style: italic;
+    font-weight: 100;
+    justify-content: center;
+    padding: 1em;
+}
+
+#startStopBtn {
+    align-items: center;
+    background-color: rgb(46, 206, 46);
+    border-radius: 4px;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    display: flex;
+    font-size: 1.5em;
+    font-weight: normal;
+    height: 2.5em;
+    justify-content: center;
+    margin: auto;
+    width: 10em;
 }
 
 #startStopBtn.running {
@@ -131,57 +140,67 @@ body {
 }
 
 .testArea {
+    border: var(--background-color-primary-dark);
+
+    border-radius: var(--border-radius-primary);
+    box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.5);
+
+    display: grid;
     font-weight: normal;
-    text-transform: uppercase;
-    width: var(--gauge-width);
+
+    grid-template-areas:
+        "kind"
+        "amount"
+        "unit";
+    grid-template-columns: 1fr;
+
+    grid-template-rows: 1fr 0.5fr 0.5fr;
     height: var(--gauge-height);
     position: relative;
 
-    border-radius: 0.3em;
-    box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.3);
+    row-gap: 1em;
+    text-transform: uppercase;
+    width: var(--gauge-width);
 
     .testName {
-        font-size: 2em;
+        
+        font-size: 4em;
+        grid-area: "kind";
         z-index: 9;
     }
 
     .meterText {
-        position: absolute;
-        left: 0;
-        width: 100%;
-        font-size: 2em;
+        font-size: 3em;
+        grid-area: amount;
+        margin: auto;
         z-index: 9;
-        top: calc(var(--gauge-height) / 4);
     }
 
     .unit {
+        grid-area: unit;
         text-transform: capitalize;
-        position: absolute;
-        bottom: 5em;
-        left: 0;
-        width: 100%;
         z-index: 9;
     }
 
     canvas {
+        height: 100%;
+        left: 0;
         position: absolute;
         top: 0;
-        left: 0;
         width: 100%;
-        height: 100%;
         z-index: 1;
     }
 }
 
 .testArea2 {
-    text-transform: uppercase;
-    width: 14em;
     height: 7em;
     position: relative;
+    text-transform: uppercase;
+    width: 14em;
 
     .testName {
-        text-align: center;
         font-size: 1.4em;
+        text-align: center;
     }
 
     .meterText {
@@ -189,18 +208,18 @@ body {
         font-size: 2.5em;
 
         #ip {
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            width: 100%;
             text-align: left;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
         }
     }
 
     .unit {
-        text-transform: lowercase;
         display: inline-block;
         margin: 0;
         padding: 0;
+        text-transform: lowercase;
     }
 }
 
@@ -210,27 +229,26 @@ body {
 
 .testGroup {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .gauge-numbers {
-    font-weight: 100;
-    font-size: 1.5em;
     font-family: var(--font-family-primary);
+    font-size: 1.5em;
+    font-weight: 100;
     position: absolute;
     transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
-@media all and (max-width: 768px) {
+@media all and (max-width: 768px) and (orientation: portrait) {
     html,
     body {
         font-size: 0.9em;
     }
 
     .main-content {
-        padding: 0;
-        margin: 0;
+        align-items: center;
 
         grid-template-areas:
             "button"
@@ -240,97 +258,25 @@ body {
 
         grid-template-columns: 1fr;
         grid-template-rows: 1fr 2fr 2fr 1fr;
-
-        align-items: center;
-    }
-
-    .header {
-        margin: 0;
-        font-size: 0.5em;
-        top: 0;
-    }
-
-    #test {
-        padding: 0;
-        margin-top: 0;
-    }
-
-    .testGroup {
         margin: 0;
         padding: 0;
-
-        .testArea2 {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-evenly;
-            margin: 0;
-            padding: 0;
-            height: 50%;
-            font-size: 1em;
-
-            .meterText {
-                font-size: 1.5em;
-            }
-        }
-
-        #ipArea {
-            margin: auto 0;
-        }
     }
 
     .testArea {
-        padding: 0;
-        .meterText {
-            bottom: 2em;
-        }
-
-        .unit {
-            bottom: 2em;
-        }
-    }
-
-    .testArea {
-        font-size: 0.8em;
-        width: calc(var(--gauge-width) / 1.4);
         height: calc(var(--gauge-height) / 1.4);
+        width: calc(var(--gauge-width) / 1.4);
     }
 }
 
-.qualtrics-btn {
-    // border-top-width: initial;
-    // border-right-width: initial;
-    // border-bottom-width: initial;
-    // border-left-width: initial;
-    // border-top-style: none;
-    // border-right-style: none;
-    // border-bottom-style: none;
-    // border-left-style: none;
-    // border-top-color: initial;
-    // border-right-color: initial;
-    // border-bottom-color: initial;
-    // border-left-color: initial;
-    // border-image-source: initial;
-    // border-image-slice: initial;
-    // border-image-width: initial;
-    // border-image-outset: initial;
-    // border-image-repeat: initial;
-    color: rgb(0, 0, 0);
-    font-size: 20px;
-    // padding-top: 8px;
-    // padding-right: 20px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    // cursor: pointer;
-    // margin-top: 0px;
-    text-align: center;
-    // text-decoration: none;
-    // -webkit-appearance: none;
-    // transition-duration: 0.3s;
-    // transition-timing-function: initial;
-    // transition-delay: initial;
-    // transition-property: background;
-    background-color: rgb(46, 206, 46);
+@media all and (max-width: 768px) and (orientation: landscape) {
+    html,
+    body {
+        font-size: 0.9em;
+        height: 100%;
+    }
+
+    .testArea {
+        height: calc(var(--gauge-height) / 1.4);
+        width: calc(var(--gauge-width) / 1.4);
+    }
 }

@@ -1,13 +1,15 @@
 import {
     getUrlParams,
     oscillate,
-    drawMeter,
-    mbpsToAmount,
-    generateGradient,
     setGaugeNumbers,
     range,
-    toggleOnce
+    toggleOnce,
+    normalize,
+    clamp,
+    lerp
 } from "./utils.js";
+
+import { Color } from "./colors.js";
 
 window.requestAnimationFrame =
     window.requestAnimationFrame ||
@@ -57,12 +59,12 @@ function startStop() {
         speedtestObj.abort();
         data = null;
         document.getElementById("startStopBtn").classList.remove("running");
-        document.getElementById("startStopBtn").innerHTML = "Start";
+        document.getElementById("startStopBtn").innerText = "Start";
 
         initUI();
     } else {
         document.getElementById("startStopBtn").classList.add("running");
-        document.getElementById("startStopBtn").innerHTML = "Stop";
+        document.getElementById("startStopBtn").innerText = "Stop";
         speedtestObj.onupdate = function(data) {
             UI_DATA = data;
 
@@ -80,7 +82,7 @@ function startStop() {
         };
 
         speedtestObj.onend = function(aborted) {
-            document.getElementById("startStopBtn").innerHTML = "Start";
+            document.getElementById("startStopBtn").innerText = "Start";
             document.getElementById("startStopBtn").classList.remove("running");
             updateUI(true);
         };
@@ -90,55 +92,133 @@ function startStop() {
     return UI_DATA;
 }
 
-let meterBackgroundColor = "#80808080";
-let progressBarColor = "#fff";
+function generateGradient(canvas, x0, y0, x1, y1, colorStops) {
+    let ctx = canvas.getContext("2d");
+    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
 
-let downloadColorStops = [
+    for (let [stop, color] of colorStops) {
+        gradient.addColorStop(stop, color);
+    }
+    return gradient;
+}
+
+function generateGradientWrapper(canvas, colorStops) {
+    return generateGradient(canvas, 0, 0, canvas.width, 0, colorStops);
+}
+
+function makeGlowColor(value, index) {
+    let [stop, color] = value;
+    let newColor = new Color(color);
+    newColor.setOpacity(0.3);
+    return [stop, newColor.colorString];
+}
+
+const backgroundColor = "#80808080";
+const progressBarColor = "#fff";
+
+let dlColorStops = [
     ["0", "#8343ab"],
     ["0.5", "#d359ff"],
     ["1.0", "#f71e6a"]
 ];
-let dlProgressColor = generateGradient(
-    document.getElementById("dlMeter"),
-    0,
-    0,
-    document.getElementById("dlMeter").width,
-    0,
-    downloadColorStops
-);
 
-let uploadColorStops = [
+let ulColorStops = [
     ["0", "#FF8000"],
     ["0.5", "#FF8000"],
     ["1.0", "#FF0000"]
 ];
-let ulProgressColor = generateGradient(
-    document.getElementById("ulMeter"),
-    0,
-    0,
-    document.getElementById("ulMeter").width,
-    0,
-    uploadColorStops
-);
+
+function drawMeter(canvas, amount, progressAmount, meterType) {
+    let ctx = canvas.getContext("2d");
+
+    let dp = window.devicePixelRatio || 1;
+    let cw = canvas.clientWidth * dp;
+    let ch = canvas.clientHeight * dp;
+
+    if (canvas.width == cw && canvas.height == ch) {
+        ctx.clearRect(0, 0, cw, ch);
+    } else {
+        canvas.width = cw;
+        canvas.height = ch;
+    }
+
+    let lineWidth = 60;
+
+    let originX = canvas.width / 2;
+    let originY = canvas.width / 2;
+
+    let outerRadius = canvas.width / 3;
+    let innerRadius = outerRadius / 1.2;
+
+    let alpha0 = Math.PI * 0.8;
+    let alpha1 = 2 * Math.PI * 1.1;
+
+    ctx.beginPath();
+    ctx.strokeStyle = backgroundColor;
+    ctx.lineWidth = lineWidth;
+
+    ctx.arc(originX, originY, outerRadius, alpha0, alpha1);
+
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "black";
+    ctx.stroke();
+
+    let progressColor =
+        meterType === "dl"
+            ? generateGradientWrapper(canvas, dlColorStops)
+            : generateGradientWrapper(canvas, ulColorStops);
+
+    ctx.beginPath();
+    ctx.strokeStyle = progressColor;
+    ctx.lineWidth = lineWidth;
+
+    let min = 0;
+    let max = 100;
+
+    let t = normalize(amount, min, max);
+    let alpha2 = clamp(lerp(alpha0, alpha1, t), alpha0, alpha1);
+
+    ctx.arc(originX, originY, outerRadius, alpha0, alpha2);
+
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "red";
+    ctx.stroke();
+
+    let progressGlowColor =
+        meterType === "dl"
+            ? generateGradientWrapper(canvas, dlColorStops.map(makeGlowColor))
+            : generateGradientWrapper(canvas, ulColorStops.map(makeGlowColor));
+
+    ctx.beginPath();
+    ctx.strokeStyle = progressGlowColor;
+    ctx.lineWidth = lineWidth;
+
+    ctx.arc(originX, originY, innerRadius, alpha0, alpha2, false);
+
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
+    if (typeof progressAmount !== "undefined") {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = progressBarColor;
+
+        let barWidth = canvas.width * 0.4;
+        let barHeight = 10;
+
+        let x = (canvas.width - barWidth) / 2;
+        let y = (canvas.height - barHeight) / 2 + outerRadius;
+
+        ctx.fillRect(x, y, barWidth * progressAmount, barHeight);
+        ctx.stroke();
+    }
+}
 
 function initUI() {
-    drawMeter(
-        document.getElementById("dlMeter"),
-        0,
-        meterBackgroundColor,
-        dlProgressColor,
-        0
-    );
-    drawMeter(
-        document.getElementById("ulMeter"),
-        0,
-        meterBackgroundColor,
-        ulProgressColor,
-        0
-    );
-    document.getElementById("dlText").innerHTML = "";
-    document.getElementById("ulText").innerHTML = "";
-    document.getElementById("pingText").innerHTML = "";
+    drawMeter(document.getElementById("dlMeter"), 0, 0, "dl");
+    // drawMeter(document.getElementById("ulMeter"), 0, 0, "ul");
+    document.getElementById("dlText").innerText = "";
+    // document.getElementById("ulText").innerText = "";
+    document.getElementById("pingText").innerText = "";
 }
 
 function drawGaugeWrapper(
@@ -147,28 +227,22 @@ function drawGaugeWrapper(
     gaugeTextEl,
     gaugeAmount,
     gaugeProgress,
-    backgroundColor,
-    arcProgressColor,
-    barProgressColor
+    gaugeType
 ) {
     gaugeAmount = Number(gaugeAmount);
     gaugeProgress = Number(gaugeProgress);
 
     if (status === 1 && gaugeAmount === 0) {
-        gaugeTextEl.innerHTML = "...";
+        gaugeTextEl.innerText = "...";
     } else {
-        gaugeTextEl.innerHTML = gaugeAmount.toPrecision(3);
+        gaugeTextEl.innerText = gaugeAmount.toPrecision(3);
     }
-    let gaugeMbpsAmount = mbpsToAmount(
-        gaugeAmount * (status == 1 ? oscillate() : 1)
-    );
+
     drawMeter(
         gaugeEl,
-        gaugeMbpsAmount,
-        backgroundColor,
-        arcProgressColor,
+        gaugeAmount * (status == 1 ? oscillate() : 1),
         gaugeProgress,
-        barProgressColor
+        gaugeType
     );
 }
 
@@ -181,32 +255,32 @@ function updateUI(forced) {
 
     // if (ip.length < 100 && ip.length > 0) {
     //     ip = ip.split("-")[0]; // CHANGE THIS LATER!!
-    //     document.getElementById("ip").innerHTML = ip;
+    //     document.getElementById("ip").innerText = ip;
     // }
 
-    drawGaugeWrapper(
-        UI_DATA.testState,
-        document.getElementById("dlMeter"),
-        document.getElementById("dlText"),
-        UI_DATA.dlStatus,
-        UI_DATA.dlProgress,
-        meterBackgroundColor,
-        dlProgressColor,
-        progressBarColor
-    );
+    let status = UI_DATA.testState;
 
-    drawGaugeWrapper(
-        UI_DATA.testState,
-        document.getElementById("ulMeter"),
-        document.getElementById("ulText"),
-        UI_DATA.ulStatus,
-        UI_DATA.ulProgress,
-        meterBackgroundColor,
-        ulProgressColor,
-        progressBarColor
-    );
+    if (status === 1) {
+        drawGaugeWrapper(
+            UI_DATA.testState,
+            document.getElementById("dlMeter"),
+            document.getElementById("dlText"),
+            UI_DATA.dlStatus,
+            UI_DATA.dlProgress,
+            "dl"
+        );
+    } else if (status == 3) {
+        drawGaugeWrapper(
+            UI_DATA.testState,
+            document.getElementById("dlMeter"),
+            document.getElementById("dlText"),
+            UI_DATA.ulStatus,
+            UI_DATA.ulProgress,
+            "ul"
+        );
+    }
 
-    document.getElementById("pingText").innerHTML = Math.round(
+    document.getElementById("pingText").innerText = Math.round(
         UI_DATA.pingStatus
     );
 }

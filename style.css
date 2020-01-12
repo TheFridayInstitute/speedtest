@@ -1,5 +1,6 @@
 :root {
-  --background-color-primary: rgba(51, 51, 51, 0.9);
+  --background-color-primary: rgba(51, 51, 51, 1);
+  --background-color-primary-dark: rgb(37, 37, 37);
   --background-color-secondary: rgb(51, 51, 51);
   --font-color-primary: #fff;
   --color-primary: #fff;
@@ -14,6 +15,7 @@
   --ncsu-font: UniversCondensed;
   --ncsu-red: #c00;
   --ncsu-red-dark: rgb(173, 0, 0);
+  --border-radius-primary: 0.5em;
 }
 
 html,
@@ -24,65 +26,65 @@ body {
 }
 
 .outer-content {
-  padding: 0;
-  margin: 0;
-  height: 100%;
   background: var(--background-color-primary);
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .main-content {
-  height: 100%;
-  position: relative;
-  padding: 0;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   background: var(--background-color-primary);
   color: var(--font-color-primary);
-  text-align: center;
-  font-family: var(--font-family-primary);
-  font-weight: 300;
   display: -ms-grid;
   display: grid;
-      grid-template-areas: "ping ping" "download upload" "button button";
+  font-family: var(--font-family-primary);
+  font-weight: 300;
+      grid-template-areas: "ping ping" "download download" "button button";
   -ms-grid-columns: 1fr 1fr;
       grid-template-columns: 1fr 1fr;
   -ms-grid-rows: 1fr 2fr 1fr;
       grid-template-rows: 1fr 2fr 1fr;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  height: 100%;
+  padding: 0;
+  position: relative;
+  text-align: center;
 }
 
 .header {
+  background-color: var(--background-color-secondary);
+  -webkit-column-gap: 1em;
+          column-gap: 1em;
   display: -ms-grid;
   display: grid;
       grid-template-areas: "l h h .";
   -ms-grid-columns: 1fr 2fr 2fr 1fr;
       grid-template-columns: 1fr 2fr 2fr 1fr;
-  -webkit-column-gap: 1em;
-          column-gap: 1em;
   -ms-grid-rows: 1fr;
       grid-template-rows: 1fr;
-  background-color: var(--background-color-secondary);
-  position: relative;
-  padding: 1em;
   margin-bottom: 5em;
+  padding: 1em;
+  position: relative;
 }
 
 .header .title {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 8em;
+  font-weight: bold;
   -ms-grid-row: 1;
   -ms-grid-column: 2;
   -ms-grid-column-span: 2;
   grid-area: h;
-  font-size: 8em;
-  font-weight: bold;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .header img.ncsu-logo {
@@ -90,43 +92,25 @@ body {
 }
 
 .header .brick {
-  -ms-grid-row: 1;
-  -ms-grid-column: 1;
-  grid-area: l;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: l;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
   width: 10em;
 }
 
 .info-container {
+  border-radius: var(--border-radius-primary);
+  height: 100%;
   width: calc(var(--gauge-width) * 2 + 2em);
-}
-
-.footer {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 1em;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  font-style: italic;
-  font-weight: 100;
-  bottom: 0;
-}
-
-#startStopBtn {
-  margin: auto;
-  width: 10em;
-  height: 2.5em;
-  font-weight: normal;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -136,6 +120,40 @@ body {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+}
+
+.footer {
+  bottom: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  font-style: italic;
+  font-weight: 100;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  padding: 1em;
+}
+
+#startStopBtn {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background-color: #2ece2e;
+  border-radius: 4px;
+  color: black;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1.5em;
+  font-weight: normal;
+  height: 2.5em;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  margin: auto;
+  width: 10em;
 }
 
 #startStopBtn.running {
@@ -143,58 +161,67 @@ body {
 }
 
 .testArea {
+  border: var(--background-color-primary-dark);
+  border-radius: var(--border-radius-primary);
+  -webkit-box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.5);
+          box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.5);
+  display: -ms-grid;
+  display: grid;
   font-weight: normal;
-  text-transform: uppercase;
-  width: var(--gauge-width);
+      grid-template-areas: "kind" "amount" "unit";
+  -ms-grid-columns: 1fr;
+      grid-template-columns: 1fr;
+  -ms-grid-rows: 1fr 0.5fr 0.5fr;
+      grid-template-rows: 1fr 0.5fr 0.5fr;
   height: var(--gauge-height);
   position: relative;
-  border-radius: 0.3em;
-  -webkit-box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.3);
-          box-shadow: -10px 20px 50px rgba(0, 0, 0, 0.3);
+  row-gap: 1em;
+  text-transform: uppercase;
+  width: var(--gauge-width);
 }
 
 .testArea .testName {
-  font-size: 2em;
+  font-size: 4em;
+  grid-area: "kind";
   z-index: 9;
 }
 
 .testArea .meterText {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  font-size: 2em;
+  font-size: 3em;
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: amount;
+  margin: auto;
   z-index: 9;
-  top: calc(var(--gauge-height) / 4);
 }
 
 .testArea .unit {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: unit;
   text-transform: capitalize;
-  position: absolute;
-  bottom: 5em;
-  left: 0;
-  width: 100%;
   z-index: 9;
 }
 
 .testArea canvas {
+  height: 100%;
+  left: 0;
   position: absolute;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
   z-index: 1;
 }
 
 .testArea2 {
-  text-transform: uppercase;
-  width: 14em;
   height: 7em;
   position: relative;
+  text-transform: uppercase;
+  width: 14em;
 }
 
 .testArea2 .testName {
-  text-align: center;
   font-size: 1.4em;
+  text-align: center;
 }
 
 .testArea2 .meterText {
@@ -203,17 +230,17 @@ body {
 }
 
 .testArea2 .meterText #ip {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  width: 100%;
   text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .testArea2 .unit {
-  text-transform: lowercase;
   display: inline-block;
   margin: 0;
   padding: 0;
+  text-transform: lowercase;
 }
 
 .meterText:empty:before {
@@ -224,101 +251,54 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
 }
 
 .gauge-numbers {
-  font-weight: 100;
-  font-size: 1.5em;
   font-family: var(--font-family-primary);
+  font-size: 1.5em;
+  font-weight: 100;
   position: absolute;
   -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
   transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
-@media all and (max-width: 768px) {
+@media all and (max-width: 768px) and (orientation: portrait) {
   html,
   body {
     font-size: 0.9em;
   }
   .main-content {
-    padding: 0;
-    margin: 0;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
         grid-template-areas: "button" "download" "upload" "ping";
     -ms-grid-columns: 1fr;
         grid-template-columns: 1fr;
     -ms-grid-rows: 1fr 2fr 2fr 1fr;
         grid-template-rows: 1fr 2fr 2fr 1fr;
-    -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
-  }
-  .header {
-    margin: 0;
-    font-size: 0.5em;
-    top: 0;
-  }
-  #test {
-    padding: 0;
-    margin-top: 0;
-  }
-  .testGroup {
     margin: 0;
     padding: 0;
-  }
-  .testGroup .testArea2 {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
-    -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
-    -webkit-box-pack: space-evenly;
-        -ms-flex-pack: space-evenly;
-            justify-content: space-evenly;
-    margin: 0;
-    padding: 0;
-    height: 50%;
-    font-size: 1em;
-  }
-  .testGroup .testArea2 .meterText {
-    font-size: 1.5em;
-  }
-  .testGroup #ipArea {
-    margin: auto 0;
   }
   .testArea {
-    padding: 0;
-  }
-  .testArea .meterText {
-    bottom: 2em;
-  }
-  .testArea .unit {
-    bottom: 2em;
-  }
-  .testArea {
-    font-size: 0.8em;
-    width: calc(var(--gauge-width) / 1.4);
     height: calc(var(--gauge-height) / 1.4);
+    width: calc(var(--gauge-width) / 1.4);
   }
 }
 
-.qualtrics-btn {
-  color: black;
-  font-size: 20px;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 4px;
-  text-align: center;
-  background-color: #2ece2e;
+@media all and (max-width: 768px) and (orientation: landscape) {
+  html,
+  body {
+    font-size: 0.9em;
+    height: 100%;
+  }
+  .testArea {
+    height: calc(var(--gauge-height) / 1.4);
+    width: calc(var(--gauge-width) / 1.4);
+  }
 }
 /*# sourceMappingURL=style.css.map */

@@ -1,13 +1,13 @@
 export {
     getUrlParams,
     oscillate,
-    drawMeter,
-    mbpsToAmount,
-    generateGradient,
     getOffset,
     setGaugeNumbers,
     range,
-    toggleOnce
+    toggleOnce,
+    lerp,
+    normalize,
+    clamp
 };
 
 function clamp(x, lowerLimit, upperLimit) {
@@ -88,81 +88,12 @@ function oscillate(a, b, frequency) {
     return 1 + r * Math.sin(Date.now() / frequency);
 }
 
-function drawMeter(
-    c,
-    amount,
-    backgroundColor,
-    progressColor,
-    progressAmount,
-    progressBarColor
-) {
-    var ctx = c.getContext("2d");
-    var dp = window.devicePixelRatio || 1;
-    var cw = c.clientWidth * dp,
-        ch = c.clientHeight * dp;
-    var sizScale = ch * 0.0055;
-    if (c.width == cw && c.height == ch) {
-        ctx.clearRect(0, 0, cw, ch);
-    } else {
-        c.width = cw;
-        c.height = ch;
-    }
-    ctx.beginPath();
-    ctx.strokeStyle = backgroundColor;
-    ctx.lineWidth = 12 * sizScale;
-    ctx.arc(
-        c.width / 2,
-        c.height - 58 * sizScale,
-        c.height / 1.8 - ctx.lineWidth,
-        -Math.PI * 1.1,
-        Math.PI * 0.1
-    );
-    ctx.shadowBlur = 2;
-    ctx.shadowColor = "black";
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.strokeStyle = progressColor;
-    ctx.lineWidth = 12 * sizScale;
-
-    ctx.arc(
-        c.width / 2,
-        c.height - 58 * sizScale,
-        c.height / 1.8 - ctx.lineWidth,
-        -Math.PI * 1.1,
-        amount * Math.PI * 1.2 - Math.PI * 1.1
-    );
-
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = "red";
-
-    ctx.stroke();
-    if (typeof progressAmount !== "undefined") {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = progressBarColor;
-        ctx.fillRect(
-            c.width * 0.3,
-            c.height - 16 * sizScale,
-            c.width * 0.4 * progressAmount,
-            4 * sizScale
-        );
-        ctx.shadowBlur = 0;
-    }
+function lerp(v0, v1, t) {
+    return (1 - t) * v0 + t * v1;
 }
 
-function mbpsToAmount(s) {
-    // return clamp(s, 0, 100);
-    return 1 - 1 / Math.pow(1.3, Math.sqrt(s));
-}
-
-function generateGradient(c, x0, y0, x1, y1, colorStops) {
-    let ctx = c.getContext("2d");
-    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-
-    for (let [stop, color] of colorStops) {
-        gradient.addColorStop(stop, color);
-    }
-    return gradient;
+function normalize(x0, min, max) {
+    return (x0 - min) / (max - min);
 }
 
 function sleep(ms) {

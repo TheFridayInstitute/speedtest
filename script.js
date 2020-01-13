@@ -68,12 +68,20 @@ function startStop() {
             let urlParams = getUrlParams(window.location.href);
 
             if (data.testState === 4) {
+                let clientData = {};
+
+                let ip = String(UI_DATA.clientIp);
+                if (ip.length < 100 && ip.length > 0) {
+                    ip = ip.split("-")[0]; // CHANGE THIS LATER!!
+                }
+
                 $.post("backend/record.php", {
                     id: urlParams.id || -1,
                     dlStatus: data.dlStatus,
                     ulStatus: data.ulStatus,
                     pingStatus: data.pingStatus,
-                    jitterStatus: data.jitterStatus
+                    jitterStatus: data.jitterStatus,
+                    ip: ip
                 });
             }
         };

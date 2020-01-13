@@ -290,7 +290,7 @@ function updateUI(forced) {
 
         toggleOnce(document.getElementById("ul-amount"), function(e) {
             let tmp = document.getElementById("tmp");
-            tmp.style.opacity = 1;
+            tmp.style.display = "block";
             let width = window.innerWidth;
 
             let testEl = document.getElementById("test-container");
@@ -409,7 +409,6 @@ window.onload = function() {
     let width = window.innerWidth;
 
     tmp.style.transform = `translateX(${-width}px)`;
-    tmp.style.opacity = 0;
 
     setTimeout(function() {
         initUI();

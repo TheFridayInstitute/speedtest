@@ -6,7 +6,10 @@ import {
     toggleOnce,
     normalize,
     clamp,
-    lerp
+    lerp,
+    Clock,
+    easeInBounce,
+    bounceInEase
 } from "./utils.js";
 
 import { Color } from "./colors.js";
@@ -25,26 +28,20 @@ var UI_DATA = null;
 
 let initGaugeNumbers = function() {
     let gaugeNumbers = range(0, 70, 10);
-    let shift = -150;
+    let shift = 0;
 
     setGaugeNumbers(
-        document.getElementById("dl-meter-container"),
-        gaugeNumbers,
-        0,
-        shift
-    );
-    setGaugeNumbers(
-        document.getElementById("ul-meter-container"),
+        document.getElementById("test-meter"),
         gaugeNumbers,
         0,
         shift
     );
 };
 
-document.getElementById("startStopBtn").addEventListener("click", function(e) {
+document.getElementById("start-btn").addEventListener("click", function(e) {
     UI_DATA = startStop();
 
-    toggleOnce(document.getElementById("startStopBtn"), function() {
+    toggleOnce(document.getElementById("start-btn"), function() {
         // initGaugeNumbers();
     });
 });
@@ -58,13 +55,13 @@ function startStop() {
     if (speedtestObj.getState() == 3) {
         speedtestObj.abort();
         data = null;
-        document.getElementById("startStopBtn").classList.remove("running");
-        document.getElementById("startStopBtn").innerText = "Start";
+        document.getElementById("start-btn").classList.remove("running");
+        document.getElementById("start-btn").innerText = "Start";
 
         initUI();
     } else {
-        document.getElementById("startStopBtn").classList.add("running");
-        document.getElementById("startStopBtn").innerText = "Stop";
+        document.getElementById("start-btn").classList.add("running");
+        document.getElementById("start-btn").innerText = "Stop";
         speedtestObj.onupdate = function(data) {
             UI_DATA = data;
 
@@ -82,8 +79,8 @@ function startStop() {
         };
 
         speedtestObj.onend = function(aborted) {
-            document.getElementById("startStopBtn").innerText = "Start";
-            document.getElementById("startStopBtn").classList.remove("running");
+            document.getElementById("start-btn").innerText = "Start";
+            document.getElementById("start-btn").classList.remove("running");
             updateUI(true);
         };
 
@@ -127,6 +124,9 @@ let ulColorStops = [
     ["0.5", "#FF8000"],
     ["1.0", "#FF0000"]
 ];
+
+let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
+let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon"></i>`;
 
 function drawMeter(canvas, amount, progressAmount, meterType) {
     let ctx = canvas.getContext("2d");
@@ -214,11 +214,9 @@ function drawMeter(canvas, amount, progressAmount, meterType) {
 }
 
 function initUI() {
-    drawMeter(document.getElementById("dlMeter"), 0, 0, "dl");
-    // drawMeter(document.getElementById("ulMeter"), 0, 0, "ul");
-    document.getElementById("dlText").innerText = "";
-    // document.getElementById("ulText").innerText = "";
-    document.getElementById("pingText").innerText = "";
+    drawMeter(document.getElementById("test-meter"), 0, 0, "dl");
+    document.getElementById("test-amount").innerText = "";
+    document.getElementById("ping-amount").innerText = "";
 }
 
 function drawGaugeWrapper(
@@ -251,36 +249,57 @@ function updateUI(forced) {
 
     if (UI_DATA == null) return;
 
-    // let ip = String(UI_DATA.clientIp);
-
-    // if (ip.length < 100 && ip.length > 0) {
-    //     ip = ip.split("-")[0]; // CHANGE THIS LATER!!
-    //     document.getElementById("ip").innerText = ip;
-    // }
-
     let status = UI_DATA.testState;
 
     if (status === 1) {
+        document.getElementById("test-kind").innerHTML = dlText;
         drawGaugeWrapper(
             UI_DATA.testState,
-            document.getElementById("dlMeter"),
-            document.getElementById("dlText"),
+            document.getElementById("test-meter"),
+            document.getElementById("test-amount"),
             UI_DATA.dlStatus,
             UI_DATA.dlProgress,
             "dl"
         );
     } else if (status == 3) {
+        document.getElementById("test-kind").innerHTML = ulText;
+        document.getElementById("dl-amount").innerHTML = Number(
+            UI_DATA.dlStatus
+        ).toPrecision(3);
+
         drawGaugeWrapper(
             UI_DATA.testState,
-            document.getElementById("dlMeter"),
-            document.getElementById("dlText"),
+            document.getElementById("test-meter"),
+            document.getElementById("test-amount"),
             UI_DATA.ulStatus,
             UI_DATA.ulProgress,
             "ul"
         );
+    } else if (status === 4) {
+        document.getElementById("ul-amount").innerHTML = Number(
+            UI_DATA.ulStatus
+        ).toPrecision(3);
+
+        toggleOnce(document.getElementById("ul-amount"), function(e) {
+            let tmp = document.getElementById("tmp");
+            tmp.style.opacity = 1;
+            let width = window.innerWidth;
+
+            let testEl = document.getElementById("test-container");
+            let buttonEl = document.getElementById("start-btn");
+
+            slideRight(buttonEl, width, 0);
+            slideRight(testEl, width, 0);
+            slideRight(tmp, 0, -width);
+
+            setTimeout(function() {
+                fadeOut(buttonEl);
+                fadeOut(testEl);
+            }, 1000);
+        });
     }
 
-    document.getElementById("pingText").innerText = Math.round(
+    document.getElementById("ping-amount").innerText = Math.round(
         UI_DATA.pingStatus
     );
 }
@@ -291,7 +310,99 @@ function frame() {
 }
 frame();
 
+function round(n, d, mode = 0) {
+    let ten = Math.pow(10, d);
+    let v = 0;
+    if (mode === 0) {
+        v = Math.round(n * ten);
+    } else if (mode === 1) {
+        v = Math.ceil(n * ten);
+    } else if (mode === 2) {
+        v = Math.floor(n * ten);
+    }
+    return v / ten;
+}
+
+function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
+    let distance = to - from;
+
+    var clock = new Clock();
+
+    function update() {}
+
+    function draw() {
+        let v = round(
+            timingFunc(clock.elapsedTicks, from, distance, duration),
+            0,
+            0
+        );
+
+        if (v >= to) {
+            transformFunc(to);
+            return true;
+        }
+
+        transformFunc(v);
+
+        return false;
+    }
+
+    function animationLoop() {
+        clock.tick();
+
+        let delta = clock.delta;
+        let updateSteps = 0;
+        let force = false;
+
+        while (delta >= clock.timeStep) {
+            delta -= clock.timeStep;
+            clock.tick();
+
+            update();
+            if (updateSteps++ >= 120) {
+                break;
+            }
+        }
+        force = draw();
+        if (force || clock.elapsedTicks / duration > 1) {
+            return true;
+        } else {
+            requestAnimationFrame(animationLoop);
+        }
+    }
+    clock.start();
+    requestAnimationFrame(animationLoop);
+}
+
+function slideRight(el, to, from, duration) {
+    duration = duration === undefined ? 1000 : duration;
+
+    let transformFunc = function(v) {
+        el.style.transform = `translateX(${v}px)`;
+    };
+
+    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+}
+
+function fadeOut(el, duration) {
+    duration = duration === undefined ? 1000 : duration;
+    let to = 0;
+    let from = 1;
+
+    let transformFunc = function(v) {
+        el.style.opacity = from - v;
+    };
+
+    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+}
+
 window.onload = function() {
+    let tmp = this.document.getElementById("tmp");
+    let width = window.innerWidth;
+
+    tmp.style.transform = `translateX(${-width}px)`;
+    tmp.style.opacity = 0;
+
     setTimeout(function() {
         initUI();
     }, 100);

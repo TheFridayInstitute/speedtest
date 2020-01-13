@@ -7,7 +7,10 @@ export {
     toggleOnce,
     lerp,
     normalize,
-    clamp
+    clamp,
+    Clock,
+    easeInBounce,
+    bounceInEase
 };
 
 function clamp(x, lowerLimit, upperLimit) {
@@ -28,7 +31,7 @@ function range(start, end, step = 1) {
 
 function setGaugeNumbers(gaugeEl, numbers, offsetX, offsetY, radius) {
     let gaugeOffset = getOffset(gaugeEl);
-    radius = radius === undefined ? gaugeOffset.height / 2.5 : radius;
+    radius = radius === undefined ? gaugeOffset.width / 3 / 1.5 : radius;
 
     let delay = 100;
 
@@ -231,4 +234,54 @@ function getOffset(el) {
         width: rect.width,
         height: rect.height
     };
+}
+
+function easeInBounce(t, b, c, d) {
+    t = cubicBezier(t / d, 0.09, 0.91, 0.5, 1.5)[1];
+    return c * t + b;
+}
+
+function bounceInEase(t, b, c, d) {
+    t = cubicBezier(t / d, 0.19, -0.53, 0.83, 0.67)[1];
+    return c * t + b;
+}
+
+class Clock {
+    constructor(autoStart = true, timeStep = 1000 / 60) {
+        this.autoStart = autoStart;
+        this.timeStep = Math.floor(timeStep);
+    }
+    start() {
+        this.startTime = (typeof performance === "undefined"
+            ? Date
+            : performance
+        ).now();
+        this.prevTime = this.startTime;
+        this.elapsedTime = 0;
+        this.elapsedTicks = 0;
+        this.running = true;
+        this.delta = 0;
+    }
+    stop() {
+        this.running = false;
+    }
+    reset() {
+        this.start();
+    }
+    tick() {
+        this.delta = 0;
+        if (this.autoStart && !this.running) {
+            this.start();
+        } else if (this.running) {
+            let currentTime = (typeof performance === "undefined"
+                ? Date
+                : performance
+            ).now();
+            this.delta = currentTime - this.prevTime;
+            this.prevTime = currentTime;
+            this.elapsedTime += this.delta;
+            this.elapsedTicks += this.timeStep;
+        }
+        return this.delta;
+    }
 }

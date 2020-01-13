@@ -31,77 +31,89 @@
 
         <title>speedtest.fi</title>
     </head>
+
     <body>
         <div
             class="outer-content container-fluid d-flex justify-content-center"
         >
-            <div class="main-content container-fluid">
-                <!-- <div class="header">
-                <div class="title">
-                    speedtest.fi
-                </div>
-            </div> -->
-
+            <div class="main-content container-fluid" id="main-content">
                 <div
                     class="container-fluid center info-container"
                     style="grid-area: button"
                 >
-                    <div class="qualtrics-btn" id="startStopBtn">
+                    <div class="start-btn" id="start-btn">
                         Start
                     </div>
                 </div>
 
                 <div
-                    class="container-fluid center info-container"
+                    class="container-fluid center test-info-container"
                     style="grid-area: ping"
                 >
-                    <div class="testArea2">
-                        <div class="testName">Latency</div>
-                        <div id="pingText" class="meterText"></div>
+                    <div class="info">
+                        <div class="test-kind">Latency</div>
+                        <div id="ping-amount" class="amount"></div>
                         <div class="unit">ms</div>
+                    </div>
+
+                    <div class="info dl-icon">
+                        <div class="test-kind">
+                            Download
+                            <i
+                                class="fa fa-arrow-circle-o-down"
+                                aria-hidden="true"
+                            ></i>
+                        </div>
+                        <div id="dl-amount" class="amount"></div>
+                        <div class="unit">Mbps</div>
+                    </div>
+
+                    <div class="info ul-icon">
+                        <div class="test-kind">
+                            Upload
+                            <i
+                                class="fa fa-arrow-circle-o-down ul-icon"
+                                aria-hidden="true"
+                            ></i>
+                        </div>
+                        <div id="ul-amount" class="amount"></div>
+                        <div class="unit">Mbps</div>
                     </div>
                 </div>
 
                 <div
-                    class="container-fluid testArea"
-                    id="dl-meter-container"
+                    class="container-fluid test-container"
+                    id="test-container"
                     style="grid-area: download"
                 >
-                    <div class="testName">Download</div>
-                    <canvas id="dlMeter" class="meter"></canvas>
-                    <div id="dlText" class="meterText"></div>
-                    <div class="unit">Mbps</div>
+                    <div id="test-kind" class="test-kind">...</div>
+                    <canvas id="test-meter" class="meter"></canvas>
+
+                    <div class="info">
+                        <div id="test-amount" class="amount"></div>
+                        <div class="unit">Mbps</div>
+                    </div>
                 </div>
 
-                <!-- <div
-                    class="container-fluid testArea"
-                    id="ul-meter-container"
-                    style="grid-area: upload"
-                >
-                    <div class="testName">Upload</div>
-                    <canvas id="ulMeter" class="meter"></canvas>
-                    <div id="ulText" class="meterText"></div>
-                    <div class="unit">Mbps</div>
-                </div> -->
+                <div class="container-fluid test-container tmp" id="tmp">
+                    <div class="text">
+                        Thanks for completing the speed test. Click continue to
+                        progress onward.
+                    </div>
+                    <i class="fa fa-check" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
-
-        <!-- <footer class="footer navbar-fixed-bottom">
-            <div class="providers">
-                Provided by LibreSpeed - powered by MCNC - developed by the
-                Friday Institute
-            </div>
-        </footer> -->
-
-        <script
-            src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"
-            integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
-            crossorigin="anonymous"
-        ></script>
 
         <script
             src="https://code.jquery.com/jquery-3.4.1.min.js"
             integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"
+        ></script>
+
+        <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"
+            integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
             crossorigin="anonymous"
         ></script>
 

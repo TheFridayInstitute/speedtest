@@ -136,8 +136,6 @@ body {
     }
 }
 
-
-
 .test-info-container {
     border-radius: var(--border-radius-primary);
 
@@ -294,12 +292,11 @@ body {
     }
 }
 
-@media all and (max-width: 900px) and (orientation: landscape) {
+@media all and (orientation: landscape) {
     html,
     body {
         font-size: 0.9em;
     }
-
     .main-content {
         align-items: center;
         justify-items: center;
@@ -312,6 +309,13 @@ body {
         grid-template-rows: 1fr 1fr;
         column-gap: 0em;
         margin: 0;
+    }
+}
+
+@media all and (max-width: 900px) and (orientation: landscape) {
+    html,
+    body {
+        font-size: 0.9em;
     }
 
     .test-container {

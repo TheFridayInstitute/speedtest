@@ -292,7 +292,7 @@ body {
   }
 }
 
-@media all and (max-width: 900px) and (orientation: landscape) {
+@media all and (orientation: landscape) {
   html,
   body {
     font-size: 0.9em;
@@ -310,6 +310,13 @@ body {
     -webkit-column-gap: 0em;
             column-gap: 0em;
     margin: 0;
+  }
+}
+
+@media all and (max-width: 900px) and (orientation: landscape) {
+  html,
+  body {
+    font-size: 0.9em;
   }
   .test-container {
     height: calc(var(--gauge-height) / var(--mobile-scale));

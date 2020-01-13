@@ -287,6 +287,24 @@ function updateUI(forced) {
         document.getElementById("ul-amount").innerHTML = Number(
             UI_DATA.ulStatus
         ).toPrecision(3);
+
+        toggleOnce(document.getElementById("ul-amount"), function(e) {
+            let tmp = document.getElementById("tmp");
+            tmp.style.opacity = 1;
+            let width = window.innerWidth;
+
+            let testEl = document.getElementById("test-container");
+            let buttonEl = document.getElementById("start-btn");
+
+            slideRight(buttonEl, width, 0);
+            slideRight(testEl, width, 0);
+            slideRight(tmp, 0, -width);
+
+            setTimeout(function() {
+                fadeOut(buttonEl);
+                fadeOut(testEl);
+            }, 1000);
+        });
     }
 
     document.getElementById("ping-amount").innerText = Math.round(
@@ -392,24 +410,6 @@ window.onload = function() {
 
     tmp.style.transform = `translateX(${-width}px)`;
     tmp.style.opacity = 0;
-
-    toggleOnce(document.getElementById("ul-amount"), function(e) {
-        let tmp = document.getElementById("tmp");
-        tmp.style.opacity = 1;
-        let width = window.innerWidth;
-
-        let testEl = document.getElementById("test-container");
-        let buttonEl = document.getElementById("start-btn");
-
-        slideRight(buttonEl, width, 0);
-        slideRight(testEl, width, 0);
-        slideRight(tmp, 0, -width);
-
-        setTimeout(function() {
-            fadeOut(buttonEl);
-            fadeOut(testEl);
-        }, 1000);
-    });
 
     setTimeout(function() {
         initUI();

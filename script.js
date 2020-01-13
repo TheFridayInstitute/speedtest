@@ -290,7 +290,9 @@ function updateUI(forced) {
 
         toggleOnce(document.getElementById("ul-amount"), function(e) {
             let tmp = document.getElementById("tmp");
-            tmp.style.display = "block";
+
+            tmp.style.opacity = "1";
+
             let width = window.innerWidth;
 
             let testEl = document.getElementById("test-container");

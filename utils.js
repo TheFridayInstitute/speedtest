@@ -82,8 +82,8 @@ function getUrlParams(qs) {
 }
 
 function oscillate(a, b, frequency) {
-    a = a == undefined ? 0.02 : a;
-    b = b == undefined ? 0.02 : b;
+    a = a == undefined ? 0.05 : a;
+    b = b == undefined ? 0.05 : b;
     frequency = frequency === undefined ? 100 : frequency;
 
     let r = Math.random() * (b - a) + a;

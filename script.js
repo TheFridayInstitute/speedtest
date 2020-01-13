@@ -72,7 +72,7 @@ function startStop() {
 
                 let ip = String(UI_DATA.clientIp);
                 if (ip.length < 100 && ip.length > 0) {
-                    ip = ip.split("-")[0]; // CHANGE THIS LATER!!
+                    ip = ip.split("-")[0].trim(); // CHANGE THIS LATER!!
                 }
 
                 $.post("backend/record.php", {

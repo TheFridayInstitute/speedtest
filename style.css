@@ -179,7 +179,7 @@ body {
 }
 
 .test-info-container .info {
-  margin: 1.2em;
+  margin: 1em;
 }
 
 .test-info-container .info .test-kind {
@@ -337,7 +337,7 @@ body {
     margin: 0;
   }
   .test-info-container .info {
-    margin: 0.5em;
+    margin: 0.7em;
   }
   .test-info-container .info .test-kind {
     font-size: 0.5em;

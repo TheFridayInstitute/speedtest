@@ -158,7 +158,7 @@ body {
     align-items: center;
 
     .info {
-        margin: 1.2em;
+        margin: 1em;
 
         .test-kind {
             font-size: 1.5em;
@@ -305,6 +305,7 @@ body {
         width: calc(var(--meter-width) / var(--tmp-scale));
 
         .info {
+           
             .test-kind {
                 font-size: 1em;
             }
@@ -339,7 +340,7 @@ body {
 
     .test-info-container {
         .info {
-            margin: 0.5em;
+            margin: 0.7em;
             .test-kind {
                 font-size: 0.5em;
             }

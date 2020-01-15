@@ -18,13 +18,14 @@
     --meter-width: 37.5em;
     --meter-height: 30em;
     --meter-padding: 10em;
-    --meter-outer-radius: 22em;
+    --meter-outer-radius: 15em;
 
     --ncsu-font: UniversCondensed;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.5em;
-    --mobile-scale: 1.5;
+    --mobile-scale: 1.2;
+    --tmp-scale: 1.5;
 }
 
 html,
@@ -206,7 +207,7 @@ body {
     overflow: visible;
 
     .test-kind {
-        font-size: 3em;
+        font-size: 2em;
         grid-area: kind;
         z-index: 9;
     }
@@ -268,12 +269,7 @@ body {
     }
 }
 
-@media all and (max-width: 768px) and (orientation: portrait) {
-    html,
-    body {
-        font-size: 1em;
-    }
-
+@media all and (max-width: 700px) {
     .main-content {
         align-items: center;
 
@@ -289,8 +285,8 @@ body {
     }
 
     .test-container {
-        height: calc(var(--meter-height) / var(--mobile-scale));
-        width: calc(var(--meter-width) / var(--mobile-scale));
+        height: calc(var(--meter-height) / var(--tmp-scale));
+        width: calc(var(--meter-width) / var(--tmp-scale));
 
         .test-kind {
             font-size: 1.5em;
@@ -306,7 +302,7 @@ body {
     }
 
     .test-info-container {
-        width: calc(var(--meter-width) / var(--mobile-scale));
+        width: calc(var(--meter-width) / var(--tmp-scale));
 
         .info {
             .test-kind {
@@ -324,6 +320,41 @@ body {
         }
         i {
             font-size: 12em;
+        }
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    :root {
+        --mobile-scale: 2.5;
+        --tmp-scale: 2;
+    }
+
+    .test-container {
+        .info {
+            font-size: 0.8em;
+            margin: 0;
+        }
+    }
+
+    .test-info-container {
+        .info {
+            margin: 0.5em;
+            .test-kind {
+                font-size: 0.5em;
+            }
+            .amount {
+                font-size: 3em;
+            }
+        }
+    }
+
+    .tmp {
+        .text {
+            font-size: 1em;
+        }
+        i {
+            font-size: 8em;
         }
     }
 }
@@ -373,8 +404,8 @@ body {
     }
 
     .test-container {
-        height: calc(var(--meter-height) / var(--mobile-scale));
-        width: calc(var(--meter-width) / var(--mobile-scale));
+        height: calc(var(--meter-height) / var(--tmp-scale));
+        width: calc(var(--meter-width) / var(--tmp-scale));
         margin: auto;
 
         .test-kind {
@@ -391,13 +422,13 @@ body {
     }
     .test-info-container {
         margin: auto;
-        width: calc(var(--meter-width) / var(--mobile-scale));
+        width: calc(var(--meter-width) / var(--tmp-scale));
 
         .info {
             margin: 0.5em;
 
             .test-kind {
-                font-size: 1em;
+                font-size: 0.8em;
             }
         }
     }

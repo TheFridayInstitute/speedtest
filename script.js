@@ -100,8 +100,6 @@ let dots = `<div
 class="container-fluid d-flex justify-content-center center filter-contrast">
 <div class="dot-overtaking"></div></div>`;
 
-// let dots = "999";
-
 let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
 let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon" style="transform: rotate(180deg)"></i>`;
 

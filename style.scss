@@ -1,3 +1,15 @@
+$meter-width: 30rem;
+$meter-height: 30rem;
+$meter-padding: 10em;
+$meter-outer-radius: 30em;
+
+$screen-size-xs: 575.98px;
+$screen-size-md:
+
+$screen-sm-scale: 1.5;
+$screen-md-scale: 1.2;
+$screen-lg-scale: 1;
+
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
     --background-color-primary-dark: rgb(37, 37, 37);
@@ -15,16 +27,16 @@
     --ul-color-1: #ff8000;
     --ul-color-2: #ff0000;
 
-    --meter-width: 30em;
-    --meter-height: 30em;
-    --meter-padding: 10em;
-    --meter-outer-radius: 15em;
+    --meter-width: #{$meter-width};
+    --meter-height: #{$meter-height};
+    --meter-padding: #{$meter-padding};
+    --meter-outer-radius: #{$meter-outer-radius};
 
     --ncsu-font: UniversCondensed;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.5em;
-    --mobile-scale: 1.2;
+    --mobile-scale: #{$screen-sm-scale};
 }
 
 html,
@@ -96,14 +108,14 @@ body {
     font-weight: 300;
 
     grid-template-areas:
-        "info"
+        "button"
         "test"
-        "button";
+        "info";
 
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 2fr 1fr;
+    grid-template-rows: 0.5fr 2fr 1fr;
     height: 100%;
-    width: 100%;
+
     padding: 0;
     position: relative;
     text-align: center;
@@ -113,10 +125,7 @@ body {
     justify-content: center;
 
     .start-btn-container {
-        width: var(--meter-width);
         grid-area: button;
-        display: flex;
-        justify-content: center;
     }
 
     .test-container {
@@ -153,7 +162,6 @@ body {
 
     box-shadow: 0px 30px 40px 10px rgba(0, 0, 0, 0.2);
 
-    width: var(--meter-width);
     display: flex;
     justify-content: space-evenly;
     align-items: center;
@@ -185,8 +193,8 @@ body {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
 
-    width: var(--meter-width);
     height: var(--meter-height);
+    width: var(--meter-width);
 
     position: relative;
 
@@ -246,103 +254,50 @@ body {
     }
 }
 
-@media all and (max-width: 900px) and (orientation: portrait) {
-    html,
-    body {
-        font-size: 1em;
+@media all and (max-width: 900px) {
+    :root {
+        --meter-width: #{$meter-width / $screen-md-scale};
+        --meter-height: #{$meter-height / $screen-md-scale};
+        --meter-outer-radius: #{$meter-outer-radius / $screen-md-scale};
     }
 
-    .main-content {
-        grid-template-areas:
-            "button"
-            "test"
-            "info";
-
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 2fr 2fr;
-    }
-
-    .test-container {
-        height: calc(var(--meter-height) / var(--mobile-scale));
-        width: calc(var(--meter-width) / var(--mobile-scale));
-    }
-
-    .test-info-container {
-        width: calc(var(--meter-width) / var(--mobile-scale));
-    }
-
-    .tmp {
-        .text {
-            font-size: 1.5em;
-        }
-        i {
-            font-size: 12em;
-        }
-    }
-}
-
-@media all and (max-width: 400px) and (orientation: portrait) {
-    html,
-    body {
-        font-size: 0.8em;
-    }
-}
-
-@media all and (orientation: landscape) and (max-height: 768px) {
     html,
     body {
         font-size: 0.9em;
     }
-    .main-content {
-        align-items: center;
-        justify-items: center;
+}
 
+@media all and (max-width: 400px) {
+    :root {
+        --meter-outer-radius: #{$meter-outer-radius / $screen-sm-scale};
+    }
+    html,
+    body {
+        font-size: 0.9em;
+    }
+}
+
+@media all and (orientation: landscape) and (max-width: 1200px) {
+    :root {
+        --meter-outer-radius: #{$meter-outer-radius / $screen-sm-scale};
+    }
+    .main-content {
         grid-template-areas:
             "test info"
             "test button";
 
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
-        column-gap: 0em;
-        row-gap: 0;
-        margin: 0;
     }
 }
 
-@media all and (max-width: 900px) and (orientation: landscape) {
+@media all and (orientation: landscape) and (max-width: 768px) {
+    :root {
+        --meter-outer-radius: #{$meter-outer-radius / $screen-sm-scale};
+    }
     html,
     body {
-        font-size: 0.9em;
-    }
-
-    .test-container {
-        height: calc(var(--meter-height) / var(--mobile-scale));
-        width: calc(var(--meter-width) / var(--mobile-scale));
-        margin: auto;
-
-        .test-kind {
-            font-size: 2em;
-            grid-area: kind;
-            z-index: 9;
-        }
-
-        .info {
-            .amount {
-                font-size: 4em;
-            }
-        }
-    }
-    .test-info-container {
-        margin: auto;
-        width: calc(var(--meter-width) / var(--mobile-scale));
-
-        .info {
-            margin: 0.5em;
-
-            .test-kind {
-                font-size: 1em;
-            }
-        }
+        font-size: 0.7em;
     }
 }
 

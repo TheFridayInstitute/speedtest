@@ -175,11 +175,15 @@ export function getOffset(el) {
 }
 
 export function emToPixels(em) {
-    let emNumber = parseFloat(
-        String(em)
-            .toLowerCase()
-            .split("em")[0]
-    );
+    em = em.toLowerCase();
+    let emNumber = 1;
+
+    if (em.indexOf("px") !== -1) {
+        emNumber = parseFloat(em.split("px")[0]);
+        return emNumber;
+    } else if (em.indexOf("em") !== -1) {
+        emNumber = parseFloat(em.split("em")[0]);
+    }
 
     let fontSize = parseFloat(
         window

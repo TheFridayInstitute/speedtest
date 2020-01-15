@@ -11,15 +11,15 @@
   --dl-color-2: #f71e6a;
   --ul-color-1: #ff8000;
   --ul-color-2: #ff0000;
-  --meter-width: 30em;
-  --meter-height: 30em;
+  --meter-width: 30rem;
+  --meter-height: 30rem;
   --meter-padding: 10em;
-  --meter-outer-radius: 15em;
+  --meter-outer-radius: 30em;
   --ncsu-font: UniversCondensed;
   --ncsu-red: #c00;
   --ncsu-red-dark: rgb(173, 0, 0);
   --border-radius-primary: 0.5em;
-  --mobile-scale: 1.2;
+  --mobile-scale: 1.5;
 }
 
 html,
@@ -97,13 +97,12 @@ body {
   display: grid;
   font-family: var(--font-family-primary);
   font-weight: 300;
-      grid-template-areas: "info" "test" "button";
+      grid-template-areas: "button" "test" "info";
   -ms-grid-columns: 1fr;
       grid-template-columns: 1fr;
-  -ms-grid-rows: 1fr 2fr 1fr;
-      grid-template-rows: 1fr 2fr 1fr;
+  -ms-grid-rows: 0.5fr 2fr 1fr;
+      grid-template-rows: 0.5fr 2fr 1fr;
   height: 100%;
-  width: 100%;
   padding: 0;
   position: relative;
   text-align: center;
@@ -116,16 +115,9 @@ body {
 }
 
 .main-content .start-btn-container {
-  width: var(--meter-width);
-  -ms-grid-row: 3;
+  -ms-grid-row: 1;
   -ms-grid-column: 1;
   grid-area: button;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
 }
 
 .main-content .test-container {
@@ -169,7 +161,6 @@ body {
   border-radius: var(--border-radius-primary);
   -webkit-box-shadow: 0px 30px 40px 10px rgba(0, 0, 0, 0.2);
           box-shadow: 0px 30px 40px 10px rgba(0, 0, 0, 0.2);
-  width: var(--meter-width);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -203,8 +194,8 @@ body {
       grid-template-columns: 1fr;
   -ms-grid-rows: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-  width: var(--meter-width);
   height: var(--meter-height);
+  width: var(--meter-width);
   position: relative;
   row-gap: 2em;
   text-transform: uppercase;
@@ -266,91 +257,48 @@ body {
   position: absolute;
 }
 
-@media all and (max-width: 900px) and (orientation: portrait) {
-  html,
-  body {
-    font-size: 1em;
+@media all and (max-width: 900px) {
+  :root {
+    --meter-width: 25rem;
+    --meter-height: 25rem;
+    --meter-outer-radius: 25em;
   }
-  .main-content {
-        grid-template-areas: "button" "test" "info";
-    -ms-grid-columns: 1fr;
-        grid-template-columns: 1fr;
-    -ms-grid-rows: 1fr 2fr 2fr;
-        grid-template-rows: 1fr 2fr 2fr;
-  }
-  .test-container {
-    height: calc(var(--meter-height) / var(--mobile-scale));
-    width: calc(var(--meter-width) / var(--mobile-scale));
-  }
-  .test-info-container {
-    width: calc(var(--meter-width) / var(--mobile-scale));
-  }
-  .tmp .text {
-    font-size: 1.5em;
-  }
-  .tmp i {
-    font-size: 12em;
-  }
-}
-
-@media all and (max-width: 400px) and (orientation: portrait) {
-  html,
-  body {
-    font-size: 0.8em;
-  }
-}
-
-@media all and (orientation: landscape) and (max-height: 768px) {
   html,
   body {
     font-size: 0.9em;
   }
+}
+
+@media all and (max-width: 400px) {
+  :root {
+    --meter-outer-radius: 20em;
+  }
+  html,
+  body {
+    font-size: 0.9em;
+  }
+}
+
+@media all and (orientation: landscape) and (max-width: 1200px) {
+  :root {
+    --meter-outer-radius: 20em;
+  }
   .main-content {
-    -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
-    justify-items: center;
         grid-template-areas: "test info" "test button";
     -ms-grid-columns: 1fr 1fr;
         grid-template-columns: 1fr 1fr;
     -ms-grid-rows: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
-    -webkit-column-gap: 0em;
-            column-gap: 0em;
-    row-gap: 0;
-    margin: 0;
   }
 }
 
-@media all and (max-width: 900px) and (orientation: landscape) {
+@media all and (orientation: landscape) and (max-width: 768px) {
+  :root {
+    --meter-outer-radius: 20em;
+  }
   html,
   body {
-    font-size: 0.9em;
-  }
-  .test-container {
-    height: calc(var(--meter-height) / var(--mobile-scale));
-    width: calc(var(--meter-width) / var(--mobile-scale));
-    margin: auto;
-  }
-  .test-container .test-kind {
-    font-size: 2em;
-    -ms-grid-row: 1;
-    -ms-grid-column: 1;
-    grid-area: kind;
-    z-index: 9;
-  }
-  .test-container .info .amount {
-    font-size: 4em;
-  }
-  .test-info-container {
-    margin: auto;
-    width: calc(var(--meter-width) / var(--mobile-scale));
-  }
-  .test-info-container .info {
-    margin: 0.5em;
-  }
-  .test-info-container .info .test-kind {
-    font-size: 1em;
+    font-size: 0.7em;
   }
 }
 

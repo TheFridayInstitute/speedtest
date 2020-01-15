@@ -61,13 +61,11 @@ let mobileScale = parseFloat(
     )
 );
 
-let outerRadius =
-    emToPixels(
-        getComputedStyle(document.documentElement).getPropertyValue(
-            "--meter-outer-radius"
-        )
-    ) /
-    (mobileScale / 1.5);
+let outerRadius = emToPixels(
+    getComputedStyle(document.documentElement).getPropertyValue(
+        "--meter-outer-radius"
+    )
+);
 
 let innerRadius = outerRadius / 1.2;
 

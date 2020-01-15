@@ -1,30 +1,6 @@
-import { clamp, lerp } from "./utils.js";
-export { Color };
+import { clamp, lerp } from "./math.js";
 
-if (!String.prototype.splice) {
-    /**
-     * {JSDoc}
-     *
-     * The splice() method changes the content of a string by removing a range
-     * of characters and/or adding new characters.
-     *
-     * @this {String}
-     * @param {number} start Index at which to start changing the string.
-     * @param {number} delCount An integer indicating the number of old chars to
-     *   remove.
-     * @param {string} newSubStr The String that is spliced in.
-     * @return {string} A new string with the spliced substring.
-     */
-    String.prototype.splice = function(start, delCount, newSubStr) {
-        return (
-            this.slice(0, start) +
-            newSubStr +
-            this.slice(start + Math.abs(delCount))
-        );
-    };
-}
-
-function toBase(num, base) {
+export function toBase(num, base) {
     let digits = [];
     while (num !== 0) {
         num = (num / base) >> 0;
@@ -45,7 +21,7 @@ function toBase(num, base) {
     }
 }
 
-function hexToRGBA(num, alpha = 1) {
+export function hexToRGBA(num, alpha = 1) {
     let rgbInt = parseInt(num, 16);
     let r = (rgbInt >> 16) & 255;
     let g = (rgbInt >> 8) & 255;
@@ -53,7 +29,7 @@ function hexToRGBA(num, alpha = 1) {
     return [r, g, b, alpha];
 }
 
-function RGBAToHex(color) {
+export function RGBAToHex(color) {
     let r, g, b, a;
     if (color.length == 3) {
         [r, g, b] = color;
@@ -64,7 +40,7 @@ function RGBAToHex(color) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
-function HSLAToRGBA(color) {
+export function HSLAToRGBA(color) {
     let h, s, l, a;
     if (color.length == 3) {
         [h, s, l] = color;
@@ -100,7 +76,7 @@ function HSLAToRGBA(color) {
     ];
 }
 
-function RGBAToHSLA(color) {
+export function RGBAToHSLA(color) {
     let r, g, b, a;
     if (color.length == 3) {
         [r, g, b] = color;
@@ -138,7 +114,7 @@ function RGBAToHSLA(color) {
     return [h, s, l, a];
 }
 
-function colorToRGBA(color) {
+export function colorToRGBA(color) {
     let canvas = document.createElement("canvas");
     canvas.height = 1;
     canvas.width = 1;
@@ -148,11 +124,11 @@ function colorToRGBA(color) {
     return Array.from(ctx.getImageData(0, 0, 1, 1).data);
 }
 
-function RGBAToString(color) {
+export function RGBAToString(color) {
     return ` rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]}) `;
 }
 
-function parseColor(color) {
+export function parseColor(color) {
     let pcolor;
 
     if (typeof color === "string") {
@@ -212,7 +188,12 @@ function parseColor(color) {
     return pcolor;
 }
 
-function interpColor(colors, steps = 2, endPoints = true, interpFunc = lerp) {
+export function interpColor(
+    colors,
+    steps = 2,
+    endPoints = true,
+    interpFunc = lerp
+) {
     let palettes = new Array((colors.length - 1) * steps).fill(0);
     colors.forEach((value, index) => {
         colors[index] = parseColor(value);
@@ -242,80 +223,101 @@ function interpColor(colors, steps = 2, endPoints = true, interpFunc = lerp) {
     return palettes;
 }
 
-class Color {
+export class Color {
     constructor(colorString) {
-        this.setColorFromString(colorString);
+        this.colorString = colorString;
     }
 
-    setColorFromString(colorString) {
-        this.rgba = parseColor(colorString);
-        this.hsla = RGBAToHSLA(this.rgba);
-        this.hex = RGBAToHex(this.rgba);
-        this.colorString = RGBAToString(this.rgba);
+    get colorString() {
+        return this._colorString;
+    }
+    set colorString(colorString) {
+        this._rgba = parseColor(colorString);
+        this._hsla = RGBAToHSLA(this._rgba);
+        this._hex = RGBAToHex(this._rgba);
+        this._colorString = RGBAToString(this._rgba);
+
+        this._hue = this._hsla[0];
+        this._saturation = this._hsla[1];
+        this._lightness = this._hsla[2];
+        this._opacity = this._hsla[3];
     }
 
-    toHSLA() {
-        return this.hsl;
+    get hsla() {
+        return this._hsla;
+    }
+    set hsla(hsla) {
+        this._rgba = HSLAToRGBA(hsla);
+        this._hsla = hsla;
+        this._hex = RGBAToHex(this._rgba);
+        this._colorString = RGBAToString(this._rgba);
     }
 
-    fromHSLA(hsla) {
-        this.rgba = HSLAToRGBA(hsla);
-        this.hsla = hsla;
-        this.hex = RGBAToHex(this.rgba);
-        this.colorString = RGBAToString(this.rgba);
+    get rgba() {
+        return this._rgba;
+    }
+    set rgba(rgba) {
+        this._rgba = rgba;
+        this._hsla = RGBAToHSLA(rgba);
+        this._hex = RGBAToHex(this._rgba);
+        this._colorString = RGBAToString(this._rgba);
     }
 
-    toRGBA() {
-        return this.rgb;
+    get hex() {
+        return this._hex;
+    }
+    set hex(hex) {
+        this._rgba = hexToRGBA(hex);
+        this._hsla = RGBAToHSLA(rgba);
+        this._hex = hex;
+        this._colorString = RGBAToString(this._rgba);
     }
 
-    fromRGBA(rgba) {
-        this.rgba = rgba;
-        this.hsla = RGBAToHSLA(rgba);
-        this.hex = RGBAToHex(this.rgba);
-        this.colorString = RGBAToString(this.rgba);
+    get hue() {
+        return this._hue;
     }
-
-    toHex() {
-        return this.hex;
-    }
-
-    fromHEX(hex) {
-        this.rgba = hexToRGBA(hex);
-        this.hsla = RGBAToHSLA(rgba);
-        this.hex = hex;
-        this.colorString = RGBAToString(this.rgba);
-    }
-
-    setHue(hue) {
+    set hue(hue) {
         if (clamp(hue) !== hue) {
             throw new Error("value must be betwixt 0 and 1");
         }
-        this.hsla[0] = hue;
-        this.fromHSLA(this.hsla);
+        this._hue = hue;
+        this._hsla[0] = hue;
+        this.hsla = this._hsla;
     }
 
-    setSaturation(saturation) {
-        if (clamp(hue) !== hue) {
+    get saturation() {
+        return this._saturation;
+    }
+    set saturation(saturation) {
+        if (clamp(saturation) !== saturation) {
             throw new Error("value must be betwixt 0 and 1");
         }
-        this.hsla[1] = saturation;
-        this.fromHSLA(this.hsla);
+        this._saturation = saturation;
+        this._hsla[1] = saturation;
+        this.hsla = this._hsla;
     }
 
-    setLightness(lightness) {
+    get lightness() {
+        return this._lightness;
+    }
+    set lightness(lightness) {
         if (clamp(lightness) !== lightness) {
             throw new Error("value must be betwixt 0 and 1");
         }
-        this.hsla[2] = lightness;
-        this.fromHSLA(this.hsla);
+        this._lightness = lightness;
+        this._hsla[2] = lightness;
+        this.hsla = this._hsla;
     }
 
-    setOpacity(opacity) {
+    get opacity() {
+        return this._opacity;
+    }
+    set opacity(opacity) {
         if (clamp(opacity) !== opacity) {
             throw new Error("value must be betwixt 0 and 1");
         }
-        this.rgba[3] = opacity;
-        this.fromRGBA(this.rgba);
+        this._opacity = opacity;
+        this._hsla[3] = opacity;
+        this.hsla = this._hsla;
     }
 }

@@ -36,23 +36,25 @@
         <div
             class="outer-content container-fluid d-flex justify-content-center"
         >
-            <div class="main-content container-fluid" id="main-content">
-                <div
-                    class="container-fluid center info-container"
-                    style="grid-area: button"
-                >
+            <!-- <div class="container-fluid circle-container">
+                <span class="circle">
+                    <i class="fa fa-arrow-down arrow-down"></i>
+                </span>
+                <span class="pulse"></span>
+            </div> -->
+
+            <div class="container-fluid main-content" id="main-content">
+                <div class="container-fluid start-btn-container">
                     <div class="start-btn" id="start-btn">
                         Start
+                        <div class="pulse"></div>
                     </div>
                 </div>
 
-                <div
-                    class="container-fluid center test-info-container"
-                    style="grid-area: ping"
-                >
+                <div class="container-fluid center test-info-container">
                     <div class="info">
                         <div class="test-kind">Latency</div>
-                        <div id="ping-amount" class="amount"></div>
+                        <div id="ping-amount" class="amount">0</div>
                         <div class="unit">ms</div>
                     </div>
 
@@ -64,7 +66,7 @@
                                 aria-hidden="true"
                             ></i>
                         </div>
-                        <div id="dl-amount" class="amount"></div>
+                        <div id="dl-amount" class="amount">0</div>
                         <div class="unit">Mbps</div>
                     </div>
 
@@ -76,29 +78,28 @@
                                 aria-hidden="true"
                             ></i>
                         </div>
-                        <div id="ul-amount" class="amount"></div>
+                        <div id="ul-amount" class="amount">0</div>
                         <div class="unit">Mbps</div>
                     </div>
                 </div>
 
-                <div
-                    class="container-fluid test-container"
-                    id="test-container"
-                    style="grid-area: download"
-                >
-                    <div id="test-kind" class="test-kind">...</div>
-                    <canvas id="test-meter" class="meter"></canvas>
+                <div class="container-fluid test-container" id="test-container">
+                    <div id="test-kind" class="test-kind">
+                        Speedtest
+                    </div>
+
+                    <canvas id="test-meter"></canvas>
 
                     <div class="info">
-                        <div id="test-amount" class="amount"></div>
-                        <div class="unit">Mbps</div>
+                        <div id="test-amount" class="amount">0</div>
+                        <div class="unit">mbps</div>
                     </div>
                 </div>
 
                 <div class="container-fluid test-container tmp" id="tmp">
                     <div class="text">
-                        Thanks for completing the speed test. Click continue to
-                        progress onward.
+                        Thank you for completing the speed test! Click continue
+                        to progress onward.
                     </div>
                     <i class="fa fa-check" aria-hidden="true"></i>
                 </div>

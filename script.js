@@ -1,16 +1,21 @@
+import { Polygon, Arc, Mesh } from "./canvas.js";
+
 import {
-    getUrlParams,
-    oscillate,
-    setGaugeNumbers,
-    range,
-    toggleOnce,
-    normalize,
     clamp,
     lerp,
-    Clock,
+    round,
+    smoothStep3,
     easeInBounce,
-    bounceInEase
-} from "./utils.js";
+    bounceInEase,
+    easeOutQuad,
+    normalize,
+    easeInOutQuad,
+    easeInOutCubic
+} from "./math.js";
+
+import { smoothAnimate, animationLoopOuter } from "./animation.js";
+
+import { emToPixels, getOffset } from "./utils.js";
 
 import { Color } from "./colors.js";
 
@@ -26,29 +31,100 @@ window.requestAnimationFrame =
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
 
-let initGaugeNumbers = function() {
-    let gaugeNumbers = range(0, 70, 10);
-    let shift = 0;
+var dial;
+var outerMeter;
+var innerMeter;
+var centerDot;
+var mesh;
 
-    setGaugeNumbers(
-        document.getElementById("test-meter"),
-        gaugeNumbers,
-        0,
-        shift
+let alpha0 = Math.PI * 0.8;
+let alpha1 = 2 * Math.PI * 1.1;
+
+let mobileScale = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(
+        "--mobile-scale"
+    )
+);
+
+let outerRadius =
+    emToPixels(
+        getComputedStyle(document.documentElement).getPropertyValue(
+            "--meter-outer-radius"
+        )
+    ) / mobileScale;
+
+let innerRadius = outerRadius / 1.2;
+
+let lineWidth = 60;
+
+let dotSize = 20;
+
+let backgroundColor = "rgba(255, 255, 255, 0.1)";
+let progressBarColor = "#fff";
+
+let dlColorStops = [
+    ["0", "#8343ab"],
+    ["0.5", "#d359ff"],
+    ["1.0", "#f71e6a"]
+];
+
+let ulColorStops = [
+    ["0", "#FF8000"],
+    ["0.5", "#FF8000"],
+    ["1.0", "#FF0000"]
+];
+
+let dots = `<div
+class="container-fluid d-flex justify-content-center center filter-contrast">
+<div class="dot-overtaking"></div></div>`;
+
+let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
+let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon"></i>`;
+
+let initMeterNumbers = function(start, stop, step) {
+    let numbers = range(start, stop, step);
+
+    let meterEl = document.getElementById("test-container");
+    let numbersEl = document.createElement("div");
+    numbersEl.classList.add("meter-numbers");
+    numbersEl.id = "meter-numbers";
+
+    for (let number of numbers) {
+        let child = document.createElement("div");
+        child.innerHTML = number;
+        numbersEl.appendChild(child);
+    }
+    meterEl.appendChild(numbersEl);
+};
+
+let resizeMeterNumbers = function(delay) {
+    let meterEl = document.getElementById("test-container");
+    let numbersEl = document.querySelector("#meter-numbers");
+    let testMeter = document.getElementById("test-meter");
+    let meterOffset = getOffset(testMeter);
+    let innerRadius = outerRadius / 2.5 / mobileScale;
+
+    let originX = meterOffset.width / 2;
+    let originY = meterOffset.height / 2;
+
+    setMeterNumbers(
+        meterEl,
+        numbersEl,
+        innerRadius,
+        alpha0,
+        alpha1,
+        originX,
+        originY,
+        delay
     );
 };
 
-document.getElementById("start-btn").addEventListener("click", function(e) {
-    UI_DATA = startStop();
-
-    toggleOnce(document.getElementById("start-btn"), function() {
-        // initGaugeNumbers();
-    });
-});
-
-// window.addEventListener("resize", function(e) {
-//     initGaugeNumbers();
-// });
+let makeGlowColor = function(value, index) {
+    let [stop, color] = value;
+    let newColor = new Color(color);
+    newColor.setOpacity(0.3);
+    return [stop, newColor.colorString];
+};
 
 function startStop() {
     let data = null;
@@ -97,45 +173,6 @@ function startStop() {
     return UI_DATA;
 }
 
-function generateGradient(canvas, x0, y0, x1, y1, colorStops) {
-    let ctx = canvas.getContext("2d");
-    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-
-    for (let [stop, color] of colorStops) {
-        gradient.addColorStop(stop, color);
-    }
-    return gradient;
-}
-
-function generateGradientWrapper(canvas, colorStops) {
-    return generateGradient(canvas, 0, 0, canvas.width, 0, colorStops);
-}
-
-function makeGlowColor(value, index) {
-    let [stop, color] = value;
-    let newColor = new Color(color);
-    newColor.setOpacity(0.3);
-    return [stop, newColor.colorString];
-}
-
-const backgroundColor = "#80808080";
-const progressBarColor = "#fff";
-
-let dlColorStops = [
-    ["0", "#8343ab"],
-    ["0.5", "#d359ff"],
-    ["1.0", "#f71e6a"]
-];
-
-let ulColorStops = [
-    ["0", "#FF8000"],
-    ["0.5", "#FF8000"],
-    ["1.0", "#FF0000"]
-];
-
-let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
-let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon"></i>`;
-
 function drawMeter(canvas, amount, progressAmount, meterType) {
     let ctx = canvas.getContext("2d");
 
@@ -153,13 +190,7 @@ function drawMeter(canvas, amount, progressAmount, meterType) {
     let lineWidth = 60;
 
     let originX = canvas.width / 2;
-    let originY = canvas.width / 2;
-
-    let outerRadius = canvas.width / 3;
-    let innerRadius = outerRadius / 1.2;
-
-    let alpha0 = Math.PI * 0.8;
-    let alpha1 = 2 * Math.PI * 1.1;
+    let originY = canvas.height / 2;
 
     ctx.beginPath();
     ctx.strokeStyle = backgroundColor;
@@ -169,6 +200,7 @@ function drawMeter(canvas, amount, progressAmount, meterType) {
 
     ctx.shadowBlur = 20;
     ctx.shadowColor = "black";
+
     ctx.stroke();
 
     let progressColor =
@@ -187,10 +219,11 @@ function drawMeter(canvas, amount, progressAmount, meterType) {
     let alpha2 = clamp(lerp(alpha0, alpha1, t), alpha0, alpha1);
 
     ctx.arc(originX, originY, outerRadius, alpha0, alpha2);
-
     ctx.shadowBlur = 20;
     ctx.shadowColor = "red";
     ctx.stroke();
+
+    let innerRadius = outerRadius / 1.2;
 
     let progressGlowColor =
         meterType === "dl"
@@ -200,21 +233,24 @@ function drawMeter(canvas, amount, progressAmount, meterType) {
     ctx.beginPath();
     ctx.strokeStyle = progressGlowColor;
     ctx.lineWidth = lineWidth;
-
     ctx.arc(originX, originY, innerRadius, alpha0, alpha2, false);
+    ctx.stroke();
 
     ctx.shadowBlur = 0;
+
+    let barWidth = outerRadius * 1.5;
+    let barHeight = lineWidth / 4;
+
+    let x = (canvas.width - barWidth) / 2;
+    let y = (canvas.height - barHeight) / 2 + outerRadius;
+
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(x, y, barWidth, barHeight);
     ctx.stroke();
 
     if (typeof progressAmount !== "undefined") {
         ctx.shadowBlur = 0;
         ctx.fillStyle = progressBarColor;
-
-        let barWidth = canvas.width * 0.4;
-        let barHeight = 10;
-
-        let x = (canvas.width - barWidth) / 2;
-        let y = (canvas.height - barHeight) / 2 + outerRadius;
 
         ctx.fillRect(x, y, barWidth * progressAmount, barHeight);
         ctx.stroke();
@@ -222,9 +258,9 @@ function drawMeter(canvas, amount, progressAmount, meterType) {
 }
 
 function initUI() {
-    drawMeter(document.getElementById("test-meter"), 0, 0, "dl");
-    document.getElementById("test-amount").innerText = "";
-    document.getElementById("ping-amount").innerText = "";
+    document.getElementById("test-kind").innerHTML = "Speedtest";
+    document.getElementById("test-amount").innerHTML = dots;
+    document.getElementById("ping-amount").innerHTML = "0";
 }
 
 function drawGaugeWrapper(
@@ -235,21 +271,19 @@ function drawGaugeWrapper(
     gaugeProgress,
     gaugeType
 ) {
-    gaugeAmount = Number(gaugeAmount);
-    gaugeProgress = Number(gaugeProgress);
+    gaugeAmount = parseFloat(gaugeAmount);
+    gaugeProgress = parseFloat(gaugeProgress);
+
+    gaugeAmount = gaugeAmount === undefined ? 0 : gaugeAmount;
+    gaugeProgress = gaugeProgress === undefined ? 0 : gaugeProgress;
 
     if (status === 1 && gaugeAmount === 0) {
-        gaugeTextEl.innerText = "...";
+        gaugeTextEl.innerHTML = dots;
     } else {
-        gaugeTextEl.innerText = gaugeAmount.toPrecision(3);
+        gaugeTextEl.innerHTML = gaugeAmount.toPrecision(3);
     }
 
-    drawMeter(
-        gaugeEl,
-        gaugeAmount * (status == 1 ? oscillate() : 1),
-        gaugeProgress,
-        gaugeType
-    );
+    drawMeter(gaugeEl, gaugeAmount, gaugeProgress, gaugeType);
 }
 
 function updateUI(forced) {
@@ -258,9 +292,11 @@ function updateUI(forced) {
     if (UI_DATA == null) return;
 
     let status = UI_DATA.testState;
+    let testKindEl = document.getElementById("test-kind");
 
     if (status === 1) {
-        document.getElementById("test-kind").innerHTML = dlText;
+        testKindEl.innerHTML = dlText;
+
         drawGaugeWrapper(
             UI_DATA.testState,
             document.getElementById("test-meter"),
@@ -270,7 +306,8 @@ function updateUI(forced) {
             "dl"
         );
     } else if (status == 3) {
-        document.getElementById("test-kind").innerHTML = ulText;
+        testKindEl.innerHTML = ulText;
+
         document.getElementById("dl-amount").innerHTML = Number(
             UI_DATA.dlStatus
         ).toPrecision(3);
@@ -303,8 +340,8 @@ function updateUI(forced) {
             slideRight(tmp, 0, -width);
 
             setTimeout(function() {
-                fadeOut(buttonEl);
-                fadeOut(testEl);
+                buttonEl.style.opacity = 0;
+                testEl.style.opacity = 0;
             }, 1000);
         });
     }
@@ -314,105 +351,132 @@ function updateUI(forced) {
     );
 }
 
-function frame() {
-    requestAnimationFrame(frame);
+let initFunc = function(t) {
+    let canvas = document.getElementById("test-meter");
+    let ctx = canvas.getContext("2d");
+
+    let canvasOffset = getOffset(canvas);
+    let dpr = window.devicePixelRatio || 1;
+
+    canvas.width = canvasOffset.width * dpr;
+    canvas.height = canvasOffset.height * dpr;
+
+    let originX = canvas.width / 2;
+    let originY = canvas.width / 2;
+
+    let dialBase = 10;
+    let dialHeight = innerRadius;
+
+    // Initializing polygons
+
+    dial = new Polygon(
+        [
+            [0, 0],
+            [dialBase, -dialHeight],
+            [2 * dialBase, 0]
+        ],
+        "red"
+    );
+
+    outerMeter = new Arc(
+        originX,
+        originY,
+        outerRadius,
+        alpha0,
+        0,
+        backgroundColor,
+        lineWidth
+    );
+
+    innerMeter = new Arc(
+        originX,
+        originY,
+        innerRadius,
+        alpha0,
+        0,
+        backgroundColor,
+        lineWidth
+    );
+
+    centerDot = new Arc(
+        originX,
+        originY,
+        1,
+        0,
+        Math.PI * 2,
+        backgroundColor,
+        1
+    );
+
+    centerDot.fillColor = backgroundColor;
+
+    // Centering the meter dial and laying it flat.
+    dial.translate(originX, originY)
+        .translate(-dialBase / 2, 0)
+        .rotateAboutPoint(originX, originY, 90, false)
+        .draw(ctx);
+
+    let transformFunc = function(v, t) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        outerMeter.endAngle = v;
+        outerMeter.radius = outerRadius * t;
+
+        innerMeter.endAngle = v;
+        innerMeter.radius = innerRadius * t;
+
+        centerDot.radius = (1 - t) * outerRadius + dotSize * t;
+
+        outerMeter.draw(ctx);
+        centerDot.draw(ctx);
+
+        dial.translate(-originX, -originY)
+            .rotate(v, true)
+            .scale(t)
+            .translate(originX, originY)
+
+            .draw(ctx)
+
+            .translate(-originX, -originY)
+            .rotate(-v, true)
+            .scale(1 / t)
+            .translate(originX, originY);
+    };
+
+    smoothAnimate(alpha1, alpha0, 2000, transformFunc, easeInOutCubic);
+};
+
+let updateFunc = function(t) {
+    return false;
+};
+let drawFunc = function(t) {
     updateUI();
-}
-frame();
-
-function round(n, d, mode = 0) {
-    let ten = Math.pow(10, d);
-    let v = 0;
-    if (mode === 0) {
-        v = Math.round(n * ten);
-    } else if (mode === 1) {
-        v = Math.ceil(n * ten);
-    } else if (mode === 2) {
-        v = Math.floor(n * ten);
-    }
-    return v / ten;
-}
-
-function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
-    let distance = to - from;
-
-    var clock = new Clock();
-
-    function update() {}
-
-    function draw() {
-        let v = round(
-            timingFunc(clock.elapsedTicks, from, distance, duration),
-            0,
-            0
-        );
-
-        if (v >= to) {
-            transformFunc(to);
-            return true;
-        }
-
-        transformFunc(v);
-
-        return false;
-    }
-
-    function animationLoop() {
-        clock.tick();
-
-        let delta = clock.delta;
-        let updateSteps = 0;
-        let force = false;
-
-        while (delta >= clock.timeStep) {
-            delta -= clock.timeStep;
-            clock.tick();
-
-            update();
-            if (updateSteps++ >= 120) {
-                break;
-            }
-        }
-        force = draw();
-        if (force || clock.elapsedTicks / duration > 1) {
-            return true;
-        } else {
-            requestAnimationFrame(animationLoop);
-        }
-    }
-    clock.start();
-    requestAnimationFrame(animationLoop);
-}
-
-function slideRight(el, to, from, duration) {
-    duration = duration === undefined ? 1000 : duration;
-
-    let transformFunc = function(v) {
-        el.style.transform = `translateX(${v}px)`;
-    };
-
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
-}
-
-function fadeOut(el, duration) {
-    duration = duration === undefined ? 1000 : duration;
-    let to = 1;
-    let from = 0;
-
-    let transformFunc = function(v) {
-        el.style.opacity = to - v;
-    };
-
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
-}
+    return false;
+};
 
 window.onload = function() {
-    let tmp = this.document.getElementById("tmp");
+    let tmp = document.getElementById("tmp");
     let width = window.innerWidth;
 
     tmp.style.transform = `translateX(${-width}px)`;
 
-    setTimeout(function() {
-        initUI();
-    }, 100);
+    initUI();
+
+    animationLoopOuter(initFunc, updateFunc, drawFunc);
 };
+
+document.getElementById("start-btn").addEventListener("click", function(e) {
+    UI_DATA = startStop();
+
+    toggleOnce(document.getElementById("start-btn"), function() {
+        // meterInit(document.getElementById("test-meter"), 2000);
+        // setTimeout(function() {
+        //     initMeterNumbers(0, 100, 25);
+        //     resizeMeterNumbers(100);
+        // }, 500);
+    });
+});
+
+// window.matchMedia("(max-width: 768px)").addListener(function() {
+//     resizeMeterNumbers(0);
+// });

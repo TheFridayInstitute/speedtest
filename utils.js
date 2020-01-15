@@ -1,57 +1,39 @@
-export {
-    getUrlParams,
-    oscillate,
-    getOffset,
-    setGaugeNumbers,
-    range,
-    toggleOnce,
-    lerp,
-    normalize,
-    clamp,
-    Clock,
-    easeInBounce,
-    bounceInEase
-};
-
-function clamp(x, lowerLimit, upperLimit) {
-    if (x < lowerLimit) {
-        return lowerLimit;
-    } else if (x > upperLimit) {
-        return upperLimit;
-    }
-    return x;
+if (!String.prototype.splice) {
+    String.prototype.splice = function(start, delCount, newSubStr) {
+        return (
+            this.slice(0, start) +
+            newSubStr +
+            this.slice(start + Math.abs(delCount))
+        );
+    };
 }
 
-function range(start, end, step = 1) {
-    const len = Math.floor((end - start) / step) + 1;
-    return Array(len)
-        .fill()
-        .map((_, idx) => start + idx * step);
-}
+export function setMeterNumbers(
+    meterEl,
+    numbersEl,
+    radius,
+    alpha0,
+    alpha1,
+    originX,
+    originY,
+    delay
+) {
+    let meterOffset = getOffset(meterEl);
+    radius = radius === undefined ? meterOffset.width / 3 / 1.2 : radius;
 
-function setGaugeNumbers(gaugeEl, numbers, offsetX, offsetY, radius) {
-    let gaugeOffset = getOffset(gaugeEl);
-    radius = radius === undefined ? gaugeOffset.width / 3 / 1.5 : radius;
+    alpha0 = alpha0 === undefined ? Math.PI : alpha0;
+    alpha1 = alpha1 === undefined ? 2 * Math.PI : alpha1;
 
-    let delay = 100;
+    originX = originX === undefined ? meterOffset.width / 2 : originX;
+    originY =
+        originY === undefined ? meterOffset.height / 2 + radius / 2 : originY;
 
-    let numbersEl = [];
+    delay = delay === undefined ? 100 : delay;
 
-    for (let number of numbers) {
-        let child = document.createElement("div");
-        child.innerText = number;
-        child.classList.add("gauge-numbers");
-        numbersEl.push(child);
-        gaugeEl.appendChild(child);
-    }
+    let theta = alpha0;
+    let d_theta = (alpha1 - alpha0) / (numbersEl.children.length - 1);
 
-    let originX = gaugeOffset.width / 2;
-    let originY = gaugeOffset.height + offsetY;
-
-    let theta = Math.PI;
-    let d_theta = Math.PI / (numbersEl.length - 1);
-
-    numbersEl.forEach((child, n) => {
+    Array.from(numbersEl.children).forEach((child, n) => {
         let childOffset = getOffset(child);
 
         let t_x = radius * Math.cos(theta);
@@ -67,7 +49,7 @@ function setGaugeNumbers(gaugeEl, numbers, offsetX, offsetY, radius) {
     });
 }
 
-function getUrlParams(qs) {
+export function getUrlParams(qs) {
     qs = qs.split("+").join(" ");
 
     let params = {},
@@ -81,29 +63,17 @@ function getUrlParams(qs) {
     return params;
 }
 
-function oscillate(a, b, frequency) {
+export function oscillate(a, from, frequency) {
     a = a == undefined ? 0.05 : a;
-    b = b == undefined ? 0.05 : b;
+    from = from == undefined ? 0.05 : from;
     frequency = frequency === undefined ? 100 : frequency;
 
-    let r = Math.random() * (b - a) + a;
+    let r = Math.random() * (from - a) + a;
 
     return 1 + r * Math.sin(Date.now() / frequency);
 }
 
-function lerp(v0, v1, t) {
-    return (1 - t) * v0 + t * v1;
-}
-
-function normalize(x0, min, max) {
-    return (x0 - min) / (max - min);
-}
-
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function toggle(el, firstCallback, secondCallback) {
+export function toggle(el, firstCallback, secondCallback) {
     let toggled = el.getAttribute("toggled") === "true";
     if (!toggled) {
         firstCallback(el);
@@ -114,7 +84,7 @@ function toggle(el, firstCallback, secondCallback) {
     return;
 }
 
-function toggleOnce(el, firstCallback) {
+export function toggleOnce(el, firstCallback) {
     let toggled = el.getAttribute("toggled") === "true";
     if (!toggled) {
         firstCallback(el);
@@ -123,7 +93,7 @@ function toggleOnce(el, firstCallback) {
     return;
 }
 
-function slideToggle(el) {
+export function slideToggle(el) {
     let slideHeight;
     if (!el.getAttribute("slide-height")) {
         el.style.height = "100%";
@@ -149,44 +119,12 @@ function slideToggle(el) {
     }
 }
 
-function DeCasteljau(t, points) {
-    let dp = new Map();
-
-    function _DeCasteljau(t, points, ix1, ix2, n) {
-        let k = `${n}${ix1}${ix2}`;
-
-        if (dp.has(k)) {
-            return dp.get(k);
-        }
-
-        let b0, b1;
-
-        if (n == 1) {
-            b0 = points[ix1];
-            b1 = points[ix2];
-        } else {
-            n--;
-            b0 = _DeCasteljau(t, points, ix1, ix2, n);
-            b1 = _DeCasteljau(t, points, ix2, ix2 + 1, n);
-        }
-        let v = (1 - t) * b0 + t * b1;
-        dp.set(k, v);
-
-        return v;
-    }
-    return _DeCasteljau(t, points, 0, 1, points.length - 1);
-}
-
-function cubicBezier(t, x1, y1, x2, y2) {
-    return [DeCasteljau(t, [0, x1, x2, 1]), DeCasteljau(t, [0, y1, y2, 1])];
-}
-
-function wrap(toWrap, wrapper) {
+export function wrap(toWrap, wrapper) {
     let wrapped = toWrap.parentNode.insertBefore(wrapper, toWrap);
     return wrapped.appendChild(toWrap);
 }
 
-function affixer(preAffixFunc, postAffixFunc) {
+export function affixer(preAffixFunc, postAffixFunc) {
     const offsets = [];
 
     document.querySelectorAll(".affix").forEach((el, n) => {
@@ -226,7 +164,7 @@ function affixer(preAffixFunc, postAffixFunc) {
     }
 }
 
-function getOffset(el) {
+export function getOffset(el) {
     const rect = el.getBoundingClientRect();
     return {
         left: rect.left + window.scrollX,
@@ -236,52 +174,20 @@ function getOffset(el) {
     };
 }
 
-function easeInBounce(t, b, c, d) {
-    t = cubicBezier(t / d, 0.09, 0.91, 0.5, 1.5)[1];
-    return c * t + b;
-}
+export function emToPixels(em) {
+    let emNumber = parseFloat(
+        String(em)
+            .toLowerCase()
+            .split("em")[0]
+    );
 
-function bounceInEase(t, b, c, d) {
-    t = cubicBezier(t / d, 0.19, -0.53, 0.83, 0.67)[1];
-    return c * t + b;
-}
+    let fontSize = parseFloat(
+        window
+            .getComputedStyle(document.body)
+            .getPropertyValue("font-size")
+            .toLowerCase()
+            .replace(/[a-z]/g, "")
+    );
 
-class Clock {
-    constructor(autoStart = true, timeStep = 1000 / 60) {
-        this.autoStart = autoStart;
-        this.timeStep = Math.floor(timeStep);
-    }
-    start() {
-        this.startTime = (typeof performance === "undefined"
-            ? Date
-            : performance
-        ).now();
-        this.prevTime = this.startTime;
-        this.elapsedTime = 0;
-        this.elapsedTicks = 0;
-        this.running = true;
-        this.delta = 0;
-    }
-    stop() {
-        this.running = false;
-    }
-    reset() {
-        this.start();
-    }
-    tick() {
-        this.delta = 0;
-        if (this.autoStart && !this.running) {
-            this.start();
-        } else if (this.running) {
-            let currentTime = (typeof performance === "undefined"
-                ? Date
-                : performance
-            ).now();
-            this.delta = currentTime - this.prevTime;
-            this.prevTime = currentTime;
-            this.elapsedTime += this.delta;
-            this.elapsedTicks += this.timeStep;
-        }
-        return this.delta;
-    }
+    return emNumber * fontSize;
 }

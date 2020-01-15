@@ -300,13 +300,6 @@ body {
   }
 }
 
-@media all and (min-width: 1500px) and (orientation: portrait) {
-  html,
-  body {
-    font-size: 1.5em;
-  }
-}
-
 @media all and (orientation: landscape) and (max-height: 768px) {
   html,
   body {

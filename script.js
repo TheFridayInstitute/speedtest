@@ -96,50 +96,8 @@ var dlProgressGlowColor;
 var ulProgressColor;
 var ulProgressGlowColor;
 
-let dots = `<div
-class="container-fluid d-flex justify-content-center center filter-contrast">
-<div class="dot-overtaking"></div></div>`;
-
 let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
 let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon" style="transform: rotate(180deg)"></i>`;
-
-let initMeterNumbers = function(start, stop, step) {
-    let numbers = range(start, stop, step);
-
-    let meterEl = document.getElementById("test-container");
-    let numbersEl = document.createElement("div");
-    numbersEl.classList.add("meter-numbers");
-    numbersEl.id = "meter-numbers";
-
-    for (let number of numbers) {
-        let child = document.createElement("div");
-        child.innerHTML = number;
-        numbersEl.appendChild(child);
-    }
-    meterEl.appendChild(numbersEl);
-};
-
-let resizeMeterNumbers = function(delay) {
-    let meterEl = document.getElementById("test-container");
-    let numbersEl = document.querySelector("#meter-numbers");
-    let testMeter = document.getElementById("test-meter");
-    let meterOffset = getOffset(testMeter);
-    let innerRadius = outerRadius / 2.5 / mobileScale;
-
-    let originX = meterOffset.width / 2;
-    let originY = meterOffset.height / 2;
-
-    setMeterNumbers(
-        meterEl,
-        numbersEl,
-        innerRadius,
-        alpha0,
-        alpha1,
-        originX,
-        originY,
-        delay
-    );
-};
 
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
@@ -229,7 +187,7 @@ function drawMeterLoop(
     progressAmount = parseFloat(progressAmount) || 0;
 
     if (status === 1 && meterAmount === 0) {
-        meterTextEl.innerHTML = dots;
+        meterTextEl.innerHTML = "";
     } else {
         meterTextEl.innerHTML = meterAmount.toPrecision(3);
     }
@@ -312,7 +270,7 @@ let initFunc = function(t) {
     tmp.style.transform = `translateX(${-width}px)`;
 
     document.getElementById("test-kind").innerHTML = "";
-    document.getElementById("test-amount").innerHTML = dots;
+    document.getElementById("test-amount").innerHTML = "0";
     document.getElementById("ping-amount").innerHTML = "0";
 
     let canvas = document.getElementById("test-meter");
@@ -498,8 +456,6 @@ let drawFunc = function(t) {
         return false;
     }
 
-    document.getElementById("test-amount-unit").innerHTML = "mbps";
-
     switch (UI_DATA.testState) {
         case 1: {
             document.getElementById("test-kind").innerHTML = dlText;
@@ -565,15 +521,4 @@ window.onload = function() {
 
 document.getElementById("start-btn").addEventListener("click", function(e) {
     UI_DATA = startStop();
-
-    // toggleOnce(document.getElementById("start-btn"), function() {
-    //     // setTimeout(function() {
-    //     //     initMeterNumbers(0, 100, 25);
-    //     //     resizeMeterNumbers(100);
-    //     // }, 500);
-    // });
 });
-
-// window.matchMedia("(max-width: 768px)").addListener(function() {
-//     resizeMeterNumbers(0);
-// });

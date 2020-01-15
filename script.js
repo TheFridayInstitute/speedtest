@@ -1,4 +1,13 @@
-import { Polygon, Arc, Mesh } from "./canvas.js";
+import {
+    Polygon,
+    Arc,
+    Mesh,
+    generateGradientWrapper,
+    Rectangle,
+    translate,
+    rotate,
+    scale
+} from "./canvas.js";
 
 import {
     clamp,
@@ -10,12 +19,14 @@ import {
     easeOutQuad,
     normalize,
     easeInOutQuad,
-    easeInOutCubic
+    easeInOutCubic,
+    cubicBezier,
+    DeCasteljau
 } from "./math.js";
 
-import { smoothAnimate, animationLoopOuter } from "./animation.js";
+import { smoothAnimate, animationLoopOuter, slideRight } from "./animation.js";
 
-import { emToPixels, getOffset } from "./utils.js";
+import { emToPixels, getOffset, toggleOnce, getUrlParams } from "./utils.js";
 
 import { Color } from "./colors.js";
 
@@ -31,14 +42,18 @@ window.requestAnimationFrame =
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
 
-var dial;
+var meterDial;
 var outerMeter;
 var innerMeter;
 var centerDot;
-var mesh;
+
+var progressBarMesh;
 
 let alpha0 = Math.PI * 0.8;
 let alpha1 = 2 * Math.PI * 1.1;
+
+let meterMin = 0;
+let meterMax = 100;
 
 let mobileScale = parseFloat(
     getComputedStyle(document.documentElement).getPropertyValue(
@@ -51,13 +66,14 @@ let outerRadius =
         getComputedStyle(document.documentElement).getPropertyValue(
             "--meter-outer-radius"
         )
-    ) / mobileScale;
+    ) /
+    (mobileScale / 1.5);
 
 let innerRadius = outerRadius / 1.2;
 
 let lineWidth = 60;
 
-let dotSize = 20;
+let meterDotSize = 30;
 
 let backgroundColor = "rgba(255, 255, 255, 0.1)";
 let progressBarColor = "#fff";
@@ -74,12 +90,20 @@ let ulColorStops = [
     ["1.0", "#FF0000"]
 ];
 
+var dlProgressColor;
+var dlProgressGlowColor;
+
+var ulProgressColor;
+var ulProgressGlowColor;
+
 let dots = `<div
 class="container-fluid d-flex justify-content-center center filter-contrast">
 <div class="dot-overtaking"></div></div>`;
 
+// let dots = "999";
+
 let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
-let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon"></i>`;
+let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon" style="transform: rotate(180deg)"></i>`;
 
 let initMeterNumbers = function(start, stop, step) {
     let numbers = range(start, stop, step);
@@ -122,8 +146,30 @@ let resizeMeterNumbers = function(delay) {
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
     let newColor = new Color(color);
-    newColor.setOpacity(0.3);
+    newColor.opacity = 0.3;
     return [stop, newColor.colorString];
+};
+
+let slideOverFunc = function() {
+    toggleOnce(document.getElementById("ul-amount"), function(e) {
+        let tmp = document.getElementById("tmp");
+
+        tmp.style.opacity = "1";
+
+        let width = window.innerWidth;
+
+        let testEl = document.getElementById("test-container");
+        let buttonEl = document.getElementById("start-btn");
+
+        slideRight(buttonEl, width, 0);
+        slideRight(testEl, width, 0);
+        slideRight(tmp, 0, -width);
+
+        setTimeout(function() {
+            buttonEl.style.opacity = 0;
+            testEl.style.opacity = 0;
+        }, 1000);
+    });
 };
 
 function startStop() {
@@ -144,8 +190,6 @@ function startStop() {
             let urlParams = getUrlParams(window.location.href);
 
             if (data.testState === 4) {
-                let clientData = {};
-
                 let ip = String(UI_DATA.clientIp);
                 if (ip.length < 100 && ip.length > 0) {
                     ip = ip.split("-")[0].trim(); // CHANGE THIS LATER!!
@@ -157,7 +201,8 @@ function startStop() {
                     ulStatus: data.ulStatus,
                     pingStatus: data.pingStatus,
                     jitterStatus: data.jitterStatus,
-                    ip: ip
+                    ip: ip,
+                    date: Date.now()
                 });
             }
         };
@@ -165,7 +210,7 @@ function startStop() {
         speedtestObj.onend = function(aborted) {
             document.getElementById("start-btn").innerText = "Start";
             document.getElementById("start-btn").classList.remove("running");
-            updateUI(true);
+            drawFunc();
         };
 
         speedtestObj.start();
@@ -173,185 +218,105 @@ function startStop() {
     return UI_DATA;
 }
 
-function drawMeter(canvas, amount, progressAmount, meterType) {
-    let ctx = canvas.getContext("2d");
+function drawMeterLoop(
+    status,
+    canvas,
+    meterTextEl,
+    meterAmount,
+    progressAmount,
+    progressColor,
+    progressGlowColor
+) {
+    meterAmount = parseFloat(meterAmount) || 0;
+    progressAmount = parseFloat(progressAmount) || 0;
 
-    let dp = window.devicePixelRatio || 1;
-    let cw = canvas.clientWidth * dp;
-    let ch = canvas.clientHeight * dp;
-
-    if (canvas.width == cw && canvas.height == ch) {
-        ctx.clearRect(0, 0, cw, ch);
+    if (status === 1 && meterAmount === 0) {
+        meterTextEl.innerHTML = dots;
     } else {
-        canvas.width = cw;
-        canvas.height = ch;
+        meterTextEl.innerHTML = meterAmount.toPrecision(3);
     }
 
-    let lineWidth = 60;
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     let originX = canvas.width / 2;
     let originY = canvas.height / 2;
 
-    ctx.beginPath();
-    ctx.strokeStyle = backgroundColor;
-    ctx.lineWidth = lineWidth;
-
-    ctx.arc(originX, originY, outerRadius, alpha0, alpha1);
-
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = "black";
-
-    ctx.stroke();
-
-    let progressColor =
-        meterType === "dl"
-            ? generateGradientWrapper(canvas, dlColorStops)
-            : generateGradientWrapper(canvas, ulColorStops);
-
-    ctx.beginPath();
-    ctx.strokeStyle = progressColor;
-    ctx.lineWidth = lineWidth;
-
-    let min = 0;
-    let max = 100;
-
-    let t = normalize(amount, min, max);
-    let alpha2 = clamp(lerp(alpha0, alpha1, t), alpha0, alpha1);
-
-    ctx.arc(originX, originY, outerRadius, alpha0, alpha2);
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = "red";
-    ctx.stroke();
-
-    let innerRadius = outerRadius / 1.2;
-
-    let progressGlowColor =
-        meterType === "dl"
-            ? generateGradientWrapper(canvas, dlColorStops.map(makeGlowColor))
-            : generateGradientWrapper(canvas, ulColorStops.map(makeGlowColor));
-
-    ctx.beginPath();
-    ctx.strokeStyle = progressGlowColor;
-    ctx.lineWidth = lineWidth;
-    ctx.arc(originX, originY, innerRadius, alpha0, alpha2, false);
-    ctx.stroke();
+    let t = normalize(
+        clamp(meterAmount, meterMin, meterMax),
+        meterMin,
+        meterMax
+    );
+    let alpha_t = lerp(t, alpha0, alpha1);
 
     ctx.shadowBlur = 0;
 
-    let barWidth = outerRadius * 1.5;
-    let barHeight = lineWidth / 4;
+    outerMeter.color = backgroundColor;
+    outerMeter.endAngle = alpha1;
+    outerMeter.draw(ctx);
 
-    let x = (canvas.width - barWidth) / 2;
-    let y = (canvas.height - barHeight) / 2 + outerRadius;
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "red";
 
-    ctx.fillStyle = backgroundColor;
-    ctx.fillRect(x, y, barWidth, barHeight);
-    ctx.stroke();
+    outerMeter.color = progressColor;
+    outerMeter.endAngle = alpha_t;
+    outerMeter.draw(ctx);
 
-    if (typeof progressAmount !== "undefined") {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = progressBarColor;
+    innerMeter.color = progressGlowColor;
+    innerMeter.endAngle = alpha_t;
+    innerMeter.draw(ctx);
 
-        ctx.fillRect(x, y, barWidth * progressAmount, barHeight);
-        ctx.stroke();
-    }
-}
+    ctx.shadowBlur = 0;
 
-function initUI() {
-    document.getElementById("test-kind").innerHTML = "Speedtest";
-    document.getElementById("test-amount").innerHTML = dots;
-    document.getElementById("ping-amount").innerHTML = "0";
-}
+    centerDot.draw(ctx);
 
-function drawGaugeWrapper(
-    status,
-    gaugeEl,
-    gaugeTextEl,
-    gaugeAmount,
-    gaugeProgress,
-    gaugeType
-) {
-    gaugeAmount = parseFloat(gaugeAmount);
-    gaugeProgress = parseFloat(gaugeProgress);
+    meterDial
+        .translate(-originX, -originY)
+        .rotate(alpha_t, true)
+        .translate(originX, originY)
 
-    gaugeAmount = gaugeAmount === undefined ? 0 : gaugeAmount;
-    gaugeProgress = gaugeProgress === undefined ? 0 : gaugeProgress;
+        .draw(ctx)
 
-    if (status === 1 && gaugeAmount === 0) {
-        gaugeTextEl.innerHTML = dots;
-    } else {
-        gaugeTextEl.innerHTML = gaugeAmount.toPrecision(3);
-    }
+        .translate(-originX, -originY)
+        .rotate(-alpha_t, true)
+        .translate(originX, originY);
 
-    drawMeter(gaugeEl, gaugeAmount, gaugeProgress, gaugeType);
-}
+    progressBarMesh.shapes[1].translate(
+        -progressBarMesh.shapes[0].originX,
+        -progressBarMesh.shapes[0].originY
+    );
 
-function updateUI(forced) {
-    if (!forced && speedtestObj.getState() != 3) return;
+    progressBarMesh.shapes[1].width =
+        progressBarMesh.shapes[0].width * progressAmount;
 
-    if (UI_DATA == null) return;
+    progressBarMesh.shapes[1].translate(
+        progressBarMesh.shapes[0].originX,
+        progressBarMesh.shapes[0].originY
+    );
 
-    let status = UI_DATA.testState;
-    let testKindEl = document.getElementById("test-kind");
+    progressBarMesh.draw(ctx);
 
-    if (status === 1) {
-        testKindEl.innerHTML = dlText;
+    progressBarMesh.shapes[1].translate(
+        -progressBarMesh.shapes[0].originX,
+        -progressBarMesh.shapes[0].originY
+    );
 
-        drawGaugeWrapper(
-            UI_DATA.testState,
-            document.getElementById("test-meter"),
-            document.getElementById("test-amount"),
-            UI_DATA.dlStatus,
-            UI_DATA.dlProgress,
-            "dl"
-        );
-    } else if (status == 3) {
-        testKindEl.innerHTML = ulText;
-
-        document.getElementById("dl-amount").innerHTML = Number(
-            UI_DATA.dlStatus
-        ).toPrecision(3);
-
-        drawGaugeWrapper(
-            UI_DATA.testState,
-            document.getElementById("test-meter"),
-            document.getElementById("test-amount"),
-            UI_DATA.ulStatus,
-            UI_DATA.ulProgress,
-            "ul"
-        );
-    } else if (status === 4) {
-        document.getElementById("ul-amount").innerHTML = Number(
-            UI_DATA.ulStatus
-        ).toPrecision(3);
-
-        toggleOnce(document.getElementById("ul-amount"), function(e) {
-            let tmp = document.getElementById("tmp");
-
-            tmp.style.opacity = "1";
-
-            let width = window.innerWidth;
-
-            let testEl = document.getElementById("test-container");
-            let buttonEl = document.getElementById("start-btn");
-
-            slideRight(buttonEl, width, 0);
-            slideRight(testEl, width, 0);
-            slideRight(tmp, 0, -width);
-
-            setTimeout(function() {
-                buttonEl.style.opacity = 0;
-                testEl.style.opacity = 0;
-            }, 1000);
-        });
-    }
-
-    document.getElementById("ping-amount").innerText = Math.round(
-        UI_DATA.pingStatus
+    progressBarMesh.shapes[1].translate(
+        progressBarMesh.shapes[0].originX,
+        progressBarMesh.shapes[0].originY
     );
 }
 
 let initFunc = function(t) {
+    let tmp = document.getElementById("tmp");
+    let width = window.innerWidth;
+
+    tmp.style.transform = `translateX(${-width}px)`;
+
+    document.getElementById("test-kind").innerHTML = "";
+    document.getElementById("test-amount").innerHTML = dots;
+    document.getElementById("ping-amount").innerHTML = "0";
+
     let canvas = document.getElementById("test-meter");
     let ctx = canvas.getContext("2d");
 
@@ -361,22 +326,39 @@ let initFunc = function(t) {
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
 
-    let originX = canvas.width / 2;
-    let originY = canvas.width / 2;
+    dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
+    ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
 
-    let dialBase = 10;
+    dlProgressGlowColor = generateGradientWrapper(
+        canvas,
+        dlColorStops.map(makeGlowColor)
+    );
+    ulProgressGlowColor = generateGradientWrapper(
+        canvas,
+        ulColorStops.map(makeGlowColor)
+    );
+
+    let originX = canvas.width / 2;
+    let originY = canvas.height / 2;
+
+    let dialBase = 40;
     let dialHeight = innerRadius;
+    let dialTop = 15;
 
     // Initializing polygons
-
-    dial = new Polygon(
+    meterDial = new Polygon(
         [
             [0, 0],
-            [dialBase, -dialHeight],
-            [2 * dialBase, 0]
+            [dialTop, -dialHeight],
+            [dialBase - dialTop, -dialHeight],
+            [dialBase, 0]
         ],
-        "red"
+        null,
+        null,
+        "white"
     );
+    meterDial.originX = originX - dialBase / 2;
+    meterDial.originY = originY;
 
     outerMeter = new Arc(
         originX,
@@ -407,14 +389,40 @@ let initFunc = function(t) {
         backgroundColor,
         1
     );
-
     centerDot.fillColor = backgroundColor;
 
-    // Centering the meter dial and laying it flat.
-    dial.translate(originX, originY)
-        .translate(-dialBase / 2, 0)
-        .rotateAboutPoint(originX, originY, 90, false)
-        .draw(ctx);
+    let barWidth = outerRadius;
+    let barHeight = lineWidth / 4;
+
+    let progressBarBackground = new Rectangle(
+        0,
+        0,
+        barWidth,
+        barHeight,
+        backgroundColor
+    );
+    let progressBarForeground = new Rectangle(
+        0,
+        0,
+        barWidth,
+        barHeight,
+        progressBarColor
+    );
+
+    progressBarMesh = new Mesh(progressBarBackground, progressBarForeground);
+
+    // Centering the meter meterDial and laying it flat.
+    meterDial
+        .translate(meterDial.originX, meterDial.originY)
+        .rotateAboutPoint(originX, originY, 90, false);
+
+    progressBarMesh
+        .translate(originX, originY)
+        .translate(
+            -progressBarBackground.width / 2,
+            -progressBarBackground.height / 2
+        )
+        .translate(0, outerRadius / 1.5);
 
     let transformFunc = function(v, t) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -425,56 +433,147 @@ let initFunc = function(t) {
         innerMeter.endAngle = v;
         innerMeter.radius = innerRadius * t;
 
-        centerDot.radius = (1 - t) * outerRadius + dotSize * t;
+        centerDot.radius = (1 - t) * outerRadius + meterDotSize * t;
 
         outerMeter.draw(ctx);
         centerDot.draw(ctx);
 
-        dial.translate(-originX, -originY)
-            .rotate(v, true)
+        let theta = lerp(t, alpha0, 2 * Math.PI + alpha0);
+
+        meterDial
+            .translate(-originX, -originY)
+            .rotate(theta, true)
             .scale(t)
             .translate(originX, originY)
 
             .draw(ctx)
 
             .translate(-originX, -originY)
-            .rotate(-v, true)
+            .rotate(-theta, true)
             .scale(1 / t)
             .translate(originX, originY);
     };
 
-    smoothAnimate(alpha1, alpha0, 2000, transformFunc, easeInOutCubic);
+    smoothAnimate(alpha1, alpha0, 2000, transformFunc, smoothStep3);
+};
+
+let closingAnimation = function(duration) {
+    let canvas = document.getElementById("test-meter");
+    let ctx = canvas.getContext("2d");
+
+    let originX = canvas.width / 2;
+    let originY = canvas.height / 2;
+
+    let transformFunc = function(v, t) {
+        t = 1 - t;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        outerMeter.radius = outerRadius * t;
+
+        centerDot.radius = t;
+
+        outerMeter.draw(ctx);
+        centerDot.draw(ctx);
+
+        meterDial
+            .translate(-originX, -originY)
+            .rotate(alpha0, true)
+            .scale(t)
+            .translate(originX, originY)
+
+            .draw(ctx)
+
+            .translate(-originX, -originY)
+            .rotate(-alpha0, true)
+            .scale(1 / t)
+            .translate(originX, originY);
+    };
+
+    smoothAnimate(alpha1, alpha0, duration, transformFunc, easeInOutCubic);
 };
 
 let updateFunc = function(t) {
     return false;
 };
 let drawFunc = function(t) {
-    updateUI();
+    if (speedtestObj.getState() != 3 || UI_DATA === null) {
+        return false;
+    }
+
+    document.getElementById("test-amount-unit").innerHTML = "mbps";
+
+    switch (UI_DATA.testState) {
+        case 1: {
+            document.getElementById("test-kind").innerHTML = dlText;
+
+            drawMeterLoop(
+                UI_DATA.testState,
+                document.getElementById("test-meter"),
+                document.getElementById("test-amount"),
+                UI_DATA.dlStatus,
+                UI_DATA.dlProgress,
+                dlProgressColor,
+                dlProgressGlowColor
+            );
+            break;
+        }
+        case 3: {
+            document.getElementById("test-kind").innerHTML = ulText;
+
+            document.getElementById("dl-amount").innerHTML = Number(
+                UI_DATA.dlStatus
+            ).toPrecision(3);
+
+            drawMeterLoop(
+                UI_DATA.testState,
+                document.getElementById("test-meter"),
+                document.getElementById("test-amount"),
+                UI_DATA.ulStatus,
+                UI_DATA.ulProgress,
+                ulProgressColor,
+                ulProgressGlowColor
+            );
+            break;
+        }
+        case 4: {
+            document.getElementById("ul-amount").innerHTML = Number(
+                UI_DATA.ulStatus
+            ).toPrecision(3);
+
+            setTimeout(function() {
+                let duration = 2000;
+
+                closingAnimation(duration);
+
+                setTimeout(function() {
+                    slideOverFunc();
+                }, duration * 0.75);
+            }, 1000);
+
+            break;
+        }
+    }
+
+    document.getElementById("ping-amount").innerText = Math.round(
+        UI_DATA.pingStatus
+    );
+
     return false;
 };
 
 window.onload = function() {
-    let tmp = document.getElementById("tmp");
-    let width = window.innerWidth;
-
-    tmp.style.transform = `translateX(${-width}px)`;
-
-    initUI();
-
     animationLoopOuter(initFunc, updateFunc, drawFunc);
 };
 
 document.getElementById("start-btn").addEventListener("click", function(e) {
     UI_DATA = startStop();
 
-    toggleOnce(document.getElementById("start-btn"), function() {
-        // meterInit(document.getElementById("test-meter"), 2000);
-        // setTimeout(function() {
-        //     initMeterNumbers(0, 100, 25);
-        //     resizeMeterNumbers(100);
-        // }, 500);
-    });
+    // toggleOnce(document.getElementById("start-btn"), function() {
+    //     // setTimeout(function() {
+    //     //     initMeterNumbers(0, 100, 25);
+    //     //     resizeMeterNumbers(100);
+    //     // }, 500);
+    // });
 });
 
 // window.matchMedia("(max-width: 768px)").addListener(function() {

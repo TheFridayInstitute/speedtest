@@ -32,7 +32,8 @@ export function rotateAboutPoint(xy, originX, originY, theta, rad = false) {
 
 export class Shape {
     constructor(
-        origin,
+        originX,
+        originY,
         points,
         color,
         lineWidth,
@@ -40,10 +41,11 @@ export class Shape {
         shadowColor,
         shadowBlur
     ) {
-        this._origin = origin;
+        this._originX = originX === undefined ? 0 : originX;
+        this._originY = originY === undefined ? 0 : originY;
         this._points = points;
-        this._color = color == undefined ? "black" : color;
-        this._lineWidth = lineWidth == undefined ? 1 : lineWidth;
+        this._color = color === undefined ? "black" : color;
+        this._lineWidth = lineWidth === undefined ? 1 : lineWidth;
 
         this._fillColor = fillColor;
         this._shadowColor = shadowColor;
@@ -51,31 +53,26 @@ export class Shape {
     }
 
     map(func) {
-        this._origin = func(this._origin);
         this._points.map((xy, index) => func(xy, index));
         return this;
     }
 
     translate(x, y) {
-        this._origin = translate(this._origin, x, y);
         this._points.map((xy) => translate(xy, x, y));
         return this;
     }
 
     scale(s) {
-        this._origin = scale(this._origin, s);
         this._points.map((xy) => scale(xy, s));
         return this;
     }
 
     rotate(theta, rad = false) {
-        this._origin = rotate(this._origin, theta, rad);
         this._points.map((xy) => rotate(xy, theta, rad));
         return this;
     }
 
     rotateAboutPoint(x, y, theta, rad = false) {
-        this._origin = rotateAboutPoint(this._origin, x, y, theta, rad);
         this._points.map((xy) => {
             rotateAboutPoint(xy, x, y, theta, rad);
         });
@@ -89,25 +86,18 @@ export class Shape {
         this._points = points;
     }
 
-    get origin() {
-        return this._origin;
-    }
-    set origin(origin) {
-        this._origin = origin;
-    }
-
     get originX() {
-        return this._origin[0];
+        return this._originX;
     }
     set originX(originX) {
-        this._origin[0] = originX;
+        this._originX = originX;
     }
 
     get originY() {
-        return this._origin[1];
+        return this._originY;
     }
     set originY(originY) {
-        this._origin[1] = originY;
+        this._originY = originY;
     }
 
     get color() {
@@ -152,7 +142,7 @@ export class Shape {
 
 export class Polygon extends Shape {
     constructor(points, color, lineWidth, fillColor) {
-        super([0, 0], points, color, lineWidth, fillColor);
+        super(0, 0, points, color, lineWidth, fillColor);
     }
 
     draw(ctx) {
@@ -194,7 +184,7 @@ export class Arc extends Shape {
         color,
         lineWidth
     ) {
-        super([originX, originY], [originX, originY], color, lineWidth);
+        super(originX, originY, [originX, originY], color, lineWidth);
 
         this._radius = radius;
         this._beginAngle = beginAngle;
@@ -217,8 +207,8 @@ export class Arc extends Shape {
         }
 
         ctx.arc(
-            this.originX,
-            this.originY,
+            this._x,
+            this._y,
             this._radius,
             this._beginAngle,
             this._endAngle
@@ -258,41 +248,6 @@ export class Arc extends Shape {
 export class FilledPolygon extends Polygon {
     constructor(points, fillColor) {
         super(points, undefined, undefined, fillColor);
-    }
-}
-
-export class Rectangle extends Polygon {
-    constructor(leftX, leftY, width, height, fillColor) {
-        let points = [
-            [leftX, leftY],
-            [leftX + width, leftY],
-            [leftX + width, leftY + height],
-            [leftX, leftY + height],
-            [leftX, leftY]
-        ];
-        super(points, undefined, undefined, fillColor);
-        this._origin = [leftX, leftY];
-
-        this._width = width;
-        this._height = height;
-    }
-
-    get height() {
-        return this._height;
-    }
-    set height(height) {
-        this._points[2][1] = this.originY + height;
-        this._points[3][1] = this.originY + height;
-        this._height = height;
-    }
-
-    get width() {
-        return this._width;
-    }
-    set width(width) {
-        this._points[1][0] = this.originX + width;
-        this._points[2][0] = this.originX + width;
-        this._width = width;
     }
 }
 

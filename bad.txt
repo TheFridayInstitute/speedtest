@@ -1,296 +1,80 @@
-<style>
-            html,
-            body {
-                position: relative;
-                padding: 0;
-                margin: 0;
-                background: rgba(51, 51, 51);
-                color: #fff;
-                height: 100%;
-                text-align: center;
-                font-family: "Helvetica";
-                font-weight: 300;
-            }
+function drawMeter(canvas, amount, progressAmount, meterType) {
+    let ctx = canvas.getContext("2d");
 
-            .header {
-                display: -ms-grid;
-                display: grid;
-                grid-template-areas: "l h h .";
-                -ms-grid-columns: 1fr 2fr 2fr 1fr;
-                grid-template-columns: 1fr 2fr 2fr 1fr;
-                -webkit-column-gap: 1em;
-                column-gap: 1em;
-                -ms-grid-rows: 1fr;
-                grid-template-rows: 1fr;
-                background-color: rgba(51, 51, 51);
-                position: relative;
-                padding: 1em;
-            }
+    let dp = window.devicePixelRatio || 1;
+    let cw = canvas.clientWidth * dp;
+    let ch = canvas.clientHeight * dp;
 
-            .header .title {
-                -ms-grid-row: 1;
-                -ms-grid-column: 2;
-                -ms-grid-column-span: 2;
-                grid-area: h;
-                font-size: 6em;
-                font-weight: bold;
-                margin: 0;
-                padding: 0;
-                width: 100%;
-            }
+    if (canvas.width == cw && canvas.height == ch) {
+        ctx.clearRect(0, 0, cw, ch);
+    } else {
+        canvas.width = cw;
+        canvas.height = ch;
+    }
 
-            .header img.ncsu-logo {
-                width: 100%;
-            }
+    let lineWidth = 60;
 
-            .header .brick {
-                -ms-grid-row: 1;
-                -ms-grid-column: 1;
-                grid-area: l;
-                display: -webkit-box;
-                display: -ms-flexbox;
-                display: flex;
-                -webkit-box-pack: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-                -webkit-box-align: center;
-                -ms-flex-align: center;
-                align-items: center;
-                width: 10em;
-            }
+    let originX = canvas.width / 2;
+    let originY = canvas.height / 2;
 
-            .footer {
-                display: -webkit-box;
-                display: -ms-flexbox;
-                display: flex;
-                padding: 2em;
-                -webkit-box-pack: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-                font-style: italic;
-                font-weight: 100;
-                background-color: rgba(51, 51, 51);
-                position: absolute;
-                width: 100%;
-            }
+    ctx.beginPath();
+    ctx.strokeStyle = backgroundColor;
+    ctx.lineWidth = lineWidth;
 
-            #test {
-                padding: 2em;
-            }
+    ctx.arc(originX, originY, outerRadius, alpha0, alpha1);
 
-            #startStopBtn {
-                text-transform: uppercase;
-                margin: 0 auto;
-                color: #fff;
-                background-color: #f77230;
-                -webkit-transition: all 0.3s;
-                transition: all 0.3s;
-                -webkit-box-sizing: border-box;
-                box-sizing: border-box;
-                width: 10em;
-                height: 2.5em;
-                display: -webkit-box;
-                display: -ms-flexbox;
-                display: flex;
-                -webkit-box-pack: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-                -webkit-box-align: center;
-                -ms-flex-align: center;
-                align-items: center;
-                font-size: 2em;
-                cursor: pointer;
-            }
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "black";
 
-            #startStopBtn.running {
-                background-color: #8f60aa;
-            }
+    ctx.stroke();
 
-            #testWrapper {
-                display: -webkit-box;
-                display: -ms-flexbox;
-                display: flex;
-                -webkit-box-orient: vertical;
-                -webkit-box-direction: normal;
-                -ms-flex-direction: column;
-                flex-direction: column;
-                -webkit-box-pack: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-                -ms-flex-line-pack: center;
-                align-content: center;
-                height: 100%;
-            }
+    let progressColor =
+        meterType === "dl"
+            ? generateGradientWrapper(canvas, dlColorStops)
+            : generateGradientWrapper(canvas, ulColorStops);
 
-            .testArea {
-                font-weight: normal;
-                font-size: 1em;
-                text-transform: uppercase;
-                margin: 1em;
-                width: 40em;
-                height: 30em;
-                position: relative;
-                -webkit-box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
-                box-shadow: -10px 25px 50px rgba(0, 0, 0, 0.3);
-            }
+    ctx.beginPath();
+    ctx.strokeStyle = progressColor;
+    ctx.lineWidth = lineWidth;
 
-            .testArea2 {
-                text-transform: uppercase;
-                display: inline-block;
-                width: 14em;
-                height: 7em;
-                -webkit-box-sizing: border-box;
-                box-sizing: border-box;
-                text-align: center;
-                font-size: 1em;
-                position: relative;
-            }
+    let t = normalize(amount, meterMin, meterMax);
+    let alpha2 = clamp(lerp(alpha0, alpha1, t), alpha0, alpha1);
 
-            .testArea .testName {
-                position: absolute;
-                top: 0.1em;
-                left: 0;
-                width: 100%;
-                font-size: 2em;
-                z-index: 9;
-            }
+    ctx.arc(originX, originY, outerRadius, alpha0, alpha2);
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "red";
+    ctx.stroke();
 
-            .testArea2 .testName {
-                display: block;
-                text-align: center;
-                font-size: 1.4em;
-            }
+    let innerRadius = outerRadius / 1.2;
 
-            .testArea .meterText {
-                position: absolute;
-                bottom: 2em;
-                left: 0;
-                width: 100%;
-                font-size: 4em;
-                z-index: 9;
-            }
+    let progressGlowColor =
+        meterType === "dl"
+            ? generateGradientWrapper(canvas, dlColorStops.map(makeGlowColor))
+            : generateGradientWrapper(canvas, ulColorStops.map(makeGlowColor));
 
-            .testArea2 .meterText {
-                display: inline-block;
-                font-size: 2.5em;
-            }
+    ctx.beginPath();
+    ctx.strokeStyle = progressGlowColor;
+    ctx.lineWidth = lineWidth;
+    ctx.arc(originX, originY, innerRadius, alpha0, alpha2, false);
+    ctx.stroke();
 
-            .testArea2 .meterText #ip {
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                width: 100%;
-                text-align: left;
-            }
+    ctx.shadowBlur = 0;
 
-            .meterText:empty:before {
-                content: "0";
-            }
+    let barWidth = outerRadius * 1.5;
+    let barHeight = lineWidth / 4;
 
-            .testArea .unit {
-                position: absolute;
-                bottom: 5em;
-                left: 0;
-                width: 100%;
-                z-index: 9;
-            }
+    let x = (canvas.width - barWidth) / 2;
+    let y = (canvas.height - barHeight) / 2 + outerRadius;
 
-            .testArea2 .unit {
-                display: inline-block;
-            }
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(x, y, barWidth, barHeight);
+    ctx.stroke();
 
-            .testArea canvas {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 1;
-            }
+    if (typeof progressAmount !== "undefined") {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = progressBarColor;
 
-            .testGroup {
-                display: -webkit-box;
-                display: -ms-flexbox;
-                display: flex;
-                -webkit-box-pack: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-                -ms-flex-wrap: wrap;
-                flex-wrap: wrap;
-            }
-
-            .gauge-numbers {
-                font-weight: 100;
-                font-size: 1.5em;
-                font-family: "Helvetica";
-                position: absolute;
-                -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
-                transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
-            }
-
-            @media all and (max-width: 80em) {
-                html,
-                body {
-                    font-size: 0.9em;
-                }
-                .testArea {
-                    width: 33em;
-                    height: 25em;
-                }
-            }
-
-            @media all and (max-width: 60em) {
-                html,
-                body {
-                    font-size: 0.6em;
-                }
-                .testGroup {
-                    margin: 0;
-                    padding: 0;
-                }
-                .testArea {
-                    padding: 0;
-                }
-                .testArea .meterText {
-                    bottom: 4em;
-                }
-                .testArea {
-                    width: 20em;
-                    height: 15em;
-                }
-            }
-
-            .hvr-underline-from-left {
-                display: inline-block;
-                vertical-align: middle;
-                -webkit-transform: perspective(1px) translateZ(0);
-                transform: perspective(1px) translateZ(0);
-                -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0);
-                box-shadow: 0 0 1px rgba(0, 0, 0, 0);
-                position: relative;
-                overflow: hidden;
-            }
-
-            .hvr-underline-from-left:before {
-                content: "";
-                position: absolute;
-                z-index: -1;
-                left: 0;
-                right: 100%;
-                bottom: 0;
-                background: white;
-                height: 4px;
-                -webkit-transition-property: right;
-                transition-property: right;
-                -webkit-transition-duration: 0.3s;
-                transition-duration: 0.3s;
-                -webkit-transition-timing-function: ease-out;
-                transition-timing-function: ease-out;
-            }
-
-            .hvr-underline-from-left:hover:before,
-            .hvr-underline-from-left:focus:before,
-            .hvr-underline-from-left:active:before {
-                right: 0;
-            }
-            /*# sourceMappingURL=style.css.map */
-        </style>
+        ctx.fillRect(x, y, barWidth * progressAmount, barHeight);
+        ctx.stroke();
+    }
+}

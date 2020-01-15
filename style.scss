@@ -18,13 +18,13 @@
     --meter-width: 37.5em;
     --meter-height: 30em;
     --meter-padding: 10em;
-    --meter-outer-radius: 20em;
+    --meter-outer-radius: 22em;
 
     --ncsu-font: UniversCondensed;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.5em;
-    --mobile-scale: 1;
+    --mobile-scale: 1.5;
 }
 
 html,
@@ -64,14 +64,14 @@ body {
     position: absolute;
 
     .text {
-        font-size: 1.2em;
+        font-size: 1.5em;
         text-transform: none;
         display: flex;
         justify-content: center;
         align-items: center;
     }
     i {
-        font-size: 10em;
+        font-size: 15em;
         color: var(--color-secondary);
     }
 }
@@ -157,10 +157,10 @@ body {
     align-items: center;
 
     .info {
-        margin: 2em;
+        margin: 1.2em;
 
         .test-kind {
-            font-size: 1.4em;
+            font-size: 1.5em;
             text-align: center;
         }
 
@@ -212,13 +212,20 @@ body {
     }
 
     .info {
-        display: grid;
-        grid-template-areas:
-            "a"
-            "u"
-            ".";
-        grid-template-rows: 1fr 1fr 1fr;
-        grid-template-columns: 1fr;
+        position: absolute;
+        margin: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 1em;
+
+        // display: grid;
+        // grid-template-areas:
+        //     "a"
+        //     "u"
+        //     ".";
+        // grid-template-rows: 1fr 1fr 1fr;
+        // grid-template-columns: 1fr;
 
         grid-area: info;
         .amount {
@@ -286,13 +293,14 @@ body {
         width: calc(var(--meter-width) / var(--mobile-scale));
 
         .test-kind {
-            font-size: 2em;
+            font-size: 1.5em;
             z-index: 9;
         }
 
         .info {
+            margin: 0.5em;
             .amount {
-                font-size: 3em;
+                font-size: 2em;
             }
         }
     }
@@ -301,11 +309,21 @@ body {
         width: calc(var(--meter-width) / var(--mobile-scale));
 
         .info {
-            margin: 0.5em;
-
             .test-kind {
                 font-size: 1em;
             }
+            .amount {
+                font-size: 3em;
+            }
+        }
+    }
+
+    .tmp {
+        .text {
+            font-size: 1.5em;
+        }
+        i {
+            font-size: 12em;
         }
     }
 }

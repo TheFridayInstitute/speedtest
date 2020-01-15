@@ -95,13 +95,13 @@ export function lerpIn(t, from, distance, duration) {
     return distance * (t /= duration) + from;
 }
 
-export function lerp(v0, v1, t) {
-    return (1 - t) * v0 + t * v1;
+export function lerp(t, from, to) {
+    return (1 - t) * from + t * to;
 }
 
-export function logerp(v0, v1, t) {
-    v0 = v0 === 0 ? 1e-9 : v0;
-    let tt = v0 * Math.pow(v1 / v0, t);
+export function logerp(t, from, to) {
+    from = from === 0 ? 1e-9 : from;
+    let tt = from * Math.pow(to / from, t);
     return tt;
 }
 

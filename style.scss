@@ -1,14 +1,17 @@
 $meter-width: 30rem;
 $meter-height: 30rem;
 $meter-padding: 10em;
-$meter-outer-radius: 30em;
+$meter-outer-radius: 20em;
 
 $screen-size-xs: 575.98px;
-$screen-size-md:
+$screen-size-sm: 767.98px;
+$screen-size-md: 991.98px;
+$screen-size-lg: 1199.98px;
 
 $screen-sm-scale: 1.5;
 $screen-md-scale: 1.2;
 $screen-lg-scale: 1;
+$meter-radius-scale: 1.2;
 
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
@@ -125,14 +128,18 @@ body {
     justify-content: center;
 
     .start-btn-container {
+        width: var(--meter-width);
         grid-area: button;
     }
 
     .test-container {
+        height: var(--meter-height);
+        width: var(--meter-width);
         grid-area: test;
     }
 
     .test-info-container {
+        width: var(--meter-width);
         grid-area: info;
     }
 }
@@ -193,9 +200,6 @@ body {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
 
-    height: var(--meter-height);
-    width: var(--meter-width);
-
     position: relative;
 
     row-gap: 2em;
@@ -254,7 +258,7 @@ body {
     }
 }
 
-@media all and (max-width: 900px) {
+@media all and (max-width: $screen-size-md) {
     :root {
         --meter-width: #{$meter-width / $screen-md-scale};
         --meter-height: #{$meter-height / $screen-md-scale};
@@ -267,17 +271,13 @@ body {
     }
 }
 
-@media all and (max-width: 400px) {
+@media all and (max-width: $screen-size-xs) {
     :root {
         --meter-outer-radius: #{$meter-outer-radius / $screen-sm-scale};
     }
-    html,
-    body {
-        font-size: 0.9em;
-    }
 }
 
-@media all and (orientation: landscape) and (max-width: 1200px) {
+@media all and (orientation: landscape) and (max-width: $screen-size-lg) {
     :root {
         --meter-outer-radius: #{$meter-outer-radius / $screen-sm-scale};
     }

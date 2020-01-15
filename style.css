@@ -14,7 +14,7 @@
   --meter-width: 30rem;
   --meter-height: 30rem;
   --meter-padding: 10em;
-  --meter-outer-radius: 30em;
+  --meter-outer-radius: 20em;
   --ncsu-font: UniversCondensed;
   --ncsu-red: #c00;
   --ncsu-red-dark: rgb(173, 0, 0);
@@ -115,18 +115,22 @@ body {
 }
 
 .main-content .start-btn-container {
+  width: var(--meter-width);
   -ms-grid-row: 1;
   -ms-grid-column: 1;
   grid-area: button;
 }
 
 .main-content .test-container {
+  height: var(--meter-height);
+  width: var(--meter-width);
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: test;
 }
 
 .main-content .test-info-container {
+  width: var(--meter-width);
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: info;
@@ -194,8 +198,6 @@ body {
       grid-template-columns: 1fr;
   -ms-grid-rows: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-  height: var(--meter-height);
-  width: var(--meter-width);
   position: relative;
   row-gap: 2em;
   text-transform: uppercase;
@@ -257,11 +259,11 @@ body {
   position: absolute;
 }
 
-@media all and (max-width: 900px) {
+@media all and (max-width: 991.98px) {
   :root {
     --meter-width: 25rem;
     --meter-height: 25rem;
-    --meter-outer-radius: 25em;
+    --meter-outer-radius: 16.66667em;
   }
   html,
   body {
@@ -269,19 +271,15 @@ body {
   }
 }
 
-@media all and (max-width: 400px) {
+@media all and (max-width: 575.98px) {
   :root {
-    --meter-outer-radius: 20em;
-  }
-  html,
-  body {
-    font-size: 0.9em;
+    --meter-outer-radius: 13.33333em;
   }
 }
 
-@media all and (orientation: landscape) and (max-width: 1200px) {
+@media all and (orientation: landscape) and (max-width: 1199.98px) {
   :root {
-    --meter-outer-radius: 20em;
+    --meter-outer-radius: 13.33333em;
   }
   .main-content {
         grid-template-areas: "test info" "test button";
@@ -294,7 +292,7 @@ body {
 
 @media all and (orientation: landscape) and (max-width: 768px) {
   :root {
-    --meter-outer-radius: 20em;
+    --meter-outer-radius: 13.33333em;
   }
   html,
   body {

@@ -15,11 +15,6 @@
         />
 
         <link
-            href="https://cdn.ncsu.edu/brand-assets/fonts/include.css"
-            rel="stylesheet"
-        />
-
-        <link
             href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
             rel="stylesheet"
             integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
@@ -28,21 +23,15 @@
 
         <link rel="shortcut icon" href="favicon.ico" />
         <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" href="extras.css" />
 
         <title>speedtest.fi</title>
     </head>
 
     <body>
         <div
-            class="outer-content container-fluid d-flex justify-content-center"
+            class="container-fluid d-flex justify-content-center align-items-center outer-content"
         >
-            <!-- <div class="container-fluid circle-container">
-                <span class="circle">
-                    <i class="fa fa-arrow-down arrow-down"></i>
-                </span>
-                <span class="pulse"></span>
-            </div> -->
-
             <div class="container-fluid main-content" id="main-content">
                 <div
                     class="container-fluid d-flex justify-content-center start-btn-container"
@@ -53,11 +42,14 @@
                     </div>
                 </div>
 
-                <div class="container-fluid center test-info-container">
+                <div class="container-fluid test-info-container box-shadow">
                     <div class="info">
                         <div class="test-kind">Latency</div>
-                        <div id="ping-amount" class="amount">0</div>
-                        <div class="unit">ms</div>
+
+                        <div class="unit-container">
+                            <div id="ping-amount" class="amount">0</div>
+                            <div class="unit">ms</div>
+                        </div>
                     </div>
 
                     <div class="info dl-icon">
@@ -68,8 +60,10 @@
                                 aria-hidden="true"
                             ></i>
                         </div>
-                        <div id="dl-amount" class="amount">0</div>
-                        <div class="unit">Mbps</div>
+                        <div class="unit-container">
+                            <div id="dl-amount" class="amount">0</div>
+                            <div class="unit">Mbps</div>
+                        </div>
                     </div>
 
                     <div class="info ul-icon">
@@ -80,23 +74,33 @@
                                 aria-hidden="true"
                             ></i>
                         </div>
-                        <div id="ul-amount" class="amount">0</div>
-                        <div class="unit">Mbps</div>
+                        <div class="unit-container">
+                            <div id="ul-amount" class="amount">0</div>
+                            <div class="unit">Mbps</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="container-fluid test-container" id="test-container">
-                    <div id="test-kind" class="test-kind"></div>
-
+                <div
+                    class="container-fluid test-container box-shadow"
+                    id="test-container"
+                >
                     <canvas id="test-meter"></canvas>
 
                     <div class="info">
-                        <div id="test-amount" class="amount">0</div>
-                        <div id="test-amount-unit" class="unit">Mbps</div>
+                        <div id="test-kind" class="test-kind"></div>
+
+                        <div class="unit-container">
+                            <div id="test-amount" class="amount">0</div>
+                            <div id="test-amount-unit" class="unit">Mbps</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="container-fluid test-container tmp" id="tmp">
+                <div
+                    class="container-fluid test-container tmp box-shadow"
+                    id="tmp"
+                >
                     <div class="text">
                         Speed test complete. Click the "next" button to finish
                         the survey.

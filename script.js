@@ -6,7 +6,7 @@ import {
     Rectangle,
     translate,
     rotate,
-    scale
+    scale,
 } from "./canvas.js";
 
 import {
@@ -21,14 +21,26 @@ import {
     easeInOutQuad,
     easeInOutCubic,
     cubicBezier,
-    DeCasteljau
+    DeCasteljau,
+    easeInCubic,
 } from "./math.js";
 
-import { smoothAnimate, animationLoopOuter, slideRight } from "./animation.js";
+import {
+    smoothAnimate,
+    animationLoopOuter,
+    slideRight,
+    sleep,
+} from "./animation.js";
 
-import { emToPixels, getOffset, toggleOnce, getUrlParams } from "./utils.js";
+import {
+    emToPixels,
+    getOffset,
+    toggleOnce,
+    getUrlParams,
+    toggle,
+} from "./utils.js";
 
-import { Color } from "./colors.js";
+import {Color} from "./colors.js";
 
 window.requestAnimationFrame =
     window.requestAnimationFrame ||
@@ -45,7 +57,7 @@ var UI_DATA = null;
 var meterDial;
 var outerMeter;
 var innerMeter;
-var centerDot;
+var meterDot;
 
 var progressBarMesh;
 
@@ -55,23 +67,17 @@ let alpha1 = 2 * Math.PI * 1.1;
 let meterMin = 0;
 let meterMax = 100;
 
-let mobileScale = parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue(
-        "--mobile-scale"
-    )
-);
+let lineWidth = 60;
 
 let outerRadius = emToPixels(
-    getComputedStyle(document.documentElement).getPropertyValue(
-        "--meter-outer-radius"
-    )
+    getComputedStyle(document.documentElement).getPropertyValue("--meter-width")
 );
+
+outerRadius -= (lineWidth * 2) / 2;
 
 let innerRadius = outerRadius / 1.2;
 
-let lineWidth = 60;
-
-let meterDotSize = 30;
+let meterDotSize = 60;
 
 let backgroundColor = "rgba(255, 255, 255, 0.1)";
 let progressBarColor = "#fff";
@@ -79,13 +85,13 @@ let progressBarColor = "#fff";
 let dlColorStops = [
     ["0", "#8343ab"],
     ["0.5", "#d359ff"],
-    ["1.0", "#f71e6a"]
+    ["1.0", "#f71e6a"],
 ];
 
 let ulColorStops = [
     ["0", "#FF8000"],
     ["0.5", "#FF8000"],
-    ["1.0", "#FF0000"]
+    ["1.0", "#FF0000"],
 ];
 
 var dlProgressColor;
@@ -156,7 +162,7 @@ function startStop() {
                     pingStatus: data.pingStatus,
                     jitterStatus: data.jitterStatus,
                     ip: ip,
-                    date: Date.now()
+                    date: Date.now(),
                 });
             }
         };
@@ -222,7 +228,7 @@ function drawMeterLoop(
 
     ctx.shadowBlur = 0;
 
-    centerDot.draw(ctx);
+    meterDot.draw(ctx);
 
     meterDial
         .translate(-originX, -originY)
@@ -295,17 +301,18 @@ let initFunc = function(t) {
     let originX = canvas.width / 2;
     let originY = canvas.height / 2;
 
-    let dialBase = 40;
+    let dialBase = lineWidth;
     let dialHeight = innerRadius;
-    let dialTop = 15;
+    let dialTop = 20;
 
     // Initializing polygons
+
     meterDial = new Polygon(
         [
             [0, 0],
             [dialTop, -dialHeight],
             [dialBase - dialTop, -dialHeight],
-            [dialBase, 0]
+            [dialBase, 0],
         ],
         null,
         null,
@@ -334,16 +341,8 @@ let initFunc = function(t) {
         lineWidth
     );
 
-    centerDot = new Arc(
-        originX,
-        originY,
-        1,
-        0,
-        Math.PI * 2,
-        backgroundColor,
-        1
-    );
-    centerDot.fillColor = backgroundColor;
+    meterDot = new Arc(originX, originY, 1, 0, Math.PI * 2, backgroundColor, 1);
+    meterDot.fillColor = backgroundColor;
 
     let barWidth = outerRadius;
     let barHeight = lineWidth / 4;
@@ -370,6 +369,7 @@ let initFunc = function(t) {
         .translate(meterDial.originX, meterDial.originY)
         .rotateAboutPoint(originX, originY, 90, false);
 
+    // Centering the progress bar mesh and moving it to be almost outside of the outer radius.
     progressBarMesh
         .translate(originX, originY)
         .translate(
@@ -377,6 +377,14 @@ let initFunc = function(t) {
             -progressBarBackground.height / 2
         )
         .translate(0, outerRadius / 1.5);
+};
+
+let openingAnimation = function(duration, timingFunc) {
+    let canvas = document.getElementById("test-meter");
+    let ctx = canvas.getContext("2d");
+
+    let originX = canvas.width / 2;
+    let originY = canvas.height / 2;
 
     let transformFunc = function(v, t) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -387,12 +395,12 @@ let initFunc = function(t) {
         innerMeter.endAngle = v;
         innerMeter.radius = innerRadius * t;
 
-        centerDot.radius = (1 - t) * outerRadius + meterDotSize * t;
+        meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
 
         outerMeter.draw(ctx);
-        centerDot.draw(ctx);
+        meterDot.draw(ctx);
 
-        let theta = lerp(t, alpha0, 2 * Math.PI + alpha0);
+        let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 
         meterDial
             .translate(-originX, -originY)
@@ -408,10 +416,10 @@ let initFunc = function(t) {
             .translate(originX, originY);
     };
 
-    smoothAnimate(alpha1, alpha0, 2000, transformFunc, smoothStep3);
+    smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
 };
 
-let closingAnimation = function(duration) {
+let closingAnimation = function(duration, timingFunc) {
     let canvas = document.getElementById("test-meter");
     let ctx = canvas.getContext("2d");
 
@@ -419,36 +427,70 @@ let closingAnimation = function(duration) {
     let originY = canvas.height / 2;
 
     let transformFunc = function(v, t) {
-        t = 1 - t;
+        t = clamp(1 - t, 0.0001, 1);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         outerMeter.radius = outerRadius * t;
 
-        centerDot.radius = t;
+        meterDot.radius = meterDotSize * t;
 
         outerMeter.draw(ctx);
-        centerDot.draw(ctx);
+        meterDot.draw(ctx);
+
+        let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 
         meterDial
             .translate(-originX, -originY)
-            .rotate(alpha0, true)
+            .rotate(theta, true)
             .scale(t)
             .translate(originX, originY)
 
             .draw(ctx)
 
             .translate(-originX, -originY)
-            .rotate(-alpha0, true)
+            .rotate(-theta, true)
             .scale(1 / t)
             .translate(originX, originY);
     };
 
-    smoothAnimate(alpha1, alpha0, duration, transformFunc, easeInOutCubic);
+    smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
+};
+
+let rotateDialAnimation = function(duration, timingFunc) {
+    let canvas = document.getElementById("test-meter");
+    let ctx = canvas.getContext("2d");
+
+    let originX = canvas.width / 2;
+    let originY = canvas.height / 2;
+
+    let transformFunc = function(v, t) {
+        t = clamp(t, 0.0001, 1);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        outerMeter.draw(ctx);
+        meterDot.draw(ctx);
+
+        let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
+
+        meterDial
+            .translate(-originX, -originY)
+            .rotate(theta, true)
+            .translate(originX, originY)
+
+            .draw(ctx)
+
+            .translate(-originX, -originY)
+            .rotate(-theta, true)
+            .translate(originX, originY);
+    };
+
+    smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
 };
 
 let updateFunc = function(t) {
     return false;
 };
+
 let drawFunc = function(t) {
     if (speedtestObj.getState() != 3 || UI_DATA === null) {
         return false;
@@ -457,7 +499,6 @@ let drawFunc = function(t) {
     switch (UI_DATA.testState) {
         case 1: {
             document.getElementById("test-kind").innerHTML = dlText;
-
             drawMeterLoop(
                 UI_DATA.testState,
                 document.getElementById("test-meter"),
@@ -470,11 +511,11 @@ let drawFunc = function(t) {
             break;
         }
         case 3: {
-            document.getElementById("test-kind").innerHTML = ulText;
-
             document.getElementById("dl-amount").innerHTML = Number(
                 UI_DATA.dlStatus
             ).toPrecision(3);
+
+            document.getElementById("test-kind").innerHTML = ulText;
 
             drawMeterLoop(
                 UI_DATA.testState,
@@ -482,8 +523,8 @@ let drawFunc = function(t) {
                 document.getElementById("test-amount"),
                 UI_DATA.ulStatus,
                 UI_DATA.ulProgress,
-                ulProgressColor,
-                ulProgressGlowColor
+                dlProgressColor,
+                dlProgressGlowColor
             );
             break;
         }
@@ -493,9 +534,8 @@ let drawFunc = function(t) {
             ).toPrecision(3);
 
             setTimeout(function() {
-                let duration = 2000;
-
-                closingAnimation(duration);
+                let duration = 3000;
+                closingAnimation(duration, easeInOutCubic);
 
                 setTimeout(function() {
                     slideOverFunc();
@@ -514,9 +554,23 @@ let drawFunc = function(t) {
 };
 
 window.onload = function() {
+    document.getElementById("test-kind").innerHTML = dlText;
     animationLoopOuter(initFunc, updateFunc, drawFunc);
 };
 
 document.getElementById("start-btn").addEventListener("click", function(e) {
-    UI_DATA = startStop();
+    let duration = 3000;
+    // toggle(
+    //     document.getElementById("start-btn"),
+    //     function() {
+    //         openingAnimation(duration, smoothStep3);
+    //     },
+    //     function() {
+    //         closingAnimation(duration, easeInOutCubic);
+    //     }
+    // );
+    openingAnimation(duration, smoothStep3);
+    setTimeout(function() {
+        UI_DATA = startStop();
+    }, duration);
 });

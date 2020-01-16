@@ -1,3 +1,5 @@
+import {clamp} from "./math.js";
+
 if (!String.prototype.splice) {
     String.prototype.splice = function(start, delCount, newSubStr) {
         return (
@@ -61,16 +63,6 @@ export function getUrlParams(qs) {
     }
 
     return params;
-}
-
-export function oscillate(a, from, frequency) {
-    a = a == undefined ? 0.05 : a;
-    from = from == undefined ? 0.05 : from;
-    frequency = frequency === undefined ? 100 : frequency;
-
-    let r = Math.random() * (from - a) + a;
-
-    return 1 + r * Math.sin(Date.now() / frequency);
 }
 
 export function toggle(el, firstCallback, secondCallback) {
@@ -170,7 +162,7 @@ export function getOffset(el) {
         left: rect.left + window.scrollX,
         top: rect.top + window.scrollY,
         width: rect.width,
-        height: rect.height
+        height: rect.height,
     };
 }
 

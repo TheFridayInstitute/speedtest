@@ -69,11 +69,11 @@ let meterMax = 100;
 
 let lineWidth = 60;
 
-let outerRadius = emToPixels(
-    getComputedStyle(document.documentElement).getPropertyValue("--meter-width")
-);
+let canvas = document.getElementById("test-meter");
 
-outerRadius -= (lineWidth * 2) / 2;
+let outerRadius = getOffset(canvas).width;
+
+outerRadius -= lineWidth / 2;
 
 let innerRadius = outerRadius / 1.2;
 
@@ -273,7 +273,7 @@ let initFunc = function(t) {
 
     tmp.style.transform = `translateX(${-width}px)`;
 
-    document.getElementById("test-kind").innerHTML = "";
+    document.getElementById("test-kind").innerHTML = dlText;
     document.getElementById("test-amount").innerHTML = "0";
     document.getElementById("ping-amount").innerHTML = "0";
 
@@ -285,6 +285,13 @@ let initFunc = function(t) {
 
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
+
+    console.log(
+        canvasOffset,
+        window.getComputedStyle(canvas).width,
+        window.getComputedStyle(canvas).height,
+        dpr
+    );
 
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);

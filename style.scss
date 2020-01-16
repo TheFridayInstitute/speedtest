@@ -1,5 +1,5 @@
-$meter-width: 32rem;
-$meter-height: 32rem;
+$meter-width: 30em;
+$meter-height: 30em;
 $meter-padding: 10em;
 $meter-outer-radius: 30em;
 
@@ -100,15 +100,11 @@ body {
 }
 
 .main-content {
-    align-items: center;
-
     background: var(--background-color-primary);
 
     color: var(--font-color-primary);
-
     display: grid;
     font-family: var(--font-family-primary);
-    font-weight: 300;
 
     grid-template-areas:
         "button"
@@ -116,14 +112,20 @@ body {
         "info";
 
     grid-template-columns: 1fr;
-    grid-template-rows: 0.5fr 1fr 1fr;
-    height: 100%;
-    justify-content: center;
+    grid-template-rows: 0.2fr 2fr 1fr;
 
-    padding: 1em;
-    position: relative;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+
+    padding: 2em;
+    max-width: 100%;
+
     row-gap: 1em;
-    text-align: center;
+
+    margin: auto;
+
+    height: 100%;
 
     .start-btn-container {
         grid-area: button;
@@ -165,16 +167,20 @@ body {
     grid-template-areas:
         "test"
         "info";
+
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
 
     position: relative;
-    height: calc(var(--meter-height) * 1.1);
-    min-width: var(--meter-width);
-    padding: 0;
+    justify-content: center;
+    justify-items: center;
+
+    width: 100%;
 
     .info {
         grid-area: info;
+        border: 2px solid white;
+
         align-self: end;
         display: grid;
         grid-template-areas:
@@ -183,7 +189,6 @@ body {
         grid-template-rows: 1fr 0.2fr;
         grid-template-columns: 1fr;
         row-gap: 0;
-        padding: 1em;
 
         justify-items: center;
         align-items: center;
@@ -201,55 +206,25 @@ body {
     }
 
     canvas {
+        border: 2px solid white;
         grid-area: test;
-        height: var(--meter-height);
-
-        position: absolute;
+        height: 100%;
         width: 100%;
+
+        max-width: var(--meter-width);
+        max-height: var(--meter-height);
+
         z-index: 1;
     }
 }
 
-.unit-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    grid-template-areas: "amount unit";
-    justify-content: center;
-    align-items: center;
-    column-gap: 0;
-    box-sizing: border-box;
-    position: relative;
-    margin: auto;
-    padding: 0;
-
-    .amount {
-        padding: 0;
-        margin: 0;
-
-        grid-area: amount;
-        font-size: 4em;
-    }
-
-    .unit {
-        position: absolute;
-        font-size: 0.5em;
-        left: 0;
-        bottom: 0;
-        margin-bottom: 1.5em;
-
-        grid-area: unit;
-    }
-}
-
 .test-info-container {
-    align-items: center;
     border-radius: var(--border-radius-primary);
 
     display: flex;
     justify-content: space-around;
-
-    width: var(--meter-width);
+    padding: 1em;
+    width: 100%;
 
     .info {
         display: flex;
@@ -258,9 +233,40 @@ body {
 
         .test-kind {
             font-size: 1em;
-
             text-align: center;
         }
+    }
+}
+
+.unit-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas: "amount unit";
+
+    column-gap: 0;
+
+    position: relative;
+    padding: 0;
+    margin: 0;
+
+    --font-size: 5em;
+
+    .amount {
+        padding: 0;
+        margin: 0;
+
+        grid-area: amount;
+        font-size: var(--font-size);
+        // line-height: calc(-1 * var(--font-size));
+    }
+
+    .unit {
+        position: absolute;
+        font-size: calc(var(--font-size) / 4);
+        padding: 0;
+        margin: 0;
+        grid-area: unit;
     }
 }
 
@@ -286,78 +292,76 @@ body {
 }
 
 @media all and (orientation: portrait) and (max-width: $screen-size-sm) {
-    :root {
-        --meter-width: #{$meter-width / $screen-sm-scale};
-        --meter-height: #{$meter-height / $screen-sm-scale};
-    }
+    // :root {
+    //     --meter-width: #{$meter-width / $screen-sm-scale};
+    //     --meter-height: #{$meter-height / $screen-sm-scale};
+    // }
 
-    html,
-    body {
-        font-size: 1em;
-    }
+    // html,
+    // body {
+    //     font-size: 0.9em;
+    // }
 
     .unit-container {
-        .amount {
-            font-size: 3.5em;
-        }
+        // --font-size: 3.5em;
     }
 }
 
 @media all and (orientation: portrait) and (max-width: $screen-size-xs) {
-    :root {
-        --meter-width: #{$meter-width / $screen-xs-scale};
-        --meter-height: #{$meter-height / $screen-xs-scale};
-    }
+    // :root {
+    //     --meter-width: #{$meter-width / $screen-xs-scale};
+    //     --meter-height: #{$meter-height / $screen-xs-scale};
+    // }
 
-    html,
-    body {
-        font-size: 0.9em;
-    }
+    // html,
+    // body {
+    //     font-size: 0.9em;
+    // }
 }
 
-@media all and (orientation: landscape) and (max-width: $screen-size-xl) {
-    :root {
-        --meter-width: #{$meter-width / $screen-lg-scale};
-        --meter-height: #{$meter-height / $screen-lg-scale};
-    }
+// @media all and (orientation: landscape) and (max-width: $screen-size-xl) {
+//     :root {
+//         --meter-width: #{$meter-width / $screen-lg-scale};
+//         --meter-height: #{$meter-height / $screen-lg-scale};
+//     }
 
-    .main-content {
-        grid-template-areas:
-            "test info"
-            "test button";
+//     .main-content {
+//         grid-template-areas:
+//             "test info"
+//             "test button";
 
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        justify-content: center;
-        align-items: center;
-        column-gap: 1em;
-        row-gap: 2em;
-        padding: 1em;
+//         grid-template-columns: 1fr 1fr;
+//         grid-template-rows: 1fr 1fr;
+//         justify-content: center;
+//         align-items: center;
+//         column-gap: 1em;
+//         row-gap: 2em;
+//         padding: 1em;
 
-        .start-btn-container {
-            align-self: start;
-        }
+//         .start-btn-container {
+//             align-self: start;
+//         }
 
-        .test-container {
-            align-self: center;
-        }
+//         .test-container {
+//             align-self: center;
+//         }
 
-        .test-info-container {
-            align-self: end;
-        }
-    }
-}
+//         .test-info-container {
+//             align-self: end;
+//         }
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-width: $screen-size-lg) {
-    html,
-    body {
-        font-size: 0.8em;
-    }
-}
+// @media all and (orientation: landscape) and (max-width: $screen-size-lg) {
+//     html,
+//     body {
+//         font-size: 0.8em;
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-width: $screen-size-md) {
-    :root {
-        --meter-width: #{$meter-width / $screen-md-scale};
-        --meter-height: #{$meter-height / $screen-md-scale};
-    }
-}
+// @media all and (orientation: landscape) and (max-width: $screen-size-md) {
+//     :root {
+//         --meter-width: #{$meter-width / $screen-md-scale};
+//         --meter-height: #{$meter-height / $screen-md-scale};
+//     }
+// }

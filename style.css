@@ -11,8 +11,8 @@
   --dl-color-2: #f71e6a;
   --ul-color-1: #ff8000;
   --ul-color-2: #ff0000;
-  --meter-width: 32rem;
-  --meter-height: 32rem;
+  --meter-width: 30em;
+  --meter-height: 30em;
   --meter-padding: 10em;
   --meter-outer-radius: 30em;
   --ncsu-font: "UniversCondensed";
@@ -88,28 +88,28 @@ body {
 }
 
 .main-content {
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
   background: var(--background-color-primary);
   color: var(--font-color-primary);
   display: -ms-grid;
   display: grid;
   font-family: var(--font-family-primary);
-  font-weight: 300;
       grid-template-areas: "button" "test" "info";
   -ms-grid-columns: 1fr;
       grid-template-columns: 1fr;
-  -ms-grid-rows: 0.5fr 1fr 1fr;
-      grid-template-rows: 0.5fr 1fr 1fr;
-  height: 100%;
+  -ms-grid-rows: 0.2fr 2fr 1fr;
+      grid-template-rows: 0.2fr 2fr 1fr;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  padding: 1em;
-  position: relative;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  justify-items: center;
+  padding: 2em;
+  max-width: 100%;
   row-gap: 1em;
-  text-align: center;
+  margin: auto;
+  height: 100%;
 }
 
 .main-content .start-btn-container {
@@ -165,15 +165,18 @@ body {
   -ms-grid-rows: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
   position: relative;
-  height: calc(var(--meter-height) * 1.1);
-  min-width: var(--meter-width);
-  padding: 0;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  justify-items: center;
+  width: 100%;
 }
 
 .test-container .info {
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: info;
+  border: 2px solid white;
   -ms-grid-row-align: end;
       align-self: end;
   display: -ms-grid;
@@ -184,7 +187,6 @@ body {
   -ms-grid-columns: 1fr;
       grid-template-columns: 1fr;
   row-gap: 0;
-  padding: 1em;
   justify-items: center;
   -webkit-box-align: center;
       -ms-flex-align: center;
@@ -210,69 +212,26 @@ body {
 }
 
 .test-container canvas {
+  border: 2px solid white;
   -ms-grid-row: 1;
   -ms-grid-column: 1;
   grid-area: test;
-  height: var(--meter-height);
-  position: absolute;
+  height: 100%;
   width: 100%;
+  max-width: var(--meter-width);
+  max-height: var(--meter-height);
   z-index: 1;
 }
 
-.unit-container {
-  display: -ms-grid;
-  display: grid;
-  -ms-grid-columns: 1fr;
-      grid-template-columns: 1fr;
-  -ms-grid-rows: 1fr;
-      grid-template-rows: 1fr;
-      grid-template-areas: "amount unit";
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-column-gap: 0;
-          column-gap: 0;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  position: relative;
-  margin: auto;
-  padding: 0;
-}
-
-.unit-container .amount {
-  padding: 0;
-  margin: 0;
-  -ms-grid-row: 1;
-  -ms-grid-column: 1;
-  grid-area: amount;
-  font-size: 4em;
-}
-
-.unit-container .unit {
-  position: absolute;
-  font-size: 0.5em;
-  left: 0;
-  bottom: 0;
-  margin-bottom: 1.5em;
-  -ms-grid-row: 1;
-  -ms-grid-column: 2;
-  grid-area: unit;
-}
-
 .test-info-container {
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
   border-radius: var(--border-radius-primary);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-pack: distribute;
       justify-content: space-around;
-  width: var(--meter-width);
+  padding: 1em;
+  width: 100%;
 }
 
 .test-info-container .info {
@@ -291,6 +250,41 @@ body {
 .test-info-container .info .test-kind {
   font-size: 1em;
   text-align: center;
+}
+
+.unit-container {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 1fr;
+      grid-template-columns: 1fr;
+  -ms-grid-rows: 1fr;
+      grid-template-rows: 1fr;
+      grid-template-areas: "amount unit";
+  -webkit-column-gap: 0;
+          column-gap: 0;
+  position: relative;
+  padding: 0;
+  margin: 0;
+  --font-size: 5em;
+}
+
+.unit-container .amount {
+  padding: 0;
+  margin: 0;
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: amount;
+  font-size: var(--font-size);
+}
+
+.unit-container .unit {
+  position: absolute;
+  font-size: calc(var(--font-size) / 4);
+  padding: 0;
+  margin: 0;
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: unit;
 }
 
 .meter-numbers {
@@ -315,83 +309,5 @@ body {
 .box-shadow {
   -webkit-box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.2);
           box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.2);
-}
-
-@media all and (orientation: portrait) and (max-width: 480px) {
-  :root {
-    --meter-width: 22.85714rem;
-    --meter-height: 22.85714rem;
-  }
-  html,
-  body {
-    font-size: 1em;
-  }
-  .unit-container .amount {
-    font-size: 3.5em;
-  }
-}
-
-@media all and (orientation: portrait) and (max-width: 320px) {
-  :root {
-    --meter-width: 21.33333rem;
-    --meter-height: 21.33333rem;
-  }
-  html,
-  body {
-    font-size: 0.9em;
-  }
-}
-
-@media all and (orientation: landscape) and (max-width: 1200px) {
-  :root {
-    --meter-width: 29.09091rem;
-    --meter-height: 29.09091rem;
-  }
-  .main-content {
-        grid-template-areas: "test info" "test button";
-    -ms-grid-columns: 1fr 1fr;
-        grid-template-columns: 1fr 1fr;
-    -ms-grid-rows: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-    -webkit-box-pack: center;
-        -ms-flex-pack: center;
-            justify-content: center;
-    -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
-    -webkit-column-gap: 1em;
-            column-gap: 1em;
-    row-gap: 2em;
-    padding: 1em;
-  }
-  .main-content .start-btn-container {
-    -ms-flex-item-align: start;
-        -ms-grid-row-align: start;
-        align-self: start;
-  }
-  .main-content .test-container {
-    -ms-flex-item-align: center;
-        -ms-grid-row-align: center;
-        align-self: center;
-  }
-  .main-content .test-info-container {
-    -ms-flex-item-align: end;
-        -ms-grid-row-align: end;
-        align-self: end;
-  }
-}
-
-@media all and (orientation: landscape) and (max-width: 992px) {
-  html,
-  body {
-    font-size: 0.8em;
-  }
-}
-
-@media all and (orientation: landscape) and (max-width: 768px) {
-  :root {
-    --meter-width: 26.66667rem;
-    --meter-height: 26.66667rem;
-  }
 }
 /*# sourceMappingURL=style.css.map */

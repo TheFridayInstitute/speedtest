@@ -1,92 +1,61 @@
-import { Color } from "./colors.js";
+import {Color} from "./colors.js";
 
-export function translate(xy, tX, tY) {
-    xy[0] += tX;
-    xy[1] += tY;
-    return xy;
-}
+import {
+    rotate,
+    translate,
+    scale,
+    rotateAboutPoint,
+    slerpPoints,
+    lerp,
+    sum,
+} from "./math.js";
 
-export function scale(xy, s) {
-    xy[0] *= s;
-    xy[1] *= s;
-    return xy;
-}
-
-export function rotate(xy, theta, rad = false) {
-    if (!rad) {
-        theta *= Math.PI / 180;
-    }
-    let x = xy[0];
-    let y = xy[1];
-    xy[0] = x * Math.cos(theta) - y * Math.sin(theta);
-    xy[1] = x * Math.sin(theta) + y * Math.cos(theta);
-    return xy;
-}
-
-export function rotateAboutPoint(xy, originX, originY, theta, rad = false) {
-    xy = translate(xy, -originX, -originY);
-    xy = rotate(xy, theta, rad);
-    xy = translate(xy, originX, originY);
-    return xy;
-}
-
-export class Shape {
-    constructor(
-        origin,
-        points,
-        color,
-        lineWidth,
-        fillColor,
-        shadowColor,
-        shadowBlur
-    ) {
+export class Canvas {
+    constructor(canvasEl, ctx, origin) {
+        this.canvasEl = canvasEl;
+        this.ctx = ctx;
         this._origin = origin;
-        this._points = points;
-        this._color = color == undefined ? "black" : color;
-        this._lineWidth = lineWidth == undefined ? 1 : lineWidth;
-
-        this._fillColor = fillColor;
-        this._shadowColor = shadowColor;
-        this._shadowBlur = shadowBlur;
     }
 
     map(func) {
+        if (y === undefined) {
+            y = x[1];
+            x = x[0];
+        }
         this._origin = func(this._origin);
-        this._points.map((xy, index) => func(xy, index));
         return this;
     }
 
     translate(x, y) {
+        if (y === undefined) {
+            y = x[1];
+            x = x[0];
+        }
         this._origin = translate(this._origin, x, y);
-        this._points.map((xy) => translate(xy, x, y));
         return this;
     }
 
     scale(s) {
         this._origin = scale(this._origin, s);
-        this._points.map((xy) => scale(xy, s));
         return this;
     }
 
     rotate(theta, rad = false) {
         this._origin = rotate(this._origin, theta, rad);
-        this._points.map((xy) => rotate(xy, theta, rad));
         return this;
     }
 
     rotateAboutPoint(x, y, theta, rad = false) {
+        if (y === undefined) {
+            y = x[1];
+            x = x[0];
+        }
         this._origin = rotateAboutPoint(this._origin, x, y, theta, rad);
-        this._points.map((xy) => {
-            rotateAboutPoint(xy, x, y, theta, rad);
-        });
         return this;
     }
 
-    get points() {
-        return this._points;
-    }
-    set points(points) {
-        this._points = points;
+    clear() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
     }
 
     get origin() {
@@ -108,6 +77,90 @@ export class Shape {
     }
     set originY(originY) {
         this._origin[1] = originY;
+    }
+
+    get width() {
+        return this.canvasEl.width;
+    }
+    set width(width) {
+        this.canvasEl.width = width;
+    }
+
+    get height() {
+        return this.canvasEl.height;
+    }
+    set height(height) {
+        this.canvasEl.height = height;
+    }
+}
+
+export class Shape {
+    constructor(points, color, lineWidth, fillColor, shadowColor, shadowBlur) {
+        this._points = points;
+        this._color = color == undefined ? "black" : color;
+        this._lineWidth = lineWidth == undefined ? 1 : lineWidth;
+
+        this._fillColor = fillColor;
+        this._shadowColor = shadowColor;
+        this._shadowBlur = shadowBlur;
+    }
+
+    map(func) {
+        if (y === undefined) {
+            y = x[1];
+            x = x[0];
+        }
+        this._points.map((xy, index) => func(xy, index));
+        return this;
+    }
+
+    translate(x, y) {
+        if (y === undefined) {
+            y = x[1];
+            x = x[0];
+        }
+        this._points.map((xy) => translate(xy, x, y));
+        return this;
+    }
+
+    scale(s) {
+        this._points.map((xy) => scale(xy, s));
+        return this;
+    }
+
+    rotate(theta, rad = false) {
+        this._points.map((xy) => rotate(xy, theta, rad));
+        return this;
+    }
+
+    rotateAboutPoint(x, y, theta, rad = false) {
+        if (y === undefined) {
+            y = x[1];
+            x = x[0];
+        }
+        this._points.map((xy) => {
+            rotateAboutPoint(xy, x, y, theta, rad);
+        });
+        return this;
+    }
+
+    get points() {
+        return this._points;
+    }
+    set points(points) {
+        this._points = points;
+    }
+
+    get centroid() {
+        let cX = 0;
+        let cY = 0;
+        for (let [x, y] of this._points) {
+            cX += x;
+            cY += y;
+        }
+        cX /= this._points.length;
+        cY /= this._points.length;
+        return [cX, cY];
     }
 
     get color() {
@@ -152,10 +205,20 @@ export class Shape {
 
 export class Polygon extends Shape {
     constructor(points, color, lineWidth, fillColor) {
-        super([0, 0], points, color, lineWidth, fillColor);
+        super(points, color, lineWidth, fillColor);
     }
 
     draw(ctx) {
+        let originX = 0;
+        let originY = 0;
+
+        if (ctx instanceof Canvas) {
+            let canvas = ctx;
+            ctx = canvas.ctx;
+            originX = canvas.originX;
+            originY = canvas.originY;
+        }
+
         ctx.beginPath();
 
         ctx.strokeStyle = this._color;
@@ -165,13 +228,17 @@ export class Polygon extends Shape {
         }
         if (this._shadowColor) {
             ctx.shadowColor = this._shadowColor;
+        } else {
+            ctx.shadowColor = "black";
         }
         if (this._shadowBlur) {
             ctx.shadowBlur = this._shadowBlur;
+        } else {
+            ctx.shadowBlur = 0;
         }
 
         for (let [x, y] of this._points) {
-            ctx.lineTo(x, y);
+            ctx.lineTo(x + originX, y + originY);
         }
 
         if (this._fillColor) {
@@ -194,7 +261,7 @@ export class Arc extends Shape {
         color,
         lineWidth
     ) {
-        super([originX, originY], [originX, originY], color, lineWidth);
+        super([originX, originY], color, lineWidth);
 
         this._radius = radius;
         this._beginAngle = beginAngle;
@@ -202,6 +269,15 @@ export class Arc extends Shape {
     }
 
     draw(ctx) {
+        let originX = 0;
+        let originY = 0;
+
+        if (ctx instanceof Canvas) {
+            let canvas = ctx;
+            ctx = canvas.ctx;
+            originX = canvas.originX;
+            originY = canvas.originY;
+        }
         ctx.beginPath();
 
         ctx.strokeStyle = this._color;
@@ -211,14 +287,18 @@ export class Arc extends Shape {
         }
         if (this._shadowColor) {
             ctx.shadowColor = this._shadowColor;
+        } else {
+            ctx.shadowColor = "black";
         }
         if (this._shadowBlur) {
             ctx.shadowBlur = this._shadowBlur;
+        } else {
+            ctx.shadowBlur = 0;
         }
 
         ctx.arc(
-            this.originX,
-            this.originY,
+            this.points[0] + originX,
+            this.points[1] + originY,
             this._radius,
             this._beginAngle,
             this._endAngle
@@ -255,12 +335,6 @@ export class Arc extends Shape {
     }
 }
 
-export class FilledPolygon extends Polygon {
-    constructor(points, fillColor) {
-        super(points, undefined, undefined, fillColor);
-    }
-}
-
 export class Rectangle extends Polygon {
     constructor(leftX, leftY, width, height, fillColor) {
         let points = [
@@ -268,10 +342,9 @@ export class Rectangle extends Polygon {
             [leftX + width, leftY],
             [leftX + width, leftY + height],
             [leftX, leftY + height],
-            [leftX, leftY]
+            [leftX, leftY],
         ];
         super(points, undefined, undefined, fillColor);
-        this._origin = [leftX, leftY];
 
         this._width = width;
         this._height = height;
@@ -281,8 +354,8 @@ export class Rectangle extends Polygon {
         return this._height;
     }
     set height(height) {
-        this._points[2][1] = this.originY + height;
-        this._points[3][1] = this.originY + height;
+        this._points[2][1] = height;
+        this._points[3][1] = height;
         this._height = height;
     }
 
@@ -290,8 +363,8 @@ export class Rectangle extends Polygon {
         return this._width;
     }
     set width(width) {
-        this._points[1][0] = this.originX + width;
-        this._points[2][0] = this.originX + width;
+        this._points[1][0] = width;
+        this._points[2][0] = width;
         this._width = width;
     }
 }

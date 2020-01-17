@@ -1,5 +1,5 @@
-$meter-width: 30em;
-$meter-height: 30em;
+$meter-width: 40em;
+$meter-height: 40em;
 $meter-padding: 10em;
 $meter-outer-radius: 30em;
 
@@ -9,7 +9,9 @@ $screen-size-md: 768px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
-$screen-xs-scale: 1.5;
+$screen-landscape-scale: 1.5;
+
+$screen-xs-scale: 1.4;
 $screen-sm-scale: 1.4;
 $screen-md-scale: 1.2;
 $screen-lg-scale: 1.1;
@@ -54,8 +56,8 @@ body {
 }
 
 .ul-icon {
-    color: var(--ul-color-1);
     i {
+        color: var(--ul-color-1);
         transform: rotate(180deg);
     }
 
@@ -66,7 +68,9 @@ body {
 }
 
 .dl-icon {
-    color: var(--dl-color-2);
+    i {
+        color: var(--dl-color-2);
+    }
 
     .amount,
     .unit {
@@ -111,21 +115,23 @@ body {
         "test"
         "info";
 
+    max-width: var(--meter-width);
+
     grid-template-columns: 1fr;
-    grid-template-rows: 0.2fr 2fr 1fr;
+    grid-template-rows: 0.5fr 1fr 1fr;
 
     justify-content: center;
     align-items: center;
     justify-items: center;
 
-    padding: 2em;
-    max-width: 100%;
+    padding: 0.5em;
 
     row-gap: 1em;
 
     margin: auto;
 
     height: 100%;
+    width: 100%;
 
     .start-btn-container {
         grid-area: button;
@@ -169,24 +175,24 @@ body {
         "info";
 
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr 0.1fr;
 
     position: relative;
     justify-content: center;
     justify-items: center;
 
     width: 100%;
+    max-width: var(--meter-width);
 
     .info {
         grid-area: info;
-        border: 2px solid white;
-
         align-self: end;
+
         display: grid;
         grid-template-areas:
             "amount"
             "kind";
-        grid-template-rows: 1fr 0.2fr;
+        grid-template-rows: 1fr 0.5fr;
         grid-template-columns: 1fr;
         row-gap: 0;
 
@@ -196,7 +202,7 @@ body {
         .test-kind {
             grid-area: kind;
             text-align: center;
-            align-self: end;
+            font-size: 4em;
         }
 
         .amount-container {
@@ -206,13 +212,11 @@ body {
     }
 
     canvas {
-        border: 2px solid white;
         grid-area: test;
-        height: 100%;
         width: 100%;
-
-        max-width: var(--meter-width);
+        height: 100%;
         max-height: var(--meter-height);
+        max-width: var(--meter-width);
 
         z-index: 1;
     }
@@ -223,7 +227,7 @@ body {
 
     display: flex;
     justify-content: space-around;
-    padding: 1em;
+    padding: 0.5em;
     width: 100%;
 
     .info {
@@ -234,6 +238,9 @@ body {
         .test-kind {
             font-size: 1em;
             text-align: center;
+            i {
+                font-size: 1.25em;
+            }
         }
     }
 }
@@ -241,31 +248,28 @@ body {
 .unit-container {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    grid-template-areas: "amount unit";
+    grid-template-rows: 1fr 0.5fr;
+    grid-template-areas:
+        "amount"
+        "unit";
 
     column-gap: 0;
 
     position: relative;
     padding: 0;
-    margin: 0;
+    margin: 0 auto;
+    text-align: center;
 
-    --font-size: 5em;
+    --font-size-lg: 4em;
+    --font-size-sm: calc(var(--font-size-lg) / 4);
 
     .amount {
-        padding: 0;
-        margin: 0;
-
         grid-area: amount;
-        font-size: var(--font-size);
-        // line-height: calc(-1 * var(--font-size));
+        font-size: var(--font-size-lg);
     }
 
     .unit {
-        position: absolute;
-        font-size: calc(var(--font-size) / 4);
-        padding: 0;
-        margin: 0;
+        font-size: var(--font-size-sm);
         grid-area: unit;
     }
 }
@@ -291,77 +295,81 @@ body {
     box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.2);
 }
 
-@media all and (orientation: portrait) and (max-width: $screen-size-sm) {
-    // :root {
-    //     --meter-width: #{$meter-width / $screen-sm-scale};
-    //     --meter-height: #{$meter-height / $screen-sm-scale};
-    // }
+@media all and (max-width: $screen-size-sm) {
+    :root {
+        --meter-width: #{$meter-width / $screen-sm-scale};
+        --meter-height: #{$meter-height / $screen-sm-scale};
+    }
 
-    // html,
-    // body {
-    //     font-size: 0.9em;
-    // }
+    html,
+    body {
+        font-size: 0.9em;
+    }
 
     .unit-container {
-        // --font-size: 3.5em;
+        --font-size-lg: 3.5em;
     }
 }
 
-@media all and (orientation: portrait) and (max-width: $screen-size-xs) {
-    // :root {
-    //     --meter-width: #{$meter-width / $screen-xs-scale};
-    //     --meter-height: #{$meter-height / $screen-xs-scale};
-    // }
+@media all and (max-width: $screen-size-xs) {
+    :root {
+        --meter-width: #{$meter-width / $screen-xs-scale};
+        --meter-height: #{$meter-height / $screen-xs-scale};
+    }
 
-    // html,
-    // body {
-    //     font-size: 0.9em;
-    // }
+    html,
+    body {
+        font-size: 0.8em;
+    }
+
+    .unit-container {
+        --font-size-lg: 3em;
+    }
 }
 
-// @media all and (orientation: landscape) and (max-width: $screen-size-xl) {
-//     :root {
-//         --meter-width: #{$meter-width / $screen-lg-scale};
-//         --meter-height: #{$meter-height / $screen-lg-scale};
-//     }
+@media all and (orientation: landscape) and (max-height: $screen-size-lg) {
+    :root {
+        --meter-width: #{$meter-width / $screen-lg-scale};
+        --meter-height: #{$meter-height / $screen-lg-scale};
+    }
 
-//     .main-content {
-//         grid-template-areas:
-//             "test info"
-//             "test button";
+    .main-content {
+        grid-template-areas:
+            "test info"
+            "test button";
 
-//         grid-template-columns: 1fr 1fr;
-//         grid-template-rows: 1fr 1fr;
-//         justify-content: center;
-//         align-items: center;
-//         column-gap: 1em;
-//         row-gap: 2em;
-//         padding: 1em;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        justify-content: center;
+        align-items: center;
+        column-gap: 1em;
+        row-gap: 2em;
+        width: 100%;
+        max-width: 100%;
 
-//         .start-btn-container {
-//             align-self: start;
-//         }
+        .start-btn-container {
+            align-self: start;
+        }
 
-//         .test-container {
-//             align-self: center;
-//         }
+        .test-container {
+            align-self: center;
+        }
 
-//         .test-info-container {
-//             align-self: end;
-//         }
-//     }
-// }
+        .test-info-container {
+            align-self: end;
+        }
+    }
+}
 
-// @media all and (orientation: landscape) and (max-width: $screen-size-lg) {
-//     html,
-//     body {
-//         font-size: 0.8em;
-//     }
-// }
-
-// @media all and (orientation: landscape) and (max-width: $screen-size-md) {
-//     :root {
-//         --meter-width: #{$meter-width / $screen-md-scale};
-//         --meter-height: #{$meter-height / $screen-md-scale};
-//     }
-// }
+@media all and (orientation: landscape) and (max-height: $screen-size-sm) {
+    :root {
+        --meter-width: #{$meter-width /
+            ($screen-xs-scale * $screen-landscape-scale)};
+        --meter-height: #{$meter-height /
+            ($screen-xs-scale * $screen-landscape-scale)};
+    }
+    html,
+    body {
+        font-size: 0.9em;
+    }
+}

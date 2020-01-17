@@ -4,9 +4,7 @@ import {
     Mesh,
     generateGradientWrapper,
     Rectangle,
-    translate,
-    rotate,
-    scale,
+    Canvas,
 } from "./canvas.js";
 
 import {
@@ -23,6 +21,7 @@ import {
     cubicBezier,
     DeCasteljau,
     easeInCubic,
+    slerpPoints,
 } from "./math.js";
 
 import {
@@ -54,11 +53,12 @@ window.requestAnimationFrame =
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
 
+var canvasObj;
+
 var meterDial;
 var outerMeter;
 var innerMeter;
 var meterDot;
-
 var progressBarMesh;
 
 let alpha0 = Math.PI * 0.8;
@@ -67,17 +67,12 @@ let alpha1 = 2 * Math.PI * 1.1;
 let meterMin = 0;
 let meterMax = 100;
 
-let lineWidth = 60;
+var lineWidth = 60;
 
-let canvas = document.getElementById("test-meter");
+var outerRadius;
+var innerRadius;
 
-let outerRadius = getOffset(canvas).width;
-
-outerRadius -= lineWidth / 2;
-
-let innerRadius = outerRadius / 1.2;
-
-let meterDotSize = 60;
+var meterDotSize = 60;
 
 let backgroundColor = "rgba(255, 255, 255, 0.1)";
 let progressBarColor = "#fff";
@@ -100,8 +95,8 @@ var dlProgressGlowColor;
 var ulProgressColor;
 var ulProgressGlowColor;
 
-let dlText = `Download <i class="fa fa-arrow-circle-o-down dl-icon"></i>`;
-let ulText = `Upload <i class="fa fa-arrow-circle-o-down ul-icon" style="transform: rotate(180deg)"></i>`;
+let dlText = `<div class="dl-icon"><i class="fa fa-arrow-circle-o-down"></i></div>`;
+let ulText = `<div class="ul-icon"><i class="fa fa-arrow-circle-o-down"></i></div>`;
 
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
@@ -191,16 +186,12 @@ function drawMeterLoop(
     progressAmount = parseFloat(progressAmount) || 0;
 
     if (status === 1 && meterAmount === 0) {
-        meterTextEl.innerHTML = "";
+        meterTextEl.innerHTML = "0";
     } else {
         meterTextEl.innerHTML = meterAmount.toPrecision(3);
     }
 
-    let ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    let originX = canvas.width / 2;
-    let originY = canvas.height / 2;
+    canvasObj.clear();
 
     let t = normalize(
         clamp(meterAmount, meterMin, meterMax),
@@ -209,62 +200,33 @@ function drawMeterLoop(
     );
     let alpha_t = lerp(t, alpha0, alpha1);
 
-    ctx.shadowBlur = 0;
-
     outerMeter.color = backgroundColor;
     outerMeter.endAngle = alpha1;
-    outerMeter.draw(ctx);
-
-    ctx.shadowBlur = 30;
-    ctx.shadowColor = "red";
+    outerMeter.draw(canvasObj);
 
     outerMeter.color = progressColor;
     outerMeter.endAngle = alpha_t;
-    outerMeter.draw(ctx);
+    outerMeter.draw(canvasObj);
 
     innerMeter.color = progressGlowColor;
     innerMeter.endAngle = alpha_t;
-    innerMeter.draw(ctx);
+    innerMeter.draw(canvasObj);
 
-    ctx.shadowBlur = 0;
-
-    meterDot.draw(ctx);
+    meterDot.draw(canvasObj);
 
     meterDial
-        .translate(-originX, -originY)
         .rotate(alpha_t, true)
-        .translate(originX, originY)
+        .draw(canvasObj)
+        .rotate(-alpha_t, true);
 
-        .draw(ctx)
-
-        .translate(-originX, -originY)
-        .rotate(-alpha_t, true)
-        .translate(originX, originY);
-
-    progressBarMesh.shapes[1].translate(
-        -progressBarMesh.shapes[0].originX,
-        -progressBarMesh.shapes[0].originY
-    );
-
+    progressBarMesh.shapes[1].translate(progressBarMesh.shapes[0].width / 2, 0);
     progressBarMesh.shapes[1].width =
         progressBarMesh.shapes[0].width * progressAmount;
-
     progressBarMesh.shapes[1].translate(
-        progressBarMesh.shapes[0].originX,
-        progressBarMesh.shapes[0].originY
+        -progressBarMesh.shapes[0].width / 2,
+        0
     );
-
-    progressBarMesh.draw(ctx);
-
-    progressBarMesh.shapes[1].translate(
-        -progressBarMesh.shapes[0].originX,
-        -progressBarMesh.shapes[0].originY
-    );
-
-    progressBarMesh.shapes[1].translate(
-        progressBarMesh.shapes[0].originX,
-        progressBarMesh.shapes[0].originY
-    );
+    progressBarMesh.draw(canvasObj);
 }
 
 let initFunc = function(t) {
@@ -286,12 +248,8 @@ let initFunc = function(t) {
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
 
-    console.log(
-        canvasOffset,
-        window.getComputedStyle(canvas).width,
-        window.getComputedStyle(canvas).height,
-        dpr
-    );
+    outerRadius = canvas.width / 2 - lineWidth / 2;
+    innerRadius = outerRadius / 1.2;
 
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
@@ -308,29 +266,29 @@ let initFunc = function(t) {
     let originX = canvas.width / 2;
     let originY = canvas.height / 2;
 
-    let dialBase = lineWidth;
+    let dialBase = lineWidth * 1.5;
     let dialHeight = innerRadius;
-    let dialTop = 20;
+    let dialTop = dialBase / 1.7;
 
     // Initializing polygons
+    let base = [
+        [0, 0],
+        [dialBase, 0],
+    ];
 
-    meterDial = new Polygon(
-        [
-            [0, 0],
-            [dialTop, -dialHeight],
-            [dialBase - dialTop, -dialHeight],
-            [dialBase, 0],
-        ],
-        null,
-        null,
-        "white"
-    );
-    meterDial.originX = originX - dialBase / 2;
-    meterDial.originY = originY;
+    let points = slerpPoints(base[0], base[1]);
+
+    let meterPoints = [
+        ...points,
+        [dialBase - dialTop, -dialHeight],
+        [dialTop, -dialHeight],
+    ];
+
+    meterDial = new Polygon(meterPoints, null, null, "white");
 
     outerMeter = new Arc(
-        originX,
-        originY,
+        0,
+        0,
         outerRadius,
         alpha0,
         0,
@@ -339,8 +297,8 @@ let initFunc = function(t) {
     );
 
     innerMeter = new Arc(
-        originX,
-        originY,
+        0,
+        0,
         innerRadius,
         alpha0,
         0,
@@ -348,7 +306,7 @@ let initFunc = function(t) {
         lineWidth
     );
 
-    meterDot = new Arc(originX, originY, 1, 0, Math.PI * 2, backgroundColor, 1);
+    meterDot = new Arc(0, 0, 70, 0, Math.PI * 2, backgroundColor, 1);
     meterDot.fillColor = backgroundColor;
 
     let barWidth = outerRadius;
@@ -372,29 +330,19 @@ let initFunc = function(t) {
     progressBarMesh = new Mesh(progressBarBackground, progressBarForeground);
 
     // Centering the meter meterDial and laying it flat.
-    meterDial
-        .translate(meterDial.originX, meterDial.originY)
-        .rotateAboutPoint(originX, originY, 90, false);
+    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
 
     // Centering the progress bar mesh and moving it to be almost outside of the outer radius.
     progressBarMesh
-        .translate(originX, originY)
-        .translate(
-            -progressBarBackground.width / 2,
-            -progressBarBackground.height / 2
-        )
+        .translate(-barWidth / 2, -barHeight / 2)
         .translate(0, outerRadius / 1.5);
+
+    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
 let openingAnimation = function(duration, timingFunc) {
-    let canvas = document.getElementById("test-meter");
-    let ctx = canvas.getContext("2d");
-
-    let originX = canvas.width / 2;
-    let originY = canvas.height / 2;
-
     let transformFunc = function(v, t) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvasObj.clear();
 
         outerMeter.endAngle = v;
         outerMeter.radius = outerRadius * t;
@@ -404,91 +352,63 @@ let openingAnimation = function(duration, timingFunc) {
 
         meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
 
-        outerMeter.draw(ctx);
-        meterDot.draw(ctx);
+        outerMeter.draw(canvasObj);
+        meterDot.draw(canvasObj);
 
         let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 
         meterDial
-            .translate(-originX, -originY)
             .rotate(theta, true)
             .scale(t)
-            .translate(originX, originY)
-
-            .draw(ctx)
-
-            .translate(-originX, -originY)
+            .draw(canvasObj)
             .rotate(-theta, true)
-            .scale(1 / t)
-            .translate(originX, originY);
+            .scale(1 / t);
     };
-
     smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
 };
 
 let closingAnimation = function(duration, timingFunc) {
-    let canvas = document.getElementById("test-meter");
-    let ctx = canvas.getContext("2d");
-
-    let originX = canvas.width / 2;
-    let originY = canvas.height / 2;
-
     let transformFunc = function(v, t) {
+        canvasObj.clear();
         t = clamp(1 - t, 0.0001, 1);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         outerMeter.radius = outerRadius * t;
 
         meterDot.radius = meterDotSize * t;
 
-        outerMeter.draw(ctx);
-        meterDot.draw(ctx);
+        outerMeter.draw(canvasObj);
+        meterDot.draw(canvasObj);
 
         let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 
         meterDial
-            .translate(-originX, -originY)
             .rotate(theta, true)
             .scale(t)
-            .translate(originX, originY)
 
-            .draw(ctx)
+            .draw(canvasObj)
 
-            .translate(-originX, -originY)
             .rotate(-theta, true)
-            .scale(1 / t)
-            .translate(originX, originY);
+            .scale(1 / t);
     };
-
     smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
 };
 
 let rotateDialAnimation = function(duration, timingFunc) {
-    let canvas = document.getElementById("test-meter");
-    let ctx = canvas.getContext("2d");
-
-    let originX = canvas.width / 2;
-    let originY = canvas.height / 2;
-
     let transformFunc = function(v, t) {
+        canvasObj.clear();
         t = clamp(t, 0.0001, 1);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        outerMeter.draw(ctx);
-        meterDot.draw(ctx);
+        outerMeter.draw(canvasObj);
+        meterDot.draw(canvasObj);
 
         let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 
         meterDial
-            .translate(-originX, -originY)
             .rotate(theta, true)
-            .translate(originX, originY)
 
-            .draw(ctx)
+            .draw(canvasObj)
 
-            .translate(-originX, -originY)
-            .rotate(-theta, true)
-            .translate(originX, originY);
+            .rotate(-theta, true);
     };
 
     smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
@@ -566,7 +486,7 @@ window.onload = function() {
 };
 
 document.getElementById("start-btn").addEventListener("click", function(e) {
-    let duration = 3000;
+    let duration = 1000;
     // toggle(
     //     document.getElementById("start-btn"),
     //     function() {
@@ -577,7 +497,5 @@ document.getElementById("start-btn").addEventListener("click", function(e) {
     //     }
     // );
     openingAnimation(duration, smoothStep3);
-    setTimeout(function() {
-        UI_DATA = startStop();
-    }, duration);
+    UI_DATA = startStop();
 });

@@ -1,3 +1,122 @@
+export function translate(xy, tX, tY) {
+    xy[0] += tX;
+    xy[1] += tY;
+    return xy;
+}
+
+export function scale(xy, s) {
+    xy[0] *= s;
+    xy[1] *= s;
+    return xy;
+}
+
+export function rotate(xy, theta, rad = false) {
+    if (!rad) {
+        theta *= Math.PI / 180;
+    }
+    let x = xy[0];
+    let y = xy[1];
+    xy[0] = x * Math.cos(theta) - y * Math.sin(theta);
+    xy[1] = x * Math.sin(theta) + y * Math.cos(theta);
+    return xy;
+}
+
+export function rotateAboutPoint(xy, originX, originY, theta, rad = false) {
+    xy = translate(xy, -originX, -originY);
+    xy = rotate(xy, theta, rad);
+    xy = translate(xy, originX, originY);
+    return xy;
+}
+
+export function distance(xy1, xy2, metric) {
+    if (metric === undefined) {
+        metric = function(xy1, xy2) {
+            let s = 0;
+            xy1.forEach(function(value, index) {
+                s += Math.pow(value - xy2[index], 2);
+            });
+            return Math.sqrt(s);
+        };
+    }
+    return metric(xy1, xy2);
+}
+
+export function dot(xy1, xy2) {
+    let s = 0;
+    xy1.forEach(function(value, index) {
+        s += value * xy2[index];
+    });
+    return s;
+}
+
+export function sum(arr, key) {
+    if (key === undefined) {
+        key = function(value) {
+            return value;
+        };
+    }
+    let s = 0;
+    arr.forEach(function(value) {
+        s += key(value);
+    });
+    return s;
+}
+
+export function mag(xy1) {
+    let s = 0;
+    xy1.forEach(function(value, index) {
+        s += Math.pow(value, 2);
+    });
+    return Math.sqrt(s);
+}
+
+export function angle(xy1, xy2) {
+    let m = mag(xy1) * mag(xy2);
+    let d = dot(xy1, xy2);
+    return Math.acos(d / m);
+}
+
+export function slerpPoints(xy1, xy2) {
+    let minX = Math.min(xy1[0], xy2[0]);
+    let minY = Math.min(xy1[1], xy2[1]);
+
+    let maxX = Math.max(xy1[0], xy2[0]);
+    let maxY = Math.max(xy1[1], xy2[1]);
+
+    let midpoint = [
+        Math.abs(xy2[0] - xy1[0]) / 2 + minX,
+        Math.abs(xy2[1] - xy1[1]) / 2 + minY,
+    ];
+
+    let r = distance(midpoint, xy2);
+
+    let unit;
+
+    if (xy1[1] > xy2[1]) {
+        unit = [1, 0];
+    } else {
+        unit = [-1, 0];
+    }
+
+    let v1 = [xy1[0] - midpoint[0], xy1[1] - midpoint[1]];
+    let v2 = [xy2[0] - midpoint[0], xy2[1] - midpoint[1]];
+
+    let alpha0 = angle(unit, v1);
+    let alpha1 = 2 * Math.PI - angle(unit, v2);
+
+    let delta = 0.1;
+    let points = [];
+
+    for (let t = 0; t < 1; t += delta) {
+        let v = lerp(t, alpha0, alpha1);
+        points.push([
+            r * Math.cos(v) + midpoint[0],
+            r * Math.sin(v) + midpoint[1],
+        ]);
+    }
+    return points;
+}
+
 export function range(start, end, step = 1) {
     const len = Math.floor((end - start) / step) + 1;
     return Array(len)

@@ -187,12 +187,13 @@ body {
     .info {
         grid-area: info;
         align-self: end;
+        margin-top: -20%;
 
         display: grid;
         grid-template-areas:
             "amount"
             "kind";
-        grid-template-rows: 1fr 0.5fr;
+        grid-template-rows: 1fr 1fr;
         grid-template-columns: 1fr;
         row-gap: 0;
 
@@ -200,6 +201,8 @@ body {
         align-items: center;
 
         .test-kind {
+            position: absolute;
+            bottom: 0;
             grid-area: kind;
             text-align: center;
             font-size: 4em;
@@ -227,7 +230,8 @@ body {
 
     display: flex;
     justify-content: space-around;
-    padding: 0.5em;
+    padding: 1em;
+
     width: 100%;
 
     .info {
@@ -248,12 +252,13 @@ body {
 .unit-container {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 0.5fr;
+    grid-template-rows: 1fr 0.1fr;
     grid-template-areas:
         "amount"
         "unit";
 
     column-gap: 0;
+    row-gap: 0;
 
     position: relative;
     padding: 0;
@@ -269,6 +274,7 @@ body {
     }
 
     .unit {
+        margin-top: calc(-1 * var(--font-size-sm));
         font-size: var(--font-size-sm);
         grid-area: unit;
     }
@@ -345,7 +351,9 @@ body {
         column-gap: 1em;
         row-gap: 2em;
         width: 100%;
+
         max-width: 100%;
+        max-height: 100%;
 
         .start-btn-container {
             align-self: start;
@@ -353,6 +361,24 @@ body {
 
         .test-container {
             align-self: center;
+
+            .info {
+                width: 100%;
+                grid-template-areas: "amount kind";
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 1fr;
+              
+
+                .test-kind {
+                    position: relative;
+                    grid-area: kind;
+                    
+                }
+
+                .amount-container {
+                    grid-area: amount;
+                }
+            }
         }
 
         .test-info-container {
@@ -370,6 +396,6 @@ body {
     }
     html,
     body {
-        font-size: 0.9em;
+        font-size: 0.8em;
     }
 }

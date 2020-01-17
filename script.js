@@ -5,6 +5,7 @@ import {
     generateGradientWrapper,
     Rectangle,
     Canvas,
+    Text,
 } from "./canvas.js";
 
 import {
@@ -60,6 +61,8 @@ var outerMeter;
 var innerMeter;
 var meterDot;
 var progressBarMesh;
+var meterMarkerMesh;
+var textMesh;
 
 let alpha0 = Math.PI * 0.8;
 let alpha1 = 2 * Math.PI * 1.1;
@@ -68,6 +71,9 @@ let meterMin = 0;
 let meterMax = 100;
 
 var lineWidth = 60;
+
+let shadowColor = "red";
+let shadowBlur = 20;
 
 var outerRadius;
 var innerRadius;
@@ -101,7 +107,7 @@ let ulText = `<div class="ul-icon"><i class="fa fa-arrow-circle-o-down"></i></di
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
     let newColor = new Color(color);
-    newColor.opacity = 0.3;
+    newColor.opacity = 0.2;
     return [stop, newColor.colorString];
 };
 
@@ -204,6 +210,9 @@ function drawMeterLoop(
     outerMeter.endAngle = alpha1;
     outerMeter.draw(canvasObj);
 
+    outerMeter.shadowBlur = shadowBlur;
+    outerMeter.shadowColor = shadowColor;
+
     outerMeter.color = progressColor;
     outerMeter.endAngle = alpha_t;
     outerMeter.draw(canvasObj);
@@ -211,6 +220,8 @@ function drawMeterLoop(
     innerMeter.color = progressGlowColor;
     innerMeter.endAngle = alpha_t;
     innerMeter.draw(canvasObj);
+
+    outerMeter.shadowBlur = 0;
 
     meterDot.draw(canvasObj);
 
@@ -249,7 +260,7 @@ let initFunc = function(t) {
     canvas.height = canvasOffset.height * dpr;
 
     outerRadius = canvas.width / 2 - lineWidth / 2;
-    innerRadius = outerRadius / 1.2;
+    innerRadius = outerRadius - lineWidth;
 
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
@@ -306,6 +317,9 @@ let initFunc = function(t) {
         lineWidth
     );
 
+    innerMeter.shadowBlur = shadowBlur;
+    innerMeter.shadowColor = shadowColor;
+
     meterDot = new Arc(0, 0, 70, 0, Math.PI * 2, backgroundColor, 1);
     meterDot.fillColor = backgroundColor;
 
@@ -327,6 +341,64 @@ let initFunc = function(t) {
         progressBarColor
     );
 
+    let meterMarkers = [];
+    let stops = 11;
+
+    let r1 = outerRadius - lineWidth / 2;
+    let r2 = outerRadius - lineWidth * 2;
+    let r3 = outerRadius - lineWidth * 3;
+    let r4 = innerRadius / 1.2;
+
+    let dashLineWidth = lineWidth / 4;
+
+    let theta = alpha0 + dashLineWidth / outerRadius / 2;
+    let d_theta = (alpha1 - alpha0) / (stops - 1);
+    let fontSize = 48;
+    let font = `${fontSize}px Verdana`;
+
+    let numberDelta = round((meterMax - meterMin) / (stops - 1), 0);
+    let start = 0;
+    let texts = [];
+
+    for (let t = 0; t < stops; t++) {
+        let v = theta;
+        let dashPoints = [];
+        let x;
+        let y;
+
+        for (let s = 0; s < 1; s += 0.5) {
+            let r;
+            if (t % 2 !== 0) {
+                r = lerp(s, r1, r3);
+            } else {
+                r = lerp(s, r1, r2);
+            }
+            x = r * Math.cos(v);
+            y = r * Math.sin(v);
+
+            dashPoints.push([x, y]);
+
+            if (s === 0) {
+                x = r4 * Math.cos(v);
+                y = r4 * Math.sin(v);
+                let text = new Text(`${start}`, x - fontSize / 2, y, font);
+                texts.push(text);
+                start += numberDelta;
+            }
+        }
+
+        let meterMarker = new Polygon(
+            dashPoints,
+            "rgba(255, 255, 255, 0.5)",
+            dashLineWidth
+        );
+        meterMarkers.push(meterMarker);
+        theta += d_theta;
+    }
+
+    meterMarkerMesh = new Mesh(...meterMarkers);
+    textMesh = new Mesh(...texts);
+
     progressBarMesh = new Mesh(progressBarBackground, progressBarForeground);
 
     // Centering the meter meterDial and laying it flat.
@@ -338,6 +410,12 @@ let initFunc = function(t) {
         .translate(0, outerRadius / 1.5);
 
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
+
+    // meterMarkerMesh.draw(canvasObj);
+    // outerMeter.draw(canvasObj);
+    // meterDot.draw(canvasObj);
+    // meterDial.draw(canvasObj);
+    // textMesh.draw(canvasObj);
 };
 
 let openingAnimation = function(duration, timingFunc) {
@@ -373,7 +451,6 @@ let closingAnimation = function(duration, timingFunc) {
         t = clamp(1 - t, 0.0001, 1);
 
         outerMeter.radius = outerRadius * t;
-
         meterDot.radius = meterDotSize * t;
 
         outerMeter.draw(canvasObj);
@@ -450,8 +527,8 @@ let drawFunc = function(t) {
                 document.getElementById("test-amount"),
                 UI_DATA.ulStatus,
                 UI_DATA.ulProgress,
-                dlProgressColor,
-                dlProgressGlowColor
+                ulProgressColor,
+                ulProgressGlowColor
             );
             break;
         }

@@ -369,6 +369,57 @@ export class Rectangle extends Polygon {
     }
 }
 
+export class Text extends Shape {
+    constructor(text, x, y, font) {
+        super([x, y], "black", 1);
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.font = font;
+    }
+
+    draw(ctx) {
+        let originX = 0;
+        let originY = 0;
+
+        if (ctx instanceof Canvas) {
+            let canvas = ctx;
+            ctx = canvas.ctx;
+            originX = canvas.originX;
+            originY = canvas.originY;
+        }
+
+        ctx.beginPath();
+
+        ctx.strokeStyle = this._color;
+        ctx.lineWidth = this._lineWidth;
+        if (this._fillColor) {
+            ctx.fillStyle = this._fillColor;
+        }
+        if (this._shadowColor) {
+            ctx.shadowColor = this._shadowColor;
+        } else {
+            ctx.shadowColor = "black";
+        }
+        if (this._shadowBlur) {
+            ctx.shadowBlur = this._shadowBlur;
+        } else {
+            ctx.shadowBlur = 0;
+        }
+
+        ctx.font = this.font;
+        ctx.fillText(this.text, this.x + originX, this.y + originY);
+
+        if (this._fillColor) {
+            ctx.fill();
+        } else {
+            ctx.stroke();
+        }
+
+        return this;
+    }
+}
+
 export class Mesh {
     constructor(...shapes) {
         this.shapes = shapes;

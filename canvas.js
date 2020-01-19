@@ -238,7 +238,7 @@ export class Polygon extends Shape {
         }
 
         for (let [x, y] of this._points) {
-            ctx.lineTo(x + originX, y + originY);
+            ctx.lineTo(x + originX, originY + y);
         }
 
         if (this._fillColor) {
@@ -439,6 +439,14 @@ export class Mesh {
         return this;
     }
 
+    map(func) {
+        let i = 0;
+        for (let shape of this.shapes) {
+            func(shape, i++);
+        }
+        return this;
+    }
+
     translate(x, y) {
         for (let shape of this.shapes) {
             shape.translate(x, y);
@@ -479,6 +487,23 @@ export function generateGradient(ctx, colorStops, x0, y0, x1, y1) {
 export function generateGradientWrapper(canvas, colorStops) {
     let ctx = canvas.getContext("2d");
     let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    for (let [stop, color] of colorStops) {
+        gradient.addColorStop(stop, color);
+    }
+    return gradient;
+}
+
+export function generateRadialGradient(
+    ctx,
+    colorStops,
+    x0,
+    y0,
+    r0,
+    x1,
+    y1,
+    r1
+) {
+    let gradient = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
     for (let [stop, color] of colorStops) {
         gradient.addColorStop(stop, color);
     }

@@ -80,9 +80,6 @@ export function slerpPoints(xy1, xy2) {
     let minX = Math.min(xy1[0], xy2[0]);
     let minY = Math.min(xy1[1], xy2[1]);
 
-    let maxX = Math.max(xy1[0], xy2[0]);
-    let maxY = Math.max(xy1[1], xy2[1]);
-
     let midpoint = [
         Math.abs(xy2[0] - xy1[0]) / 2 + minX,
         Math.abs(xy2[1] - xy1[1]) / 2 + minY,
@@ -93,16 +90,16 @@ export function slerpPoints(xy1, xy2) {
     let unit;
 
     if (xy1[1] > xy2[1]) {
-        unit = [1, 0];
-    } else {
         unit = [-1, 0];
+    } else {
+        unit = [1, 0];
     }
 
     let v1 = [xy1[0] - midpoint[0], xy1[1] - midpoint[1]];
     let v2 = [xy2[0] - midpoint[0], xy2[1] - midpoint[1]];
 
-    let alpha0 = angle(unit, v1);
-    let alpha1 = 2 * Math.PI - angle(unit, v2);
+    let alpha0 = 2 * Math.PI - angle(unit, v1);
+    let alpha1 = angle(unit, v2);
 
     let delta = 0.1;
     let points = [];

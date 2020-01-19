@@ -6,6 +6,7 @@ import {
     Rectangle,
     Canvas,
     Text,
+    generateRadialGradient,
 } from "./canvas.js";
 
 import {
@@ -193,26 +194,23 @@ function genRoundedMeterMesh(
     let slump = -0.003;
     let outerEdge = radius + lineWidth / 2;
 
-    let barHeight = 10;
+    let barHeight = 0.05;
     let barWidth = lineWidth;
 
     let base = [
         [0, barHeight],
         [barWidth, barHeight],
     ];
-    let pts = [
-        ...slerpPoints(base[0], base[1]),
-        [0, 0],
-        [barWidth, 0],
-        [barWidth, barHeight],
-    ];
+
+    let slerps = slerpPoints(base[0], base[1]);
+    let points = [...slerps, [barWidth, 0], [0, 0], [0, barHeight]];
 
     let theta = beginAngle;
     let delta = (barHeight * 2) / radius;
 
     theta += delta;
 
-    let startCap = new Polygon(pts, null, null, color);
+    let startCap = new Polygon(points, null, null, color);
     let arc = new Arc(
         originX,
         originY,
@@ -223,7 +221,7 @@ function genRoundedMeterMesh(
         lineWidth
     );
     let endCap = new Polygon(
-        JSON.parse(JSON.stringify(pts)),
+        JSON.parse(JSON.stringify(points)),
         null,
         null,
         color
@@ -276,6 +274,7 @@ function genRoundedMeterMesh(
 
         this.shapes[2].draw(ctx);
     };
+
     return roundedMeterMesh;
 }
 
@@ -359,9 +358,10 @@ let initFunc = function(t) {
 
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
+    let innerDelta = lineWidth * 1.25;
 
     outerRadius = canvas.width / 2 - lineWidth / 2;
-    innerRadius = outerRadius - lineWidth;
+    innerRadius = outerRadius - innerDelta;
 
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
@@ -489,7 +489,7 @@ let initFunc = function(t) {
     let innerInnerRoundedMeterMesh = genRoundedMeterMesh(
         0,
         0,
-        innerRadius - lineWidth,
+        innerRadius - innerDelta,
         alpha0,
         alpha1,
         watchBlue,
@@ -498,13 +498,12 @@ let initFunc = function(t) {
 
     let transformFunc = function(v, t) {
         canvasObj.clear();
-        v = lerp(t, alpha0, alpha1 + 4 * Math.PI);
         roundedMeterMesh.draw(canvasObj, v);
         innerRoundedMeterMesh.draw(canvasObj, v);
         innerInnerRoundedMeterMesh.draw(canvasObj, v);
     };
 
-    smoothAnimate(Math.PI * 2, alpha0, 10000, transformFunc, easeInOutCubic);
+    smoothAnimate(alpha1, alpha0, 1000, transformFunc, easeInBounce);
 };
 
 let openingAnimation = function(duration, timingFunc) {

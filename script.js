@@ -504,7 +504,7 @@ let initFunc = function(t) {
         innerInnerRoundedMeterMesh.draw(canvasObj, v);
     };
 
-    smoothAnimate(Math.PI * 2, alpha0, 1000, transformFunc, easeInOutCubic);
+    smoothAnimate(Math.PI * 2, alpha0, 10000, transformFunc, easeInOutCubic);
 };
 
 let openingAnimation = function(duration, timingFunc) {

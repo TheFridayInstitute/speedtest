@@ -261,7 +261,7 @@ export class Arc extends Shape {
         color,
         lineWidth
     ) {
-        super([originX, originY], color, lineWidth);
+        super([[originX, originY]], color, lineWidth);
 
         this._radius = radius;
         this._beginAngle = beginAngle;
@@ -297,8 +297,8 @@ export class Arc extends Shape {
         }
 
         ctx.arc(
-            this.points[0] + originX,
-            this.points[1] + originY,
+            this.points[0][0] + originX,
+            this.points[0][1] + originY,
             this._radius,
             this._beginAngle,
             this._endAngle
@@ -371,10 +371,8 @@ export class Rectangle extends Polygon {
 
 export class Text extends Shape {
     constructor(text, x, y, font) {
-        super([x, y], "black", 1);
+        super([[x, y]], undefined, undefined, undefined);
         this.text = text;
-        this.x = x;
-        this.y = y;
         this.font = font;
     }
 
@@ -408,7 +406,11 @@ export class Text extends Shape {
         }
 
         ctx.font = this.font;
-        ctx.fillText(this.text, this.x + originX, this.y + originY);
+        ctx.fillText(
+            this.text,
+            this._points[0][0] + originX,
+            this._points[0][1] + originY
+        );
 
         if (this._fillColor) {
             ctx.fill();

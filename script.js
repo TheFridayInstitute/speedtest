@@ -66,11 +66,13 @@ var textMesh;
 
 let alpha0 = Math.PI * 0.8;
 let alpha1 = 2 * Math.PI * 1.1;
+// let alpha0 = Math.PI*0.01;
+// let alpha1 = 2*Math.PI*1.1;
 
 let meterMin = 0;
 let meterMax = 100;
 
-var lineWidth = 60;
+var lineWidth = emToPixels("2em");
 
 let shadowColor = "red";
 let shadowBlur = 20;
@@ -179,6 +181,104 @@ function startStop() {
     return UI_DATA;
 }
 
+function genRoundedMeterMesh(
+    originX,
+    originY,
+    radius,
+    beginAngle,
+    endAngle,
+    color,
+    lineWidth
+) {
+    let slump = -0.003;
+    let outerEdge = radius + lineWidth / 2;
+
+    let barHeight = 10;
+    let barWidth = lineWidth;
+
+    let base = [
+        [0, barHeight],
+        [barWidth, barHeight],
+    ];
+    let pts = [
+        ...slerpPoints(base[0], base[1]),
+        [0, 0],
+        [barWidth, 0],
+        [barWidth, barHeight],
+    ];
+
+    let theta = beginAngle;
+    let delta = (barHeight * 2) / radius;
+
+    theta += delta;
+
+    let startCap = new Polygon(pts, null, null, color);
+    let arc = new Arc(
+        originX,
+        originY,
+        radius,
+        theta + slump,
+        0,
+        color,
+        lineWidth
+    );
+    let endCap = new Polygon(
+        JSON.parse(JSON.stringify(pts)),
+        null,
+        null,
+        color
+    );
+
+    startCap.translate(originX, originY);
+    endCap.translate(originX, originY);
+
+    let x = outerEdge * Math.cos(theta);
+    let y = outerEdge * Math.sin(theta);
+
+    startCap
+        .scale(-1)
+        .rotate(theta, true)
+        .translate(x, y);
+
+    let roundedMeterMesh = new Mesh(endCap, arc, startCap);
+
+    roundedMeterMesh.draw = function(ctx, theta) {
+        theta = clamp(theta, beginAngle, endAngle - 2 * delta);
+        let theta2 = theta;
+
+        if (theta >= beginAngle - delta + slump) {
+            if (theta >= endAngle - delta) {
+                theta2 = endAngle - delta + slump;
+                theta = endAngle - delta;
+            } else {
+                theta2 = theta + delta + slump;
+                theta += delta;
+            }
+        } else {
+            theta2 = theta;
+        }
+
+        let x = outerEdge * Math.cos(theta2);
+        let y = outerEdge * Math.sin(theta2);
+
+        this.shapes[0]
+            .translate(-barWidth, 0)
+            .rotate(theta2, true)
+            .translate(x, y)
+
+            .draw(ctx)
+            .translate(-x, -y)
+            .rotate(-theta2, true)
+            .translate(barWidth, 0);
+
+        this.shapes[1].endAngle = theta;
+        this.shapes[1].draw(ctx);
+
+        this.shapes[2].draw(ctx);
+    };
+    return roundedMeterMesh;
+}
+
 function drawMeterLoop(
     status,
     canvas,
@@ -255,6 +355,7 @@ let initFunc = function(t) {
 
     let canvasOffset = getOffset(canvas);
     let dpr = window.devicePixelRatio || 1;
+    lineWidth *= dpr;
 
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
@@ -320,7 +421,15 @@ let initFunc = function(t) {
     innerMeter.shadowBlur = shadowBlur;
     innerMeter.shadowColor = shadowColor;
 
-    meterDot = new Arc(0, 0, 70, 0, Math.PI * 2, backgroundColor, 1);
+    meterDot = new Arc(
+        0,
+        0,
+        outerRadius / 5,
+        0,
+        Math.PI * 2,
+        backgroundColor,
+        1
+    );
     meterDot.fillColor = backgroundColor;
 
     let barWidth = outerRadius;
@@ -341,64 +450,6 @@ let initFunc = function(t) {
         progressBarColor
     );
 
-    let meterMarkers = [];
-    let stops = 11;
-
-    let r1 = outerRadius - lineWidth / 2;
-    let r2 = outerRadius - lineWidth * 2;
-    let r3 = outerRadius - lineWidth * 3;
-    let r4 = innerRadius / 1.2;
-
-    let dashLineWidth = lineWidth / 4;
-
-    let theta = alpha0 + dashLineWidth / outerRadius / 2;
-    let d_theta = (alpha1 - alpha0) / (stops - 1);
-    let fontSize = 48;
-    let font = `${fontSize}px Verdana`;
-
-    let numberDelta = round((meterMax - meterMin) / (stops - 1), 0);
-    let start = 0;
-    let texts = [];
-
-    for (let t = 0; t < stops; t++) {
-        let v = theta;
-        let dashPoints = [];
-        let x;
-        let y;
-
-        for (let s = 0; s < 1; s += 0.5) {
-            let r;
-            if (t % 2 !== 0) {
-                r = lerp(s, r1, r3);
-            } else {
-                r = lerp(s, r1, r2);
-            }
-            x = r * Math.cos(v);
-            y = r * Math.sin(v);
-
-            dashPoints.push([x, y]);
-
-            if (s === 0) {
-                x = r4 * Math.cos(v);
-                y = r4 * Math.sin(v);
-                let text = new Text(`${start}`, x - fontSize / 2, y, font);
-                texts.push(text);
-                start += numberDelta;
-            }
-        }
-
-        let meterMarker = new Polygon(
-            dashPoints,
-            "rgba(255, 255, 255, 0.5)",
-            dashLineWidth
-        );
-        meterMarkers.push(meterMarker);
-        theta += d_theta;
-    }
-
-    meterMarkerMesh = new Mesh(...meterMarkers);
-    textMesh = new Mesh(...texts);
-
     progressBarMesh = new Mesh(progressBarBackground, progressBarForeground);
 
     // Centering the meter meterDial and laying it flat.
@@ -411,11 +462,49 @@ let initFunc = function(t) {
 
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 
-    // meterMarkerMesh.draw(canvasObj);
-    // outerMeter.draw(canvasObj);
-    // meterDot.draw(canvasObj);
-    // meterDial.draw(canvasObj);
-    // textMesh.draw(canvasObj);
+    let watchRed = "rgb(233, 70, 126)";
+    let watchGreen = "rgb(180, 243, 77)";
+    let watchBlue = "rgb(105, 228, 212)";
+
+    let roundedMeterMesh = genRoundedMeterMesh(
+        0,
+        0,
+        outerRadius,
+        alpha0,
+        alpha1,
+        watchRed,
+        lineWidth
+    );
+
+    let innerRoundedMeterMesh = genRoundedMeterMesh(
+        0,
+        0,
+        innerRadius,
+        alpha0,
+        alpha1,
+        watchGreen,
+        lineWidth
+    );
+
+    let innerInnerRoundedMeterMesh = genRoundedMeterMesh(
+        0,
+        0,
+        innerRadius - lineWidth,
+        alpha0,
+        alpha1,
+        watchBlue,
+        lineWidth
+    );
+
+    let transformFunc = function(v, t) {
+        canvasObj.clear();
+        v = lerp(t, alpha0, alpha1 + 4 * Math.PI);
+        roundedMeterMesh.draw(canvasObj, v);
+        innerRoundedMeterMesh.draw(canvasObj, v);
+        innerInnerRoundedMeterMesh.draw(canvasObj, v);
+    };
+
+    smoothAnimate(Math.PI * 2, alpha0, 1000, transformFunc, easeInOutCubic);
 };
 
 let openingAnimation = function(duration, timingFunc) {

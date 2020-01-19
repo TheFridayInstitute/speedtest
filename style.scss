@@ -1,7 +1,9 @@
-$meter-width: 40em;
-$meter-height: 40em;
-$meter-padding: 10em;
-$meter-outer-radius: 30em;
+@use "sass:math";
+
+$meter-width: 40rem;
+$meter-height: 40rem;
+$meter-padding: 10rem;
+$meter-outer-radius: 30rem;
 
 $screen-size-xs: 320px;
 $screen-size-sm: 480px;
@@ -124,14 +126,15 @@ body {
     align-items: center;
     justify-items: center;
 
-    padding: 0.5em;
-
-    row-gap: 1em;
+    padding: 1rem;
+    row-gap: 1rem;
 
     margin: auto;
 
     height: 100%;
     width: 100%;
+
+    position: relative;
 
     .start-btn-container {
         grid-area: button;
@@ -176,18 +179,25 @@ body {
 
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 0.1fr;
-
     position: relative;
     justify-content: center;
-    justify-items: center;
+
+    row-gap: 0;
+    align-items: center;
 
     width: 100%;
-    max-width: var(--meter-width);
+    max-height: 100%;
+
+    justify-content: center;
+    box-sizing: border-box;
 
     .info {
+        box-sizing: border-box;
+        align-self: start;
         grid-area: info;
-        align-self: end;
-        margin-top: -20%;
+        border: 2px solid white;
+
+        margin-top: calc((-100%) + 50% + 50% * (0.58));
 
         display: grid;
         grid-template-areas:
@@ -195,17 +205,12 @@ body {
             "kind";
         grid-template-rows: 1fr 1fr;
         grid-template-columns: 1fr;
-        row-gap: 0;
 
         justify-items: center;
-        align-items: center;
 
         .test-kind {
-            position: absolute;
-            bottom: 0;
             grid-area: kind;
-            text-align: center;
-            font-size: 4em;
+            font-size: 4rem;
         }
 
         .amount-container {
@@ -214,14 +219,25 @@ body {
         }
     }
 
-    canvas {
+    .square-box {
+        box-sizing: border-box;
         grid-area: test;
-        width: 100%;
-        height: 100%;
-        max-height: var(--meter-height);
-        max-width: var(--meter-width);
+        border: 2px solid white;
 
         z-index: 1;
+    }
+}
+
+.square-box {
+    height: 0%;
+    width: 100%;
+    padding-bottom: 100%;
+    position: relative;
+
+    * {
+        position: absolute;
+        width: 100%;
+        height: 100%;
     }
 }
 
@@ -240,10 +256,10 @@ body {
         flex-direction: column;
 
         .test-kind {
-            font-size: 1em;
+            font-size: 1rem;
             text-align: center;
             i {
-                font-size: 1.25em;
+                font-size: 1.25rem;
             }
         }
     }
@@ -252,21 +268,21 @@ body {
 .unit-container {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 0.1fr;
+    grid-template-rows: 90% 10%;
     grid-template-areas:
         "amount"
         "unit";
 
     column-gap: 0;
     row-gap: 0;
-
-    position: relative;
     padding: 0;
-    margin: 0 auto;
+    margin: auto;
     text-align: center;
 
-    --font-size-lg: 4em;
+    --font-size-lg: 4rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
+
+    max-height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
 
     .amount {
         grid-area: amount;
@@ -274,7 +290,6 @@ body {
     }
 
     .unit {
-        margin-top: calc(-1 * var(--font-size-sm));
         font-size: var(--font-size-sm);
         grid-area: unit;
     }
@@ -301,101 +316,80 @@ body {
     box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.2);
 }
 
-@media all and (max-width: $screen-size-sm) {
-    :root {
-        --meter-width: #{$meter-width / $screen-sm-scale};
-        --meter-height: #{$meter-height / $screen-sm-scale};
-    }
+@media all and (max-width: $screen-size-md) {
+    // :root {
+    //     --meter-width: #{$meter-width / $screen-md-scale};
+    //     --meter-height: #{$meter-height / $screen-md-scale};
+    // }
 
     html,
     body {
-        font-size: 0.9em;
-    }
-
-    .unit-container {
-        --font-size-lg: 3.5em;
+        font-size: 0.9rem;
     }
 }
 
-@media all and (max-width: $screen-size-xs) {
-    :root {
-        --meter-width: #{$meter-width / $screen-xs-scale};
-        --meter-height: #{$meter-height / $screen-xs-scale};
-    }
+@media all and (max-width: $screen-size-sm) {
+    // :root {
+    //     --meter-width: #{$meter-width / $screen-sm-scale};
+    //     --meter-height: #{$meter-height / $screen-sm-scale};
+    // }
 
     html,
     body {
-        font-size: 0.8em;
+        font-size: 0.9rem;
     }
 
-    .unit-container {
-        --font-size-lg: 3em;
+    // .unit-container {
+    //     --font-size-lg: 3.5em;
+    // }
+}
+
+@media all and (max-width: $screen-size-xs) {
+    html,
+    body {
+        font-size: 0.7rem;
     }
 }
 
 @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
-    :root {
-        --meter-width: #{$meter-width / $screen-lg-scale};
-        --meter-height: #{$meter-height / $screen-lg-scale};
-    }
+    // .main-content {
+    //     grid-template-areas:
+    //         "test info"
+    //         "test button";
 
-    .main-content {
-        grid-template-areas:
-            "test info"
-            "test button";
+    //     grid-template-columns: 1fr 1fr;
+    //     grid-template-rows: 1fr 1fr;
+    //     justify-content: center;
+    //     align-items: center;
+    //     column-gap: 1em;
+    //     row-gap: 2em;
+    //     width: 100%;
 
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        justify-content: center;
-        align-items: center;
-        column-gap: 1em;
-        row-gap: 2em;
-        width: 100%;
+    //     max-width: 100%;
 
-        max-width: 100%;
-        max-height: 100%;
+    //     .start-btn-container {
+    //         align-self: end;
+    //     }
 
-        .start-btn-container {
-            align-self: start;
-        }
+    //     .test-container {
+    //         align-self: center;
+    //     }
 
-        .test-container {
-            align-self: center;
-
-            .info {
-                width: 100%;
-                grid-template-areas: "amount kind";
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: 1fr;
-              
-
-                .test-kind {
-                    position: relative;
-                    grid-area: kind;
-                    
-                }
-
-                .amount-container {
-                    grid-area: amount;
-                }
-            }
-        }
-
-        .test-info-container {
-            align-self: end;
-        }
-    }
+    //     .test-info-container {
+    //         align-self: end;
+    //     }
+    // }
 }
 
 @media all and (orientation: landscape) and (max-height: $screen-size-sm) {
-    :root {
-        --meter-width: #{$meter-width /
-            ($screen-xs-scale * $screen-landscape-scale)};
-        --meter-height: #{$meter-height /
-            ($screen-xs-scale * $screen-landscape-scale)};
-    }
-    html,
-    body {
-        font-size: 0.8em;
-    }
+    // :root {
+    //     --meter-width: #{$meter-width /
+    //         ($screen-xs-scale * $screen-landscape-scale)};
+    //     --meter-height: #{$meter-height /
+    //         ($screen-xs-scale * $screen-landscape-scale)};
+    // }
+    // html,
+    // body {
+    //     font-size: 0.7em;
+    // }
 }

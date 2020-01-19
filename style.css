@@ -1,3 +1,4 @@
+@use "sass:math";
 :root {
   --background-color-primary: rgba(51, 51, 51, 1);
   --background-color-primary-dark: rgb(37, 37, 37);
@@ -11,10 +12,10 @@
   --dl-color-2: #f71e6a;
   --ul-color-1: #ff8000;
   --ul-color-2: #ff0000;
-  --meter-width: 40em;
-  --meter-height: 40em;
-  --meter-padding: 10em;
-  --meter-outer-radius: 30em;
+  --meter-width: 40rem;
+  --meter-height: 40rem;
+  --meter-padding: 10rem;
+  --meter-outer-radius: 30rem;
   --ncsu-font: "UniversCondensed";
   --ncsu-red: #c00;
   --ncsu-red-dark: rgb(173, 0, 0);
@@ -103,11 +104,12 @@ body {
       -ms-flex-align: center;
           align-items: center;
   justify-items: center;
-  padding: 0.5em;
-  row-gap: 1em;
+  padding: 1rem;
+  row-gap: 1rem;
   margin: auto;
   height: 100%;
   width: 100%;
+  position: relative;
 }
 
 .main-content .start-btn-container {
@@ -166,18 +168,27 @@ body {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  justify-items: center;
+  row-gap: 0;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   width: 100%;
-  max-width: var(--meter-width);
+  max-height: 100%;
+  justify-content: center;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 .test-container .info {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  -ms-grid-row-align: start;
+      align-self: start;
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: info;
-  -ms-grid-row-align: end;
-      align-self: end;
-  margin-top: -20%;
+  border: 2px solid white;
+  margin-top: calc((-100%) + 50% + 50% * (0.58));
   display: -ms-grid;
   display: grid;
       grid-template-areas: "amount" "kind";
@@ -185,21 +196,14 @@ body {
       grid-template-rows: 1fr 1fr;
   -ms-grid-columns: 1fr;
       grid-template-columns: 1fr;
-  row-gap: 0;
   justify-items: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
 }
 
 .test-container .info .test-kind {
-  position: absolute;
-  bottom: 0;
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: kind;
-  text-align: center;
-  font-size: 4em;
+  font-size: 4rem;
 }
 
 .test-container .info .amount-container {
@@ -210,15 +214,27 @@ body {
   grid-area: amount;
 }
 
-.test-container canvas {
+.test-container .square-box {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   -ms-grid-row: 1;
   -ms-grid-column: 1;
   grid-area: test;
+  border: 2px solid white;
+  z-index: 1;
+}
+
+.square-box {
+  height: 0%;
+  width: 100%;
+  padding-bottom: 100%;
+  position: relative;
+}
+
+.square-box * {
+  position: absolute;
   width: 100%;
   height: 100%;
-  max-height: var(--meter-height);
-  max-width: var(--meter-width);
-  z-index: 1;
 }
 
 .test-info-container {
@@ -246,12 +262,12 @@ body {
 }
 
 .test-info-container .info .test-kind {
-  font-size: 1em;
+  font-size: 1rem;
   text-align: center;
 }
 
 .test-info-container .info .test-kind i {
-  font-size: 1.25em;
+  font-size: 1.25rem;
 }
 
 .unit-container {
@@ -259,18 +275,18 @@ body {
   display: grid;
   -ms-grid-columns: 1fr;
       grid-template-columns: 1fr;
-  -ms-grid-rows: 1fr 0.1fr;
-      grid-template-rows: 1fr 0.1fr;
+  -ms-grid-rows: 90% 10%;
+      grid-template-rows: 90% 10%;
       grid-template-areas: "amount" "unit";
   -webkit-column-gap: 0;
           column-gap: 0;
   row-gap: 0;
-  position: relative;
   padding: 0;
-  margin: 0 auto;
+  margin: auto;
   text-align: center;
-  --font-size-lg: 4em;
+  --font-size-lg: 4rem;
   --font-size-sm: calc(var(--font-size-lg) / 4);
+  max-height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
 }
 
 .unit-container .amount {
@@ -281,7 +297,6 @@ body {
 }
 
 .unit-container .unit {
-  margin-top: calc(-1 * var(--font-size-sm));
   font-size: var(--font-size-sm);
   -ms-grid-row: 2;
   -ms-grid-column: 1;
@@ -312,102 +327,23 @@ body {
           box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.2);
 }
 
-@media all and (max-width: 480px) {
-  :root {
-    --meter-width: 28.57143em;
-    --meter-height: 28.57143em;
-  }
+@media all and (max-width: 768px) {
   html,
   body {
-    font-size: 0.9em;
+    font-size: 0.9rem;
   }
-  .unit-container {
-    --font-size-lg: 3.5em;
+}
+
+@media all and (max-width: 480px) {
+  html,
+  body {
+    font-size: 0.9rem;
   }
 }
 
 @media all and (max-width: 320px) {
-  :root {
-    --meter-width: 28.57143em;
-    --meter-height: 28.57143em;
-  }
   html,
   body {
-    font-size: 0.8em;
-  }
-  .unit-container {
-    --font-size-lg: 3em;
+    font-size: 0.7rem;
   }
 }
-
-@media all and (orientation: landscape) and (max-height: 992px) {
-  :root {
-    --meter-width: 36.36364em;
-    --meter-height: 36.36364em;
-  }
-  .main-content {
-        grid-template-areas: "test info" "test button";
-    -ms-grid-columns: 1fr 1fr;
-        grid-template-columns: 1fr 1fr;
-    -ms-grid-rows: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-    -webkit-box-pack: center;
-        -ms-flex-pack: center;
-            justify-content: center;
-    -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
-    -webkit-column-gap: 1em;
-            column-gap: 1em;
-    row-gap: 2em;
-    width: 100%;
-    max-width: 100%;
-    max-height: 100%;
-  }
-  .main-content .start-btn-container {
-    -ms-flex-item-align: start;
-        -ms-grid-row-align: start;
-        align-self: start;
-  }
-  .main-content .test-container {
-    -ms-flex-item-align: center;
-        -ms-grid-row-align: center;
-        align-self: center;
-  }
-  .main-content .test-container .info {
-    width: 100%;
-        grid-template-areas: "amount kind";
-    -ms-grid-columns: 1fr 1fr;
-        grid-template-columns: 1fr 1fr;
-    -ms-grid-rows: 1fr;
-        grid-template-rows: 1fr;
-  }
-  .main-content .test-container .info .test-kind {
-    position: relative;
-    -ms-grid-row: 1;
-    -ms-grid-column: 2;
-    grid-area: kind;
-  }
-  .main-content .test-container .info .amount-container {
-    -ms-grid-row: 1;
-    -ms-grid-column: 1;
-    grid-area: amount;
-  }
-  .main-content .test-info-container {
-    -ms-flex-item-align: end;
-        -ms-grid-row-align: end;
-        align-self: end;
-  }
-}
-
-@media all and (orientation: landscape) and (max-height: 480px) {
-  :root {
-    --meter-width: 19.04762em;
-    --meter-height: 19.04762em;
-  }
-  html,
-  body {
-    font-size: 0.8em;
-  }
-}
-/*# sourceMappingURL=style.css.map */

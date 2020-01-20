@@ -112,7 +112,7 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  font-size: 1.5em;
+  font-size: 2em;
   font-weight: normal;
   height: 2.5em;
   -webkit-box-pack: center;
@@ -348,14 +348,14 @@ body {
 @media all and (max-width: 768px) {
   html,
   body {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 }
 
 @media all and (max-width: 480px) {
   html,
   body {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -400,6 +400,9 @@ body {
     -ms-flex-item-align: end;
         -ms-grid-row-align: end;
         align-self: end;
+  }
+  .test-container {
+    padding: 1em;
   }
   .test-container .info {
         grid-template-areas: "amount kind";

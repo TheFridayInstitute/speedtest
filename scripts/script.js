@@ -37,6 +37,7 @@ import {
     animationLoopOuter,
     slideRight,
     sleep,
+    slideLeft,
 } from "./animation.js";
 
 import {
@@ -114,28 +115,6 @@ let makeGlowColor = function(value, index) {
     let newColor = new Color(color);
     newColor.opacity = 0.2;
     return [stop, newColor.colorString];
-};
-
-let slideOverFunc = function() {
-    toggleOnce(document.getElementById("ul-amount"), function(e) {
-        let completeModal = document.getElementById("complete-modal");
-
-        completeModal.style.opacity = "1";
-
-        let width = window.innerWidth;
-
-        let testEl = document.getElementById("test-container");
-        let buttonEl = document.getElementById("start-btn");
-
-        slideRight(buttonEl, width, 0);
-        slideRight(testEl, width, 0);
-        slideRight(completeModal, 0, -width);
-
-        setTimeout(function() {
-            buttonEl.style.opacity = 0;
-            testEl.style.opacity = 0;
-        }, 1000);
-    });
 };
 
 function startStop() {
@@ -252,15 +231,6 @@ function drawMeterLoop(
 }
 
 let initFunc = function(t) {
-    let completeModal = document.getElementById("complete-modal");
-    let width = window.innerWidth;
-
-    completeModal.style.transform = `translateX(${-width}px)`;
-
-    document.getElementById("test-kind").innerHTML = dlText;
-    document.getElementById("test-amount").innerHTML = "0";
-    document.getElementById("ping-amount").innerHTML = "0";
-
     let canvas = document.getElementById("test-meter");
     let ctx = canvas.getContext("2d");
 
@@ -493,12 +463,7 @@ let drawFunc = function(t) {
         ).toPrecision(3);
 
         setTimeout(function() {
-            let duration = 3000;
-            closingAnimation(duration, easeInOutCubic);
-
-            setTimeout(function() {
-                slideOverFunc();
-            }, duration * 0.75);
+            onend();
         }, 1000);
     }
 
@@ -509,15 +474,74 @@ let drawFunc = function(t) {
     return false;
 };
 
-window.onload = function() {
-    document.getElementById("test-kind").innerHTML = dlText;
-    animationLoopOuter(initFunc, updateFunc, drawFunc);
-};
+function onload() {
+    let testEl = document.getElementById("test-container");
+    let startModal = document.getElementById("start-modal");
+    let completeModal = document.getElementById("complete-modal");
 
-document.getElementById("start-btn").addEventListener("click", function(e) {
+    let width = window.innerWidth;
+    testEl.style.transform = `translateX(${width}px)`;
+    completeModal.style.transform = `translateX(${-width}px)`;
+
+    document.getElementById("test-kind").innerHTML = dlText;
+    document.getElementById("test-amount").innerHTML = "0";
+    document.getElementById("ping-amount").innerHTML = "0";
+
+    animationLoopOuter(initFunc, updateFunc, drawFunc);
+}
+
+async function onstart() {
     let duration = 1000;
-    toggleOnce(document.getElementById("start-btn"), function() {
+
+    toggleOnce(document.getElementById("start-btn"), async function() {
+        let testEl = document.getElementById("test-container");
+        let startModal = document.getElementById("start-modal");
+        let completeModal = document.getElementById("complete-modal");
+
+        testEl.classList.remove("pane-end");
+
+        let width = window.innerWidth;
+
+        slideLeft(startModal, -width, 0);
+        slideLeft(testEl, 0, width);
+
+        await sleep(1000);
+
+        startModal.classList.add("pane-end");
         openingAnimation(duration, smoothStep3);
     });
     UI_DATA = startStop();
+}
+
+async function onend() {
+    let duration = 3000;
+    closingAnimation(duration, easeInOutCubic);
+
+    let testEl = document.getElementById("test-container");
+    let startModal = document.getElementById("start-modal");
+    let completeModal = document.getElementById("complete-modal");
+    let buttonEl = document.getElementById("start-btn");
+
+    let width = window.innerWidth;
+
+    completeModal.classList.remove("pane-end");
+
+    await sleep(duration);
+
+    slideRight(buttonEl, width, 0);
+    slideRight(testEl, width, 0);
+    slideRight(completeModal, 0, -width);
+
+    await sleep(1000);
+
+    buttonEl.classList.add("pane-end");
+    testEl.classList.add("pane-end");
+}
+
+window.onload = function() {
+    onload();
+};
+
+document.getElementById("start-btn").addEventListener("click", function(e) {
+    onstart();
 });

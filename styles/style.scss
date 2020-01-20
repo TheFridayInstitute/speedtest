@@ -55,6 +55,7 @@ body {
     overflow: hidden;
     padding: 0;
     width: 100%;
+    user-select: none;
 }
 
 .ul-icon {
@@ -146,7 +147,7 @@ body {
     position: relative;
 
     width: 10em;
-
+   
     &.running {
         background-color: var(--dl-color-2);
     }
@@ -271,7 +272,7 @@ body {
     --font-size-lg: 4rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
 
-    max-height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
+    height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
 
     .amount {
         text-align: center;
@@ -308,8 +309,7 @@ body {
     box-shadow: 1rem 1rem 40px 10px rgba(0, 0, 0, 0.2);
 }
 
-.complete-modal {
-    opacity: 0;
+.pane {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -318,6 +318,7 @@ body {
 
     padding: 1rem;
     width: 100%;
+    height: 100%;
     max-width: var(--meter-width);
 
     .text {
@@ -327,10 +328,20 @@ body {
             color: var(--ul-color-1);
         }
     }
+
     i {
-        color: var(--color-secondary);
-        font-size: 15rem;
+        font-style: normal;
+        // color: var(--color-secondary);
+        font-size: 12rem;
     }
+}
+
+.pane-start {
+    opacity: 1;
+}
+
+.pane-end {
+    opacity: 0;
 }
 
 @media all and (max-width: $screen-size-md) {

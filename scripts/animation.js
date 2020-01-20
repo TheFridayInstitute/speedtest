@@ -1,10 +1,4 @@
-import {
-    clamp,
-    lerp,
-    round,
-    normalize,
-    bounceInEase,
-} from "./math.js";
+import {clamp, lerp, round, normalize, bounceInEase} from "./math.js";
 
 export class Clock {
     constructor(autoStart = true, timeStep = 1000 / 60) {
@@ -74,16 +68,12 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     function update() {}
 
     function draw() {
-        let v = timingFunc(clock.elapsedTicks, from, distance, duration);
-        let t = clamp(normalize(v, from, to), 0, 1);
+        let c = clamp(clock.elapsedTicks, 0, duration);
+        let v = timingFunc(c, from, distance, duration);
+        let t = normalize(v, from, to);
 
-        if (v >= to) {
-            transformFunc(to, t);
-            return true;
-        } else {
-            transformFunc(v, t);
-            return false;
-        }
+        let b = transformFunc(v, t) || false;
+        return b;
     }
 
     function animationLoop() {
@@ -177,7 +167,8 @@ export function slideLeft(el, to, from, duration) {
     duration = duration === undefined ? 1000 : duration;
 
     let transformFunc = function(v) {
-        el.style.transform = `translateX(${to - v}px)`;
+        console.log(v, from, to);
+        el.style.transform = `translateX(${v}px)`;
     };
 
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);

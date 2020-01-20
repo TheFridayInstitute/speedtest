@@ -22,8 +22,8 @@
         />
 
         <link rel="shortcut icon" href="favicon.ico" />
-        <link rel="stylesheet" href="style.css" />
-        <link rel="stylesheet" href="extras.css" />
+        <link rel="stylesheet" href="styles/style.css" />
+        <link rel="stylesheet" href="styles/extras.css" />
 
         <title>speedtest.fi</title>
     </head>
@@ -31,7 +31,7 @@
     <body>
         <div class="outer-content">
             <div class="main-content" id="main-content">
-                <div class=" start-btn-container">
+                <div class="start-btn-container">
                     <div class="start-btn" id="start-btn">
                         Start
                         <div class="pulse"></div>
@@ -79,11 +79,8 @@
 
                 <div class="test-container box-shadow" id="test-container">
                     <div class="square-box">
-                        
-                            <canvas id="test-meter"></canvas>
-                        
+                        <canvas id="test-meter"></canvas>
                     </div>
-                    
 
                     <div class="info">
                         <div id="test-kind" class="test-kind"></div>
@@ -95,12 +92,14 @@
                 </div>
 
                 <div
-                    class="container-fluid test-container tmp box-shadow"
-                    id="tmp"
+                    class="test-container complete-modal box-shadow"
+                    id="complete-modal"
                 >
                     <div class="text">
-                        Speed test complete. Click the "next" button to finish
-                        the survey.
+                        <h1>
+                            Speed test complete!
+                        </h1>
+                        Click the Next button to finish the survey.
                     </div>
                     <i class="fa fa-check" aria-hidden="true"></i>
                 </div>
@@ -120,6 +119,6 @@
         ></script>
 
         <script type="text/javascript" src="speedtest.js"></script>
-        <script type="module" src="script.js"></script>
+        <script type="module" src="scripts/script.js"></script>
     </body>
 </html>

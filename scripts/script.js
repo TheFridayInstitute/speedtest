@@ -7,6 +7,7 @@ import {
     Canvas,
     Text,
     generateRadialGradient,
+    generateGradient,
 } from "./canvas.js";
 
 import {
@@ -72,21 +73,21 @@ let alpha1 = 2 * Math.PI * 1.1;
 let meterMin = 0;
 let meterMax = 100;
 
-var lineWidth = emToPixels("2em");
+var lineWidth = emToPixels("2.5em");
 
-let shadowColor = "red";
-let shadowBlur = 20;
+let shadowColor = "rgba(0, 0, 0, 0.5)";
+let shadowBlur = 0;
 
 var outerRadius;
 var innerRadius;
 
 var meterDotSize = 60;
 
-let backgroundColor = "rgba(255, 255, 255, 0.1)";
+let backgroundColor = "rgba(0, 0, 0, 0.25)";
 let progressBarColor = "#fff";
 
 let dlColorStops = [
-    ["0", "#8343ab"],
+    ["0", "#8630e6"],
     ["0.5", "#d359ff"],
     ["1.0", "#f71e6a"],
 ];
@@ -115,9 +116,9 @@ let makeGlowColor = function(value, index) {
 
 let slideOverFunc = function() {
     toggleOnce(document.getElementById("ul-amount"), function(e) {
-        let tmp = document.getElementById("tmp");
+        let completeModal = document.getElementById("complete-modal");
 
-        tmp.style.opacity = "1";
+        completeModal.style.opacity = "1";
 
         let width = window.innerWidth;
 
@@ -126,7 +127,7 @@ let slideOverFunc = function() {
 
         slideRight(buttonEl, width, 0);
         slideRight(testEl, width, 0);
-        slideRight(tmp, 0, -width);
+        slideRight(completeModal, 0, -width);
 
         setTimeout(function() {
             buttonEl.style.opacity = 0;
@@ -142,8 +143,6 @@ function startStop() {
         data = null;
         document.getElementById("start-btn").classList.remove("running");
         document.getElementById("start-btn").innerText = "Start";
-
-        initUI();
     } else {
         document.getElementById("start-btn").classList.add("running");
         document.getElementById("start-btn").innerText = "Stop";
@@ -202,7 +201,7 @@ function roundedArc(
     ];
 
     let slerps = slerpPoints(base[0], base[1]);
-    let points = [...slerps, [barWidth, 0], [0, 0], [0, barHeight]];
+    let points = [...slerps];
 
     let theta = beginAngle;
     let delta = (barHeight * 2) / radius;
@@ -304,7 +303,7 @@ function roundedRectangle(leftX, leftY, width, height, fillColor) {
     let shiftX = -width / 2;
     let shiftY = height / 2;
 
-    startCap.translate(shiftX, shiftY);
+    startCap.translate(shiftX - slump, shiftY);
     endCap.translate(shiftX - 2 * r, shiftY);
     bar.translate(shiftX, -shiftY);
 
@@ -367,49 +366,55 @@ function drawMeterLoop(
         meterMin,
         meterMax
     );
-    let alpha_t = lerp(t, alpha0, alpha1);
-
-    // outerMeter.color = backgroundColor;
-    // outerMeter.endAngle = alpha1;
-    // outerMeter.draw(canvasObj);
-
-    // outerMeter.shadowBlur = shadowBlur;
-    // outerMeter.shadowColor = shadowColor;
-
-    // outerMeter.color = progressColor;
-    // outerMeter.endAngle = alpha_t;
-    // outerMeter.draw(canvasObj);
-
-    // innerMeter.color = progressGlowColor;
-    // innerMeter.endAngle = alpha_t;
-    // innerMeter.draw(canvasObj);
-
-    // outerMeter.shadowBlur = 0;
+    let theta = lerp(t, alpha0, alpha1);
 
     outerMeter.draw(canvasObj, 1);
-    // outerMeter.map((shape) => {
-    //     shape.color = progressColor;
-    // });
-    // outerMeter.draw(canvasObj, t);
-    // outerMeter.map((shape) => {
-    //     shape.color = backgroundColor;
-    // });
+    outerMeter.map((shape, index) => {
+        if (shape instanceof Arc) {
+            shape.color = progressColor;
+            shape.shadowColor = shadowColor;
+            shape.shadowBlur = shadowBlur;
+        } else {
+            shape.fillColor = progressColor;
+        }
+    });
+
+    outerMeter.draw(canvasObj, t);
+    outerMeter.map((shape, index) => {
+        shape.shadowBlur = 0;
+        if (shape instanceof Arc) {
+            shape.color = backgroundColor;
+        } else {
+            shape.fillColor = backgroundColor;
+        }
+    });
+
+    innerMeter.map((shape, index) => {
+        if (shape instanceof Arc) {
+            shape.shadowColor = shadowColor;
+            shape.shadowBlur = shadowBlur;
+            shape.color = progressGlowColor;
+        } else {
+            shape.fillColor = progressGlowColor;
+        }
+    });
+    innerMeter.draw(canvasObj, t);
 
     meterDot.draw(canvasObj);
 
     meterDial
-        .rotate(alpha_t, true)
+        .rotate(theta, true)
         .draw(canvasObj)
-        .rotate(-alpha_t, true);
+        .rotate(-theta, true);
 
     progressBarMesh.draw(canvasObj, progressAmount);
 }
 
 let initFunc = function(t) {
-    let tmp = document.getElementById("tmp");
+    let completeModal = document.getElementById("complete-modal");
     let width = window.innerWidth;
 
-    tmp.style.transform = `translateX(${-width}px)`;
+    completeModal.style.transform = `translateX(${-width}px)`;
 
     document.getElementById("test-kind").innerHTML = dlText;
     document.getElementById("test-amount").innerHTML = "0";
@@ -429,24 +434,48 @@ let initFunc = function(t) {
     outerRadius = canvas.width / 2 - lineWidth / 2;
     innerRadius = outerRadius - innerDelta;
 
-    dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
-    ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
-
-    dlProgressGlowColor = generateGradientWrapper(
-        canvas,
-        dlColorStops.map(makeGlowColor)
-    );
-    ulProgressGlowColor = generateGradientWrapper(
-        canvas,
-        ulColorStops.map(makeGlowColor)
-    );
-
     let originX = canvas.width / 2;
     let originY = canvas.height / 2;
 
-    let dialBase = lineWidth * 1.5;
-    let dialHeight = innerRadius;
-    let dialTop = dialBase / 1.7;
+    dlProgressColor = generateGradient(
+        ctx,
+        dlColorStops,
+        originX - outerRadius,
+        originY + outerRadius,
+        originX + outerRadius,
+        originY + outerRadius
+    );
+
+    ulProgressColor = generateGradient(
+        ctx,
+        ulColorStops,
+        originX - outerRadius,
+        originY + outerRadius,
+        originX + outerRadius,
+        originY + outerRadius
+    );
+
+    dlProgressGlowColor = generateGradient(
+        ctx,
+        dlColorStops.map(makeGlowColor),
+        originX - innerRadius,
+        originY + innerRadius,
+        originX + innerRadius,
+        originY + innerRadius
+    );
+
+    ulProgressGlowColor = generateGradient(
+        ctx,
+        ulColorStops.map(makeGlowColor),
+        originX - innerRadius,
+        originY + innerRadius,
+        originX + innerRadius,
+        originY + innerRadius
+    );
+
+    let dialBase = lineWidth / 1.2;
+    let dialHeight = innerRadius * 0.8;
+    let dialTop = dialBase / 1.8;
 
     // Initializing polygons
     let base = [
@@ -473,6 +502,9 @@ let initFunc = function(t) {
         backgroundColor,
         lineWidth
     );
+    outerMeter.map((shape, index) => {
+        shape.shadowColor = shadowColor;
+    });
 
     innerMeter = roundedArc(
         0,
@@ -483,6 +515,9 @@ let initFunc = function(t) {
         backgroundColor,
         lineWidth
     );
+    innerMeter.map((shape, index) => {
+        shape.shadowColor = shadowColor;
+    });
 
     meterDot = new Arc(
         0,
@@ -500,8 +535,6 @@ let initFunc = function(t) {
 
     // Centering the meter meterDial and laying it flat.
     meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
-
-    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 
     let progressBar = roundedRectangle(
         0,
@@ -527,6 +560,8 @@ let initFunc = function(t) {
         this.shapes[0].draw(ctx, 1);
         this.shapes[1].draw(ctx, t);
     };
+
+    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
 let openingAnimation = function(duration, timingFunc) {
@@ -561,8 +596,8 @@ let closingAnimation = function(duration, timingFunc) {
         outerMeter.radius = outerRadius * t;
         meterDot.radius = meterDotSize * t;
 
-        outerMeter.draw(canvasObj);
-        meterDot.draw(canvasObj);
+        outerMeter.draw(canvasObj, t);
+        meterDot.draw(canvasObj, t);
 
         let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 

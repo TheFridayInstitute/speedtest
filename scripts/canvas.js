@@ -268,7 +268,7 @@ export class Arc extends Shape {
         this._endAngle = endAngle;
     }
 
-    draw(ctx) {
+    draw(ctx, t) {
         let originX = 0;
         let originY = 0;
 
@@ -376,7 +376,7 @@ export class Text extends Shape {
         this.font = font;
     }
 
-    draw(ctx) {
+    draw(ctx, t) {
         let originX = 0;
         let originY = 0;
 

@@ -65,13 +65,9 @@ var outerMeter;
 var innerMeter;
 var meterDot;
 var progressBarMesh;
-var meterMarkerMesh;
-var textMesh;
 
 let alpha0 = Math.PI * 0.8;
 let alpha1 = 2 * Math.PI * 1.1;
-// let alpha0 = Math.PI*0.01;
-// let alpha1 = 2*Math.PI*1.1;
 
 let meterMin = 0;
 let meterMax = 100;
@@ -194,7 +190,7 @@ function roundedArc(
     color,
     lineWidth
 ) {
-    let slump = -0.003;
+    let slump = -0.0003;
     let outerEdge = radius + lineWidth / 2;
 
     let barHeight = 0.05;
@@ -243,8 +239,8 @@ function roundedArc(
 
     let roundedArcMesh = new Mesh(endCap, arc, startCap);
 
-    roundedArcMesh.draw = function(ctx, theta) {
-        theta = clamp(theta, beginAngle, endAngle - 2 * delta);
+    roundedArcMesh.draw = function(ctx, t) {
+        let theta = lerp(t, beginAngle, endAngle - 2 * delta);
         let theta2 = theta;
 
         if (theta >= beginAngle - delta + slump) {
@@ -296,14 +292,16 @@ function roundedRectangle(leftX, leftY, width, height, fillColor) {
         [leftX + width, leftY - height],
     ];
 
+    width -= 2 * r;
+
     let slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
     let slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
 
     let startCap = new Polygon(slerpsLeft, null, null, fillColor);
-    let bar = new Rectangle(leftX, leftY, width - 2 * r, height, fillColor);
+    let bar = new Rectangle(leftX, leftY, width, height, fillColor);
     let endCap = new Polygon(slerpsRight, null, null, fillColor);
 
-    let shiftX = -width / 2 + r;
+    let shiftX = -width / 2;
     let shiftY = height / 2;
 
     startCap.translate(shiftX, shiftY);
@@ -314,25 +312,25 @@ function roundedRectangle(leftX, leftY, width, height, fillColor) {
     let lock = false;
 
     roundedBarMesh.draw = function(ctx, t) {
-        if (t < 0 && !lock) {
-            roundedBarMesh.shapes[2].translate(shiftX, 0);
-            roundedBarMesh.shapes[2].rotate(180, false);
-            roundedBarMesh.shapes[2].translate(-shiftX, -0);
-            lock = true;
-        } else if (t > 0 && lock) {
-            roundedBarMesh.shapes[2].translate(shiftX, 0);
-            roundedBarMesh.shapes[2].rotate(180, false);
-            roundedBarMesh.shapes[2].translate(-shiftX, -0);
-            lock = false;
-        }
-
         let w = t * width;
 
-        roundedBarMesh.shapes[1].translate(width / 2 - r, 0);
-        roundedBarMesh.shapes[1].width = w;
-        roundedBarMesh.shapes[1].translate(-width / 2 + r, 0);
+        if (t < 0 && !lock) {
+            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
+            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
+            width += r;
+            lock = true;
+        } else if (t > 0 && lock) {
+            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
+            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
+            lock = false;
+            width -= r;
+        }
 
-        t = -(1 - t) * width + 2 * r + slump;
+        roundedBarMesh.shapes[1].translate(-shiftX, 0);
+        roundedBarMesh.shapes[1].width = w;
+        roundedBarMesh.shapes[1].translate(shiftX, 0);
+
+        t = -(1 - t) * width + slump;
 
         roundedBarMesh.shapes[2].translate(t, 0);
         for (let shape of this.shapes) {
@@ -371,22 +369,31 @@ function drawMeterLoop(
     );
     let alpha_t = lerp(t, alpha0, alpha1);
 
-    outerMeter.color = backgroundColor;
-    outerMeter.endAngle = alpha1;
-    outerMeter.draw(canvasObj);
+    // outerMeter.color = backgroundColor;
+    // outerMeter.endAngle = alpha1;
+    // outerMeter.draw(canvasObj);
 
-    outerMeter.shadowBlur = shadowBlur;
-    outerMeter.shadowColor = shadowColor;
+    // outerMeter.shadowBlur = shadowBlur;
+    // outerMeter.shadowColor = shadowColor;
 
-    outerMeter.color = progressColor;
-    outerMeter.endAngle = alpha_t;
-    outerMeter.draw(canvasObj);
+    // outerMeter.color = progressColor;
+    // outerMeter.endAngle = alpha_t;
+    // outerMeter.draw(canvasObj);
 
-    innerMeter.color = progressGlowColor;
-    innerMeter.endAngle = alpha_t;
-    innerMeter.draw(canvasObj);
+    // innerMeter.color = progressGlowColor;
+    // innerMeter.endAngle = alpha_t;
+    // innerMeter.draw(canvasObj);
 
-    outerMeter.shadowBlur = 0;
+    // outerMeter.shadowBlur = 0;
+
+    outerMeter.draw(canvasObj, 1);
+    // outerMeter.map((shape) => {
+    //     shape.color = progressColor;
+    // });
+    // outerMeter.draw(canvasObj, t);
+    // outerMeter.map((shape) => {
+    //     shape.color = backgroundColor;
+    // });
 
     meterDot.draw(canvasObj);
 
@@ -395,14 +402,7 @@ function drawMeterLoop(
         .draw(canvasObj)
         .rotate(-alpha_t, true);
 
-    progressBarMesh.shapes[1].translate(progressBarMesh.shapes[0].width / 2, 0);
-    progressBarMesh.shapes[1].width =
-        progressBarMesh.shapes[0].width * progressAmount;
-    progressBarMesh.shapes[1].translate(
-        -progressBarMesh.shapes[0].width / 2,
-        0
-    );
-    progressBarMesh.draw(canvasObj);
+    progressBarMesh.draw(canvasObj, progressAmount);
 }
 
 let initFunc = function(t) {
@@ -464,28 +464,25 @@ let initFunc = function(t) {
 
     meterDial = new Polygon(meterPoints, null, null, "white");
 
-    outerMeter = new Arc(
+    outerMeter = roundedArc(
         0,
         0,
         outerRadius,
         alpha0,
-        0,
+        alpha1,
         backgroundColor,
         lineWidth
     );
 
-    innerMeter = new Arc(
+    innerMeter = roundedArc(
         0,
         0,
         innerRadius,
         alpha0,
-        0,
+        alpha1,
         backgroundColor,
         lineWidth
     );
-
-    innerMeter.shadowBlur = shadowBlur;
-    innerMeter.shadowColor = shadowColor;
 
     meterDot = new Arc(
         0,
@@ -501,35 +498,19 @@ let initFunc = function(t) {
     let barWidth = outerRadius;
     let barHeight = lineWidth / 4;
 
-    let progressBarBackground = new Rectangle(
-        0,
-        0,
-        barWidth,
-        barHeight,
-        backgroundColor
-    );
-    let progressBarForeground = new Rectangle(
+    // Centering the meter meterDial and laying it flat.
+    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
+
+    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
+
+    let progressBar = roundedRectangle(
         0,
         0,
         barWidth,
         barHeight,
         progressBarColor
     );
-
-    progressBarMesh = new Mesh(progressBarBackground, progressBarForeground);
-
-    // Centering the meter meterDial and laying it flat.
-    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
-
-    // Centering the progress bar mesh and moving it to be almost outside of the outer radius.
-    progressBarMesh
-        .translate(-barWidth / 2, -barHeight / 2)
-        .translate(0, outerRadius / 1.5);
-
-    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
-
-    let pBar = roundedRectangle(0, 0, barWidth, barHeight, progressBarColor);
-    let pBarBackground = roundedRectangle(
+    let progressBarBackground = roundedRectangle(
         0,
         0,
         barWidth,
@@ -537,29 +518,28 @@ let initFunc = function(t) {
         backgroundColor
     );
 
-    let transformFunc = function(v, t) {
-        canvasObj.clear();
-        pBar.draw(canvasObj, v);
-        pBarBackground.draw(canvasObj, 1);
-    };
+    progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(
+        0,
+        outerRadius / 1.5 - barHeight / 2
+    );
 
-    smoothAnimate(1, 0, 3000, transformFunc, bounceInEase);
+    progressBarMesh.draw = function(ctx, t) {
+        this.shapes[0].draw(ctx, 1);
+        this.shapes[1].draw(ctx, t);
+    };
 };
 
 let openingAnimation = function(duration, timingFunc) {
     let transformFunc = function(v, t) {
         canvasObj.clear();
 
-        outerMeter.endAngle = v;
         outerMeter.radius = outerRadius * t;
-
-        innerMeter.endAngle = v;
         innerMeter.radius = innerRadius * t;
 
         meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
 
-        outerMeter.draw(canvasObj);
-        meterDot.draw(canvasObj);
+        outerMeter.draw(canvasObj, t);
+        meterDot.draw(canvasObj, t);
 
         let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
 

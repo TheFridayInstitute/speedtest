@@ -514,7 +514,7 @@ async function onstart() {
 }
 
 async function onend() {
-    let duration = 3000;
+    let duration = 2000;
     closingAnimation(duration, easeInOutCubic);
 
     let testEl = document.getElementById("test-container");

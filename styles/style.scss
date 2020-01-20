@@ -97,14 +97,14 @@ body {
     font-family: var(--font-family-primary);
 
     grid-template-areas:
-        "button"
         "test"
-        "info";
+        "info"
+        "button";
 
     max-width: var(--meter-width);
 
     grid-template-columns: 1fr;
-    grid-template-rows: 0.5fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 0.5fr;
 
     justify-content: center;
     align-items: center;

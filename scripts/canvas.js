@@ -476,6 +476,167 @@ export class Mesh {
     }
 }
 
+export function roundedArc(
+    originX,
+    originY,
+    radius,
+    beginAngle,
+    endAngle,
+    color,
+    lineWidth
+) {
+    let slump = -0.0003;
+    let outerEdge = radius + lineWidth / 2;
+
+    let barHeight = 0.05;
+    let barWidth = lineWidth;
+
+    let base = [
+        [0, barHeight],
+        [barWidth, barHeight],
+    ];
+
+    let slerps = slerpPoints(base[0], base[1]);
+    let points = [...slerps];
+
+    let theta = beginAngle;
+    let delta = (barHeight * 2) / radius;
+
+    theta += delta;
+
+    let startCap = new Polygon(points, null, null, color);
+    let arc = new Arc(
+        originX,
+        originY,
+        radius,
+        theta + slump,
+        0,
+        color,
+        lineWidth
+    );
+    let endCap = new Polygon(
+        JSON.parse(JSON.stringify(points)),
+        null,
+        null,
+        color
+    );
+
+    startCap.translate(originX, originY);
+    endCap.translate(originX, originY);
+
+    let x = outerEdge * Math.cos(theta);
+    let y = outerEdge * Math.sin(theta);
+
+    startCap
+        .scale(-1)
+        .rotate(theta, true)
+        .translate(x, y);
+
+    let roundedArcMesh = new Mesh(endCap, arc, startCap);
+
+    roundedArcMesh.draw = function(ctx, t) {
+        let theta = lerp(t, beginAngle, endAngle - 2 * delta);
+        let theta2 = theta;
+
+        if (theta >= beginAngle - delta + slump) {
+            if (theta >= endAngle - delta) {
+                theta2 = endAngle - delta + slump;
+                theta = endAngle - delta;
+            } else {
+                theta2 = theta + delta + slump;
+                theta += delta;
+            }
+        } else {
+            theta2 = theta;
+        }
+
+        let x = outerEdge * Math.cos(theta2);
+        let y = outerEdge * Math.sin(theta2);
+
+        this.shapes[0]
+            .translate(-barWidth, 0)
+            .rotate(theta2, true)
+            .translate(x, y)
+
+            .draw(ctx)
+            .translate(-x, -y)
+            .rotate(-theta2, true)
+            .translate(barWidth, 0);
+
+        this.shapes[1].endAngle = theta;
+        this.shapes[1].draw(ctx);
+
+        this.shapes[2].draw(ctx);
+    };
+
+    return roundedArcMesh;
+}
+
+export function roundedRectangle(leftX, leftY, width, height, fillColor) {
+    let slump = -0.3;
+
+    let r = Math.abs((leftY - height) / 2);
+
+    let leftSide = [
+        [leftX, leftY],
+        [leftX, leftY - height],
+    ];
+
+    let rightSide = [
+        [leftX + width, leftY],
+        [leftX + width, leftY - height],
+    ];
+
+    width -= 2 * r;
+
+    let slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
+    let slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
+
+    let startCap = new Polygon(slerpsLeft, null, null, fillColor);
+    let bar = new Rectangle(leftX, leftY, width, height, fillColor);
+    let endCap = new Polygon(slerpsRight, null, null, fillColor);
+
+    let shiftX = -width / 2;
+    let shiftY = height / 2;
+
+    startCap.translate(shiftX - slump, shiftY);
+    endCap.translate(shiftX - 2 * r, shiftY);
+    bar.translate(shiftX, -shiftY);
+
+    let roundedBarMesh = new Mesh(startCap, bar, endCap);
+    let lock = false;
+
+    roundedBarMesh.draw = function(ctx, t) {
+        let w = t * width;
+
+        if (t < 0 && !lock) {
+            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
+            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
+            width += r;
+            lock = true;
+        } else if (t > 0 && lock) {
+            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
+            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
+            lock = false;
+            width -= r;
+        }
+
+        roundedBarMesh.shapes[1].translate(-shiftX, 0);
+        roundedBarMesh.shapes[1].width = w;
+        roundedBarMesh.shapes[1].translate(shiftX, 0);
+
+        t = -(1 - t) * width + slump;
+
+        roundedBarMesh.shapes[2].translate(t, 0);
+        for (let shape of this.shapes) {
+            shape.draw(ctx);
+        }
+        roundedBarMesh.shapes[2].translate(-t, 0);
+    };
+
+    return roundedBarMesh;
+}
+
 export function generateGradient(ctx, colorStops, x0, y0, x1, y1) {
     let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
     for (let [stop, color] of colorStops) {

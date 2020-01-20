@@ -8,6 +8,8 @@ import {
     Text,
     generateRadialGradient,
     generateGradient,
+    roundedArc,
+    roundedRectangle,
 } from "./canvas.js";
 
 import {
@@ -73,7 +75,7 @@ let alpha1 = 2 * Math.PI * 1.1;
 let meterMin = 0;
 let meterMax = 100;
 
-var lineWidth = emToPixels("2.5em");
+let lineWidth = emToPixels("2.5em");
 
 let shadowColor = "rgba(0, 0, 0, 0.5)";
 let shadowBlur = 0;
@@ -146,6 +148,7 @@ function startStop() {
     } else {
         document.getElementById("start-btn").classList.add("running");
         document.getElementById("start-btn").innerText = "Stop";
+
         speedtestObj.onupdate = function(data) {
             UI_DATA = data;
 
@@ -180,176 +183,16 @@ function startStop() {
     return UI_DATA;
 }
 
-function roundedArc(
-    originX,
-    originY,
-    radius,
-    beginAngle,
-    endAngle,
-    color,
-    lineWidth
-) {
-    let slump = -0.0003;
-    let outerEdge = radius + lineWidth / 2;
-
-    let barHeight = 0.05;
-    let barWidth = lineWidth;
-
-    let base = [
-        [0, barHeight],
-        [barWidth, barHeight],
-    ];
-
-    let slerps = slerpPoints(base[0], base[1]);
-    let points = [...slerps];
-
-    let theta = beginAngle;
-    let delta = (barHeight * 2) / radius;
-
-    theta += delta;
-
-    let startCap = new Polygon(points, null, null, color);
-    let arc = new Arc(
-        originX,
-        originY,
-        radius,
-        theta + slump,
-        0,
-        color,
-        lineWidth
-    );
-    let endCap = new Polygon(
-        JSON.parse(JSON.stringify(points)),
-        null,
-        null,
-        color
-    );
-
-    startCap.translate(originX, originY);
-    endCap.translate(originX, originY);
-
-    let x = outerEdge * Math.cos(theta);
-    let y = outerEdge * Math.sin(theta);
-
-    startCap
-        .scale(-1)
-        .rotate(theta, true)
-        .translate(x, y);
-
-    let roundedArcMesh = new Mesh(endCap, arc, startCap);
-
-    roundedArcMesh.draw = function(ctx, t) {
-        let theta = lerp(t, beginAngle, endAngle - 2 * delta);
-        let theta2 = theta;
-
-        if (theta >= beginAngle - delta + slump) {
-            if (theta >= endAngle - delta) {
-                theta2 = endAngle - delta + slump;
-                theta = endAngle - delta;
-            } else {
-                theta2 = theta + delta + slump;
-                theta += delta;
-            }
-        } else {
-            theta2 = theta;
-        }
-
-        let x = outerEdge * Math.cos(theta2);
-        let y = outerEdge * Math.sin(theta2);
-
-        this.shapes[0]
-            .translate(-barWidth, 0)
-            .rotate(theta2, true)
-            .translate(x, y)
-
-            .draw(ctx)
-            .translate(-x, -y)
-            .rotate(-theta2, true)
-            .translate(barWidth, 0);
-
-        this.shapes[1].endAngle = theta;
-        this.shapes[1].draw(ctx);
-
-        this.shapes[2].draw(ctx);
-    };
-
-    return roundedArcMesh;
-}
-
-function roundedRectangle(leftX, leftY, width, height, fillColor) {
-    let slump = -0.3;
-
-    let r = Math.abs((leftY - height) / 2);
-
-    let leftSide = [
-        [leftX, leftY],
-        [leftX, leftY - height],
-    ];
-
-    let rightSide = [
-        [leftX + width, leftY],
-        [leftX + width, leftY - height],
-    ];
-
-    width -= 2 * r;
-
-    let slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
-    let slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
-
-    let startCap = new Polygon(slerpsLeft, null, null, fillColor);
-    let bar = new Rectangle(leftX, leftY, width, height, fillColor);
-    let endCap = new Polygon(slerpsRight, null, null, fillColor);
-
-    let shiftX = -width / 2;
-    let shiftY = height / 2;
-
-    startCap.translate(shiftX - slump, shiftY);
-    endCap.translate(shiftX - 2 * r, shiftY);
-    bar.translate(shiftX, -shiftY);
-
-    let roundedBarMesh = new Mesh(startCap, bar, endCap);
-    let lock = false;
-
-    roundedBarMesh.draw = function(ctx, t) {
-        let w = t * width;
-
-        if (t < 0 && !lock) {
-            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
-            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
-            width += r;
-            lock = true;
-        } else if (t > 0 && lock) {
-            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
-            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
-            lock = false;
-            width -= r;
-        }
-
-        roundedBarMesh.shapes[1].translate(-shiftX, 0);
-        roundedBarMesh.shapes[1].width = w;
-        roundedBarMesh.shapes[1].translate(shiftX, 0);
-
-        t = -(1 - t) * width + slump;
-
-        roundedBarMesh.shapes[2].translate(t, 0);
-        for (let shape of this.shapes) {
-            shape.draw(ctx);
-        }
-        roundedBarMesh.shapes[2].translate(-t, 0);
-    };
-
-    return roundedBarMesh;
-}
-
 function drawMeterLoop(
     status,
-    canvas,
     meterTextEl,
     meterAmount,
     progressAmount,
     progressColor,
     progressGlowColor
 ) {
+    canvasObj.clear();
+
     meterAmount = parseFloat(meterAmount) || 0;
     progressAmount = parseFloat(progressAmount) || 0;
 
@@ -358,8 +201,6 @@ function drawMeterLoop(
     } else {
         meterTextEl.innerHTML = meterAmount.toPrecision(3);
     }
-
-    canvasObj.clear();
 
     let t = normalize(
         clamp(meterAmount, meterMin, meterMax),
@@ -613,27 +454,6 @@ let closingAnimation = function(duration, timingFunc) {
     smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
 };
 
-let rotateDialAnimation = function(duration, timingFunc) {
-    let transformFunc = function(v, t) {
-        canvasObj.clear();
-        t = clamp(t, 0.0001, 1);
-
-        outerMeter.draw(canvasObj);
-        meterDot.draw(canvasObj);
-
-        let theta = lerp(t, alpha0, 4 * Math.PI + alpha0);
-
-        meterDial
-            .rotate(theta, true)
-
-            .draw(canvasObj)
-
-            .rotate(-theta, true);
-    };
-
-    smoothAnimate(alpha1, alpha0, duration, transformFunc, timingFunc);
-};
-
 let updateFunc = function(t) {
     return false;
 };
@@ -643,54 +463,43 @@ let drawFunc = function(t) {
         return false;
     }
 
-    switch (UI_DATA.testState) {
-        case 1: {
-            document.getElementById("test-kind").innerHTML = dlText;
-            drawMeterLoop(
-                UI_DATA.testState,
-                document.getElementById("test-meter"),
-                document.getElementById("test-amount"),
-                UI_DATA.dlStatus,
-                UI_DATA.dlProgress,
-                dlProgressColor,
-                dlProgressGlowColor
-            );
-            break;
-        }
-        case 3: {
-            document.getElementById("dl-amount").innerHTML = Number(
-                UI_DATA.dlStatus
-            ).toPrecision(3);
+    if (UI_DATA.testState === 1) {
+        document.getElementById("test-kind").innerHTML = dlText;
+        drawMeterLoop(
+            UI_DATA.testState,
+            document.getElementById("test-amount"),
+            UI_DATA.dlStatus,
+            UI_DATA.dlProgress,
+            dlProgressColor,
+            dlProgressGlowColor
+        );
+    } else if (UI_DATA.testState === 3) {
+        document.getElementById("dl-amount").innerHTML = Number(
+            UI_DATA.dlStatus
+        ).toPrecision(3);
 
-            document.getElementById("test-kind").innerHTML = ulText;
+        document.getElementById("test-kind").innerHTML = ulText;
+        drawMeterLoop(
+            UI_DATA.testState,
+            document.getElementById("test-amount"),
+            UI_DATA.ulStatus,
+            UI_DATA.ulProgress,
+            ulProgressColor,
+            ulProgressGlowColor
+        );
+    } else if (UI_DATA.testState === 4) {
+        document.getElementById("ul-amount").innerHTML = Number(
+            UI_DATA.ulStatus
+        ).toPrecision(3);
 
-            drawMeterLoop(
-                UI_DATA.testState,
-                document.getElementById("test-meter"),
-                document.getElementById("test-amount"),
-                UI_DATA.ulStatus,
-                UI_DATA.ulProgress,
-                ulProgressColor,
-                ulProgressGlowColor
-            );
-            break;
-        }
-        case 4: {
-            document.getElementById("ul-amount").innerHTML = Number(
-                UI_DATA.ulStatus
-            ).toPrecision(3);
+        setTimeout(function() {
+            let duration = 3000;
+            closingAnimation(duration, easeInOutCubic);
 
             setTimeout(function() {
-                let duration = 3000;
-                closingAnimation(duration, easeInOutCubic);
-
-                setTimeout(function() {
-                    slideOverFunc();
-                }, duration * 0.75);
-            }, 1000);
-
-            break;
-        }
+                slideOverFunc();
+            }, duration * 0.75);
+        }, 1000);
     }
 
     document.getElementById("ping-amount").innerText = Math.round(
@@ -707,15 +516,8 @@ window.onload = function() {
 
 document.getElementById("start-btn").addEventListener("click", function(e) {
     let duration = 1000;
-    // toggle(
-    //     document.getElementById("start-btn"),
-    //     function() {
-    //         openingAnimation(duration, smoothStep3);
-    //     },
-    //     function() {
-    //         closingAnimation(duration, easeInOutCubic);
-    //     }
-    // );
-    openingAnimation(duration, smoothStep3);
+    toggleOnce(document.getElementById("start-btn"), function() {
+        openingAnimation(duration, smoothStep3);
+    });
     UI_DATA = startStop();
 });

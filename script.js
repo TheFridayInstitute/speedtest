@@ -24,6 +24,9 @@ import {
     DeCasteljau,
     easeInCubic,
     slerpPoints,
+    dot,
+    distance,
+    rotate,
 } from "./math.js";
 
 import {
@@ -182,7 +185,7 @@ function startStop() {
     return UI_DATA;
 }
 
-function genRoundedMeterMesh(
+function roundedArc(
     originX,
     originY,
     radius,
@@ -238,9 +241,9 @@ function genRoundedMeterMesh(
         .rotate(theta, true)
         .translate(x, y);
 
-    let roundedMeterMesh = new Mesh(endCap, arc, startCap);
+    let roundedArcMesh = new Mesh(endCap, arc, startCap);
 
-    roundedMeterMesh.draw = function(ctx, theta) {
+    roundedArcMesh.draw = function(ctx, theta) {
         theta = clamp(theta, beginAngle, endAngle - 2 * delta);
         let theta2 = theta;
 
@@ -275,7 +278,70 @@ function genRoundedMeterMesh(
         this.shapes[2].draw(ctx);
     };
 
-    return roundedMeterMesh;
+    return roundedArcMesh;
+}
+
+function roundedRectangle(leftX, leftY, width, height, fillColor) {
+    let slump = -0.3;
+
+    let r = Math.abs((leftY - height) / 2);
+
+    let leftSide = [
+        [leftX, leftY],
+        [leftX, leftY - height],
+    ];
+
+    let rightSide = [
+        [leftX + width, leftY],
+        [leftX + width, leftY - height],
+    ];
+
+    let slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
+    let slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
+
+    let startCap = new Polygon(slerpsLeft, null, null, fillColor);
+    let bar = new Rectangle(leftX, leftY, width - 2 * r, height, fillColor);
+    let endCap = new Polygon(slerpsRight, null, null, fillColor);
+
+    let shiftX = -width / 2 + r;
+    let shiftY = height / 2;
+
+    startCap.translate(shiftX, shiftY);
+    endCap.translate(shiftX - 2 * r, shiftY);
+    bar.translate(shiftX, -shiftY);
+
+    let roundedBarMesh = new Mesh(startCap, bar, endCap);
+    let lock = false;
+
+    roundedBarMesh.draw = function(ctx, t) {
+        if (t < 0 && !lock) {
+            roundedBarMesh.shapes[2].translate(shiftX, 0);
+            roundedBarMesh.shapes[2].rotate(180, false);
+            roundedBarMesh.shapes[2].translate(-shiftX, -0);
+            lock = true;
+        } else if (t > 0 && lock) {
+            roundedBarMesh.shapes[2].translate(shiftX, 0);
+            roundedBarMesh.shapes[2].rotate(180, false);
+            roundedBarMesh.shapes[2].translate(-shiftX, -0);
+            lock = false;
+        }
+
+        let w = t * width;
+
+        roundedBarMesh.shapes[1].translate(width / 2 - r, 0);
+        roundedBarMesh.shapes[1].width = w;
+        roundedBarMesh.shapes[1].translate(-width / 2 + r, 0);
+
+        t = -(1 - t) * width + 2 * r + slump;
+
+        roundedBarMesh.shapes[2].translate(t, 0);
+        for (let shape of this.shapes) {
+            shape.draw(ctx);
+        }
+        roundedBarMesh.shapes[2].translate(-t, 0);
+    };
+
+    return roundedBarMesh;
 }
 
 function drawMeterLoop(
@@ -462,48 +528,22 @@ let initFunc = function(t) {
 
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 
-    let watchRed = "rgb(233, 70, 126)";
-    let watchGreen = "rgb(180, 243, 77)";
-    let watchBlue = "rgb(105, 228, 212)";
-
-    let roundedMeterMesh = genRoundedMeterMesh(
+    let pBar = roundedRectangle(0, 0, barWidth, barHeight, progressBarColor);
+    let pBarBackground = roundedRectangle(
         0,
         0,
-        outerRadius,
-        alpha0,
-        alpha1,
-        watchRed,
-        lineWidth
-    );
-
-    let innerRoundedMeterMesh = genRoundedMeterMesh(
-        0,
-        0,
-        innerRadius,
-        alpha0,
-        alpha1,
-        watchGreen,
-        lineWidth
-    );
-
-    let innerInnerRoundedMeterMesh = genRoundedMeterMesh(
-        0,
-        0,
-        innerRadius - innerDelta,
-        alpha0,
-        alpha1,
-        watchBlue,
-        lineWidth
+        barWidth,
+        barHeight,
+        backgroundColor
     );
 
     let transformFunc = function(v, t) {
         canvasObj.clear();
-        roundedMeterMesh.draw(canvasObj, v);
-        innerRoundedMeterMesh.draw(canvasObj, v);
-        innerInnerRoundedMeterMesh.draw(canvasObj, v);
+        pBar.draw(canvasObj, v);
+        pBarBackground.draw(canvasObj, 1);
     };
 
-    smoothAnimate(alpha1, alpha0, 1000, transformFunc, easeInBounce);
+    smoothAnimate(1, 0, 3000, transformFunc, bounceInEase);
 };
 
 let openingAnimation = function(duration, timingFunc) {

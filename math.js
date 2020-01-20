@@ -76,7 +76,7 @@ export function angle(xy1, xy2) {
     return Math.acos(d / m);
 }
 
-export function slerpPoints(xy1, xy2) {
+export function slerpPoints(xy1, xy2, neg = 1) {
     let minX = Math.min(xy1[0], xy2[0]);
     let minY = Math.min(xy1[1], xy2[1]);
 
@@ -101,13 +101,19 @@ export function slerpPoints(xy1, xy2) {
     let alpha0 = 2 * Math.PI - angle(unit, v1);
     let alpha1 = angle(unit, v2);
 
+    if (neg === 1) {
+        let t = alpha0;
+        alpha0 = alpha1;
+        alpha1 = t;
+    }
+
     let delta = 0.1;
     let points = [];
 
     for (let t = 0; t < 1; t += delta) {
         let v = lerp(t, alpha0, alpha1);
         points.push([
-            r * Math.cos(v) + midpoint[0],
+            neg * r * Math.cos(v) + midpoint[0],
             r * Math.sin(v) + midpoint[1],
         ]);
     }

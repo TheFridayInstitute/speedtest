@@ -103,12 +103,8 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     requestAnimationFrame(animationLoop);
 }
 
-export function animationLoopOuter(initFunc, updateFunc, drawFunc) {
+export function animationLoopOuter(updateFunc, drawFunc) {
     let clock = new Clock();
-
-    function init() {
-        return initFunc(clock.elapsedTicks);
-    }
 
     function update() {
         return updateFunc(clock.elapsedTicks);
@@ -145,7 +141,6 @@ export function animationLoopOuter(initFunc, updateFunc, drawFunc) {
     }
 
     clock.start();
-    init();
     requestAnimationFrame(animationLoop);
 }
 
@@ -167,7 +162,6 @@ export function slideLeft(el, to, from, duration) {
     duration = duration === undefined ? 1000 : duration;
 
     let transformFunc = function(v) {
-        console.log(v, from, to);
         el.style.transform = `translateX(${v}px)`;
     };
 

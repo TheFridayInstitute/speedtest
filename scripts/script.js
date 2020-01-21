@@ -30,6 +30,8 @@ import {
     dot,
     distance,
     rotate,
+    range,
+    lerpIn,
 } from "./math.js";
 
 import {
@@ -69,6 +71,7 @@ var outerMeter;
 var innerMeter;
 var meterDot;
 var progressBarMesh;
+var progressIntervals;
 
 let alpha0 = Math.PI * 0.8;
 let alpha1 = 2 * Math.PI * 1.1;
@@ -107,8 +110,7 @@ var dlProgressGlowColor;
 var ulProgressColor;
 var ulProgressGlowColor;
 
-let dlText = `<div class="dl-icon"><i class="fa fa-arrow-circle-o-down"></i></div>`;
-let ulText = `<div class="ul-icon"><i class="fa fa-arrow-circle-o-down"></i></div>`;
+let dlText = `<div><i class="fa fa-arrow-circle-o-down"></i></div>`;
 
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
@@ -154,6 +156,17 @@ function startStop() {
         speedtestObj.onend = function(aborted) {
             document.getElementById("start-btn").innerText = "Start";
             document.getElementById("start-btn").classList.remove("running");
+            if (aborted) {
+                toggleOnce(document.getElementById("test-kind"), function(el) {
+                    rotateElement(
+                        el,
+                        0,
+                        el.getAttribute("rotation"),
+                        1000,
+                        false
+                    );
+                });
+            }
             drawFunc();
         };
 
@@ -161,6 +174,19 @@ function startStop() {
     }
     return UI_DATA;
 }
+
+function setRoundedArcColor(roundedArc, color) {
+    roundedArc.map((shape, index) => {
+        if (shape instanceof Arc) {
+            shape.color = color;
+        } else {
+            shape.fillColor = color;
+        }
+    });
+}
+
+var prevT = 0;
+var eps = 0.1;
 
 function drawMeterLoop(
     status,
@@ -170,8 +196,6 @@ function drawMeterLoop(
     progressColor,
     progressGlowColor
 ) {
-    canvasObj.clear();
-
     meterAmount = parseFloat(meterAmount) || 0;
     progressAmount = parseFloat(progressAmount) || 0;
 
@@ -186,38 +210,22 @@ function drawMeterLoop(
         meterMin,
         meterMax
     );
+
+    if (t - prevT > eps) {
+        t = prevT + eps;
+    } else if (t - prevT < -eps) {
+        t = prevT - eps;
+    }
+    prevT = t;
+
     let theta = lerp(t, alpha0, alpha1);
 
     outerMeter.draw(canvasObj, 1);
-    outerMeter.map((shape, index) => {
-        if (shape instanceof Arc) {
-            shape.color = progressColor;
-            shape.shadowColor = shadowColor;
-            shape.shadowBlur = shadowBlur;
-        } else {
-            shape.fillColor = progressColor;
-        }
-    });
-
+    setRoundedArcColor(outerMeter, progressColor);
     outerMeter.draw(canvasObj, t);
-    outerMeter.map((shape, index) => {
-        shape.shadowBlur = 0;
-        if (shape instanceof Arc) {
-            shape.color = backgroundColor;
-        } else {
-            shape.fillColor = backgroundColor;
-        }
-    });
+    setRoundedArcColor(outerMeter, backgroundColor);
 
-    innerMeter.map((shape, index) => {
-        if (shape instanceof Arc) {
-            shape.shadowColor = shadowColor;
-            shape.shadowBlur = shadowBlur;
-            shape.color = progressGlowColor;
-        } else {
-            shape.fillColor = progressGlowColor;
-        }
-    });
+    setRoundedArcColor(innerMeter, progressGlowColor);
     innerMeter.draw(canvasObj, t);
 
     meterDot.draw(canvasObj);
@@ -227,7 +235,7 @@ function drawMeterLoop(
         .draw(canvasObj)
         .rotate(-theta, true);
 
-    progressBarMesh.draw(canvasObj, progressAmount);
+    progressBarMesh.draw(canvasObj, clamp(progressAmount, 0, 1));
 }
 
 let initFunc = function(t) {
@@ -429,12 +437,13 @@ let updateFunc = function(t) {
 };
 
 let drawFunc = function(t) {
+    canvasObj.clear();
+
     if (speedtestObj.getState() != 3 || UI_DATA === null) {
         return false;
     }
 
     if (UI_DATA.testState === 1) {
-        document.getElementById("test-kind").innerHTML = dlText;
         drawMeterLoop(
             UI_DATA.testState,
             document.getElementById("test-amount"),
@@ -444,11 +453,14 @@ let drawFunc = function(t) {
             dlProgressGlowColor
         );
     } else if (UI_DATA.testState === 3) {
+        toggleOnce(document.getElementById("test-kind"), function(el) {
+            rotateElement(el, 180, 0, 1000, false);
+        });
+
         document.getElementById("dl-amount").innerHTML = Number(
             UI_DATA.dlStatus
         ).toPrecision(3);
 
-        document.getElementById("test-kind").innerHTML = ulText;
         drawMeterLoop(
             UI_DATA.testState,
             document.getElementById("test-amount"),
@@ -461,6 +473,7 @@ let drawFunc = function(t) {
         document.getElementById("ul-amount").innerHTML = Number(
             UI_DATA.ulStatus
         ).toPrecision(3);
+        document.getElementById("test-kind").classList.remove("ul");
 
         setTimeout(function() {
             onend();
@@ -470,8 +483,6 @@ let drawFunc = function(t) {
     document.getElementById("ping-amount").innerText = Math.round(
         UI_DATA.pingStatus
     );
-
-    return false;
 };
 
 function onload() {
@@ -479,15 +490,31 @@ function onload() {
     let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
 
-    let width = window.innerWidth;
-    testEl.style.transform = `translateX(${width}px)`;
-    completeModal.style.transform = `translateX(${-width}px)`;
+    // let width = window.innerWidth;
+    // testEl.style.transform = `translateX(${width}px)`;
+    // completeModal.style.transform = `translateX(${-width}px)`;
 
-    document.getElementById("test-kind").innerHTML = dlText;
-    document.getElementById("test-amount").innerHTML = "0";
-    document.getElementById("ping-amount").innerHTML = "0";
+    let testKind = document.getElementById("test-kind");
+    testKind.innerHTML = dlText;
 
-    animationLoopOuter(initFunc, updateFunc, drawFunc);
+    // document.getElementById("test-amount").innerHTML = "0";
+    // document.getElementById("ping-amount").innerHTML = "0";
+
+    initFunc();
+}
+
+export function rotateElement(el, to, from, duration, rad = false) {
+    to = to === undefined ? window.innerWidth : to;
+    from = from === undefined ? 0 : from;
+    duration = duration === undefined ? 1000 : duration;
+
+    let suffix = rad ? "rad" : "deg";
+
+    let transformFunc = function(v, t) {
+        el.style.transform = `rotate(${v}${suffix})`;
+        el.setAttribute("rotation", v);
+    };
+    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }
 
 async function onstart() {
@@ -511,6 +538,7 @@ async function onstart() {
         openingAnimation(duration, smoothStep3);
     });
     UI_DATA = startStop();
+    animationLoopOuter(updateFunc, drawFunc);
 }
 
 async function onend() {
@@ -538,7 +566,10 @@ async function onend() {
     testEl.classList.add("pane-end");
 }
 
+let dots = `<div class="dot-container dot-overtaking"></div>`;
+
 window.onload = function() {
+    // document.getElementById("test-kind").innerHTML = dots;
     onload();
 };
 

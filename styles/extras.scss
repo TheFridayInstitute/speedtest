@@ -34,7 +34,6 @@
     top: 0;
     width: inherit;
 
-
     z-index: 0;
 }
 @keyframes arrow {
@@ -179,13 +178,4 @@ $dot-color: white;
     100% {
         transform: rotateZ(360deg);
     }
-}
-
-.test-iframe {
-    border: none;
-    display: block;
-    height: 35rem;
-    margin: 0;
-    overflow: hidden;
-    width: 100%;
 }

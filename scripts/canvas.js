@@ -342,12 +342,13 @@ export class Rectangle extends Polygon {
             [leftX + width, leftY],
             [leftX + width, leftY + height],
             [leftX, leftY + height],
-            [leftX, leftY],
         ];
         super(points, undefined, undefined, fillColor);
 
         this._width = width;
         this._height = height;
+        this.leftX = leftX;
+        this.leftY = leftY;
     }
 
     get height() {
@@ -432,9 +433,9 @@ export class Mesh {
         return this;
     }
 
-    draw(ctx) {
+    draw(ctx, t) {
         for (let shape of this.shapes) {
-            shape.draw(ctx);
+            shape.draw(ctx, t);
         }
         return this;
     }
@@ -604,34 +605,27 @@ export function roundedRectangle(leftX, leftY, width, height, fillColor) {
     bar.translate(shiftX, -shiftY);
 
     let roundedBarMesh = new Mesh(startCap, bar, endCap);
-    let lock = false;
+
+    let [cX, cY] = bar.centroid;
 
     roundedBarMesh.draw = function(ctx, t) {
         let w = t * width;
 
-        if (t < 0 && !lock) {
-            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
-            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
-            width += r;
-            lock = true;
-        } else if (t > 0 && lock) {
-            let [cX, cY] = roundedBarMesh.shapes[2].centroid;
-            roundedBarMesh.shapes[2].rotateAboutPoint(cX, cY, 180, false);
-            lock = false;
-            width -= r;
-        }
+        let [tcX, tcY] = bar.centroid;
+        let sX = tcX - cX - bar.width / 2;
+        let sY = tcY - cY - bar.height / 2;
 
-        roundedBarMesh.shapes[1].translate(-shiftX, 0);
-        roundedBarMesh.shapes[1].width = w;
-        roundedBarMesh.shapes[1].translate(shiftX, 0);
+        bar.translate(-sX, -sY);
+        bar.width = w;
+        bar.translate(sX, sY);
 
         t = -(1 - t) * width + slump;
 
-        roundedBarMesh.shapes[2].translate(t, 0);
+        endCap.translate(t, 0);
         for (let shape of this.shapes) {
             shape.draw(ctx);
         }
-        roundedBarMesh.shapes[2].translate(-t, 0);
+        endCap.translate(-t, 0);
     };
 
     return roundedBarMesh;
@@ -669,4 +663,46 @@ export function generateRadialGradient(
         gradient.addColorStop(stop, color);
     }
     return gradient;
+}
+
+export function progressBarIntervals(leftX, leftY, width, height, colors) {
+    let shapes = [];
+    let step = 0;
+    let w = width / colors.length - height / colors.length;
+
+    let i = 0;
+    for (let color of colors) {
+        let tw = w + height;
+
+        let rRect = roundedRectangle(leftX, leftY, tw, height, color);
+        rRect.translate([-width / 2 + tw / 2 + step, 0]);
+        shapes.push(rRect);
+
+        step += w;
+        i += 1;
+    }
+
+    let intervalMesh = new Mesh(...shapes);
+
+    intervalMesh.draw = function(ctx, t) {
+        let n = this.shapes.length;
+        let step = 1 / n;
+        let s = t;
+        let v = 0;
+
+        for (let shape of this.shapes) {
+            if (s > 0) {
+                if (s - step > 0) {
+                    v = 1;
+                } else {
+                    v = s / step;
+                }
+                shape.draw(ctx, v);
+                s -= step;
+            } else {
+                break;
+            }
+        }
+    };
+    return intervalMesh;
 }

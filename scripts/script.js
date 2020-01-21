@@ -147,7 +147,6 @@ function startStop() {
                     pingStatus: data.pingStatus,
                     jitterStatus: data.jitterStatus,
                     ip: ip,
-                    date: Date.now(),
                 });
             }
         };

@@ -167,7 +167,6 @@ export function slideLeft(el, to, from, duration) {
     duration = duration === undefined ? 1000 : duration;
 
     let transformFunc = function(v) {
-        console.log(v, from, to);
         el.style.transform = `translateX(${v}px)`;
     };
 

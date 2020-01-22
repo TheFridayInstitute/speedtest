@@ -246,6 +246,8 @@ function drawMeterLoop(
     progressColor,
     progressGlowColor
 ) {
+    canvasObj.clear();
+
     meterAmount = parseFloat(meterAmount) || 0;
     progressAmount = parseFloat(progressAmount) || 0;
 
@@ -487,8 +489,6 @@ let updateFunc = function(t) {
 };
 
 let drawFunc = function(t) {
-    canvasObj.clear();
-
     if (speedtestObj.getState() != 3 || UI_DATA === null) {
         return false;
     }

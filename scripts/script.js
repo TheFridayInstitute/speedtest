@@ -79,47 +79,42 @@ var progressBarMesh;
 var progressIntervals;
 var progressBarEl;
 
-let alpha0 = Math.PI * 0.8;
-let alpha1 = 2 * Math.PI * 1.1;
+var alpha0 = Math.PI * 0.8;
+var alpha1 = 2 * Math.PI * 1.1;
 
-let meterMin = 0;
-let meterMax = 100;
+var meterMin = 0;
+var meterMax = 100;
 
-let lineWidth = emToPixels("2.5em");
+var lineWidth = emToPixels("2.5em");
 
-let shadowColor = "rgba(0, 0, 0, 0.5)";
-let shadowBlur = 0;
+var shadowColor = "rgba(0, 0, 0, 0.5)";
+var shadowBlur = 0;
 
 var outerRadius;
 var innerRadius;
 
 var meterDotSize = 60;
 
-let backgroundColor = getComputedVariable("--meter-background-color");
+var borderRadiusPrimary = getComputedVariable("--border-radius-primary");
 
-let progressBarColor = "#fff";
+var backgroundColor = getComputedVariable("--meter-background-color");
+var progressBarColor = "#fff";
+var dlColor1 = getComputedVariable("--dl-color-1");
+var dlColor2 = getComputedVariable("--dl-color-2");
+var ulColor1 = getComputedVariable("--ul-color-1");
+var ulColor2 = getComputedVariable("--ul-color-2");
 
-let dlColor1 = getComputedVariable("--dl-color-1");
+var dlColorGradient = `linear-gradient(to right, ${dlColor1}, ${dlColor2})`;
+var ulColorGradient = `linear-gradient(to right, ${ulColor1}, ${ulColor2})`;
+var backgroundColorGradient = `linear-gradient(to right, white, ${progressBarColor})`;
 
-let dlColor2 = getComputedVariable("--dl-color-2");
-
-let ulColor1 = getComputedVariable("--ul-color-1");
-
-let ulColor2 = getComputedVariable("--ul-color-2");
-
-let dlColorGradient = `linear-gradient(to right, ${dlColor1}, ${dlColor2})`;
-let ulColorGradient = `linear-gradient(to right, ${ulColor1}, ${ulColor2})`;
-let backgroundColorGradient = `linear-gradient(to right, white, ${progressBarColor})`;
-
-let borderRadiusPrimary = getComputedVariable("--border-radius-primary");
-
-let dlColorStops = [
+var dlColorStops = [
     ["0", "#8630e6"],
     ["0.5", "#d359ff"],
     ["1.0", "#f71e6a"],
 ];
 
-let ulColorStops = [
+var ulColorStops = [
     ["0", "#FF8000"],
     ["0.5", "#FF8000"],
     ["1.0", "#FF0000"],
@@ -131,7 +126,7 @@ var dlProgressGlowColor;
 var ulProgressColor;
 var ulProgressGlowColor;
 
-let dlText = `<div><i class="fa fa-arrow-circle-o-down"></i></div>`;
+var dlText = `<div><i class="fa fa-arrow-circle-o-down"></i></div>`;
 
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
@@ -190,6 +185,16 @@ function updateTestState(speedtestState, testStateObj) {
         testStateObj["prev_state"] = speedtestState;
     }
     return testStateObj;
+}
+
+function setRoundedArcColor(roundedArc, color) {
+    roundedArc.map((shape, index) => {
+        if (shape instanceof Arc) {
+            shape.color = color;
+        } else {
+            shape.fillColor = color;
+        }
+    });
 }
 
 function startStop() {
@@ -258,19 +263,6 @@ function startStop() {
     return UI_DATA;
 }
 
-function setRoundedArcColor(roundedArc, color) {
-    roundedArc.map((shape, index) => {
-        if (shape instanceof Arc) {
-            shape.color = color;
-        } else {
-            shape.fillColor = color;
-        }
-    });
-}
-
-var prevT = 0;
-var eps = 0.1;
-
 function drawMeterLoop(
     status,
     meterTextEl,
@@ -322,151 +314,6 @@ function drawMeterLoop(
 
     progressBarMesh.draw(canvasObj, clamp(progressAmount, 0, 1));
 }
-
-let initFunc = function(t) {
-    let canvas = document.getElementById("test-meter");
-    let ctx = canvas.getContext("2d");
-
-    let canvasOffset = getOffset(canvas);
-    let dpr = window.devicePixelRatio || 1;
-    lineWidth *= dpr;
-
-    canvas.width = canvasOffset.width * dpr;
-    canvas.height = canvasOffset.height * dpr;
-    let innerDelta = lineWidth * 1.25;
-
-    outerRadius = canvas.width / 2 - lineWidth / 2;
-    innerRadius = outerRadius - innerDelta;
-
-    let originX = canvas.width / 2;
-    let originY = canvas.height / 2;
-
-    dlProgressColor = generateGradient(
-        ctx,
-        dlColorStops,
-        originX - outerRadius,
-        originY + outerRadius,
-        originX + outerRadius,
-        originY + outerRadius
-    );
-
-    ulProgressColor = generateGradient(
-        ctx,
-        ulColorStops,
-        originX - outerRadius,
-        originY + outerRadius,
-        originX + outerRadius,
-        originY + outerRadius
-    );
-
-    dlProgressGlowColor = generateGradient(
-        ctx,
-        dlColorStops.map(makeGlowColor),
-        originX - innerRadius,
-        originY + innerRadius,
-        originX + innerRadius,
-        originY + innerRadius
-    );
-
-    ulProgressGlowColor = generateGradient(
-        ctx,
-        ulColorStops.map(makeGlowColor),
-        originX - innerRadius,
-        originY + innerRadius,
-        originX + innerRadius,
-        originY + innerRadius
-    );
-
-    let dialBase = lineWidth / 1.2;
-    let dialHeight = innerRadius * 0.8;
-    let dialTop = dialBase / 1.8;
-
-    // Initializing polygons
-    let base = [
-        [0, 0],
-        [dialBase, 0],
-    ];
-
-    let points = slerpPoints(base[0], base[1]);
-
-    let meterPoints = [
-        ...points,
-        [dialBase - dialTop, -dialHeight],
-        [dialTop, -dialHeight],
-    ];
-
-    meterDial = new Polygon(meterPoints, null, null, "white");
-
-    outerMeter = roundedArc(
-        0,
-        0,
-        outerRadius,
-        alpha0,
-        alpha1,
-        backgroundColor,
-        lineWidth
-    );
-    outerMeter.map((shape, index) => {
-        shape.shadowColor = shadowColor;
-    });
-
-    innerMeter = roundedArc(
-        0,
-        0,
-        innerRadius,
-        alpha0,
-        alpha1,
-        backgroundColor,
-        lineWidth
-    );
-    innerMeter.map((shape, index) => {
-        shape.shadowColor = shadowColor;
-    });
-
-    meterDot = new Arc(
-        0,
-        0,
-        outerRadius / 5,
-        0,
-        Math.PI * 2,
-        backgroundColor,
-        1
-    );
-    meterDot.fillColor = backgroundColor;
-
-    let barWidth = outerRadius;
-    let barHeight = lineWidth / 4;
-
-    // Centering the meter meterDial and laying it flat.
-    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
-
-    let progressBar = roundedRectangle(
-        0,
-        0,
-        barWidth,
-        barHeight,
-        progressBarColor
-    );
-    let progressBarBackground = roundedRectangle(
-        0,
-        0,
-        barWidth,
-        barHeight,
-        backgroundColor
-    );
-
-    progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(
-        0,
-        outerRadius / 1.5 - barHeight / 2
-    );
-
-    progressBarMesh.draw = function(ctx, t) {
-        this.shapes[0].draw(ctx, 1);
-        this.shapes[1].draw(ctx, t);
-    };
-
-    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
-};
 
 let openingAnimation = function(duration, timingFunc) {
     let transformFunc = function(v, t) {
@@ -578,6 +425,130 @@ let drawFunc = function(t) {
         document.getElementById("test-kind").classList.remove("ul");
         onend();
     }
+};
+
+var prevT = 0;
+var eps = 0.1;
+
+let initFunc = function(t) {
+    let canvas = document.getElementById("test-meter");
+    let ctx = canvas.getContext("2d");
+
+    let canvasOffset = getOffset(canvas);
+    let dpr = window.devicePixelRatio || 1;
+    lineWidth *= dpr;
+
+    canvas.width = canvasOffset.width * dpr;
+    canvas.height = canvasOffset.height * dpr;
+    let meterGap = lineWidth * 1.25;
+
+    outerRadius = canvas.width / 2 - lineWidth / 2;
+    innerRadius = outerRadius - meterGap;
+
+    let originX = canvas.width / 2;
+    let originY = canvas.height / 2;
+
+    dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
+    ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
+
+    dlProgressGlowColor = generateGradientWrapper(
+        canvas,
+        dlColorStops.map(makeGlowColor)
+    );
+    ulProgressGlowColor = generateGradientWrapper(
+        canvas,
+        ulColorStops.map(makeGlowColor)
+    );
+
+    let dialBase = lineWidth / 1.2;
+    let dialHeight = innerRadius * 0.8;
+    let dialTop = dialBase / 1.8;
+
+    // Initializing polygons
+    let base = [
+        [0, 0],
+        [dialBase, 0],
+    ];
+
+    let points = slerpPoints(base[0], base[1]);
+
+    let meterPoints = [
+        ...points,
+        [dialBase - dialTop, -dialHeight],
+        [dialTop, -dialHeight],
+    ];
+
+    meterDial = new Polygon(meterPoints, null, null, "white");
+
+    outerMeter = roundedArc(
+        0,
+        0,
+        outerRadius,
+        alpha0,
+        alpha1,
+        backgroundColor,
+        lineWidth
+    );
+    outerMeter.map((shape, index) => {
+        shape.shadowColor = shadowColor;
+    });
+
+    innerMeter = roundedArc(
+        0,
+        0,
+        innerRadius,
+        alpha0,
+        alpha1,
+        backgroundColor,
+        lineWidth
+    );
+    innerMeter.map((shape, index) => {
+        shape.shadowColor = shadowColor;
+    });
+
+    meterDot = new Arc(
+        0,
+        0,
+        outerRadius / 5,
+        0,
+        Math.PI * 2,
+        backgroundColor,
+        1
+    );
+    meterDot.fillColor = backgroundColor;
+
+    let barWidth = outerRadius;
+    let barHeight = lineWidth / 4;
+
+    // Centering the meter meterDial and laying it flat.
+    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
+
+    let progressBar = roundedRectangle(
+        0,
+        0,
+        barWidth,
+        barHeight,
+        progressBarColor
+    );
+    let progressBarBackground = roundedRectangle(
+        0,
+        0,
+        barWidth,
+        barHeight,
+        backgroundColor
+    );
+
+    progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(
+        0,
+        outerRadius / 1.5 - barHeight / 2
+    );
+
+    progressBarMesh.draw = function(ctx, t) {
+        this.shapes[0].draw(ctx, 1);
+        this.shapes[1].draw(ctx, t);
+    };
+
+    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
 function onload() {

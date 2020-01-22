@@ -152,6 +152,12 @@ var speedTestStateMapping = {
  * 0: started;
  * 1: active;
  * 2: finished;
+ *
+ * Maybe should be:
+ *
+ * 2: just finished;
+ * 3: finished;
+ *
  */
 
 var testStateObj = {ping: -1, download: -1, upload: -1, prev_state: -1};
@@ -375,13 +381,12 @@ let drawFunc = function(t) {
     }
 
     testStateObj = updateTestState(UI_DATA.testState + 1, testStateObj);
-    console.log(UI_DATA.pingStatus);
 
     if (testStateObj["ping"] === 2 && testStateObj["download"] === 0) {
-        document.getElementById("ping-amount").innerText = UI_DATA.pingStatus;
-
         animateProgressBarWrapper(progressBarEl);
-        console.log(testStateObj, UI_DATA.pingStatus);
+        document.getElementById("ping-amount").innerText = Math.round(
+            parseFloat(UI_DATA.pingStatus)
+        );
     }
     if (testStateObj["download"] === 1 || testStateObj["download"] === 0) {
         drawMeterLoop(
@@ -403,7 +408,7 @@ let drawFunc = function(t) {
             false
         );
 
-        document.getElementById("dl-amount").innerHTML = Number(
+        document.getElementById("dl-amount").innerHTML = parseFloat(
             UI_DATA.dlStatus
         ).toPrecision(3);
     }
@@ -420,10 +425,10 @@ let drawFunc = function(t) {
     if (UI_DATA.testState === 4) {
         animateProgressBarWrapper(progressBarEl);
 
-        document.getElementById("ul-amount").innerHTML = Number(
+        document.getElementById("ul-amount").innerHTML = parseFloat(
             UI_DATA.ulStatus
         ).toPrecision(3);
-        document.getElementById("test-kind").classList.remove("ul");
+
         onend();
     }
 };

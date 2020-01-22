@@ -50,6 +50,8 @@ body {
       -ms-flex-pack: center;
           justify-content: center;
   margin: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   padding: 1rem;
   width: 100%;
 }

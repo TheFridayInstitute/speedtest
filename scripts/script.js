@@ -43,13 +43,7 @@ import {
     rotateElement,
 } from "./animation.js";
 
-import {
-    emToPixels,
-    getOffset,
-    toggleOnce,
-    getUrlParams,
-    toggle,
-} from "./utils.js";
+import {emToPixels, getOffset, toggleOnce, toggle} from "./utils.js";
 
 import {Color} from "./colors.js";
 
@@ -186,23 +180,21 @@ function startStop() {
         speedtestObj.onupdate = function(data) {
             UI_DATA = data;
 
-            let urlObj = new URL(window.location.href);
-            let id = urlObj.searchParams.get("id");
-
             if (data.testState === 4) {
+                let urlObj = new URL(window.location.href);
+                let id = urlObj.searchParams.get("id");
                 let ip = String(UI_DATA.clientIp);
-                // if (ip.length < 100 && ip.length > 0) {
-                //     ip = ip.split("-")[0].trim(); // CHANGE THIS LATER!!
-                // }
 
-                $.post("backend/record.php", {
-                    id: id || -1,
-                    dlStatus: data.dlStatus,
-                    ulStatus: data.ulStatus,
-                    pingStatus: data.pingStatus,
-                    jitterStatus: data.jitterStatus,
-                    ip: ip,
-                });
+                if (id !== undefined) {
+                    $.post("backend/record.php", {
+                        id: id,
+                        dlStatus: data.dlStatus,
+                        ulStatus: data.ulStatus,
+                        pingStatus: data.pingStatus,
+                        jitterStatus: data.jitterStatus,
+                        ip: ip,
+                    });
+                }
             }
         };
 

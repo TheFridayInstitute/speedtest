@@ -84,8 +84,8 @@ body {
 
     justify-content: center;
     justify-items: center;
-    max-height: $meter-height * 2;
 
+    max-height: $meter-height * 2;
     max-width: $meter-width;
 
     position: relative;
@@ -203,7 +203,7 @@ body {
 .test-info-container {
     border-radius: var(--border-radius-primary);
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-around;
     max-width: $meter-width;
     padding: 1em;
     width: 100%;
@@ -299,6 +299,7 @@ body {
 
 .pane-end {
     opacity: 0;
+    // display: none;
 }
 
 .test-icon {
@@ -326,8 +327,8 @@ body {
     display: flex;
     flex-direction: row;
     width: 100%;
-    padding: 0.5rem;
     height: 1rem;
+    padding: 1rem;
 
     .progress-bar {
         border-radius: 0;
@@ -339,8 +340,10 @@ body {
 @media all and (max-width: $screen-size-md) {
     html,
     body {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
+
+   
 }
 
 @media all and (max-width: $screen-size-sm) {
@@ -348,12 +351,20 @@ body {
     body {
         font-size: 0.8rem;
     }
+
+    .unit-container {
+        --font-size-lg: 2.5rem
+    }
 }
 
 @media all and (max-width: $screen-size-xs) {
     html,
     body {
         font-size: 0.7rem;
+    }
+
+    .unit-container {
+        --font-size-lg: 2.5rem
     }
 }
 
@@ -371,7 +382,6 @@ body {
 
         max-height: 100%;
         max-width: 100%;
-        row-gap: 2rem;
         width: 100%;
 
         .start-btn-container {
@@ -379,11 +389,12 @@ body {
         }
 
         .test-container {
+            height: 100%;
             align-self: center;
         }
 
         .test-info-container {
-            align-self: end;
+            align-self: center;
         }
     }
 

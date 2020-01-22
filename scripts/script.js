@@ -44,6 +44,7 @@ import {
     createProgessBar,
     animateProgressBar,
     animateProgressBarWrapper,
+    debounce,
 } from "./animation.js";
 
 import {
@@ -428,7 +429,7 @@ let drawFunc = function(t) {
 };
 
 var prevT = 0;
-var eps = 0.1;
+var eps = 0.05;
 
 let initFunc = function(t) {
     let canvas = document.getElementById("test-meter");
@@ -582,7 +583,7 @@ function onload() {
 }
 
 async function onstart() {
-    let duration = 2000;
+    let duration = 1500;
 
     toggleOnce(document.getElementById("start-btn"), async function() {
         let testEl = document.getElementById("test-container");
@@ -596,11 +597,14 @@ async function onstart() {
         slideLeft(startModal, -width, 0);
         slideLeft(testEl, 0, width);
 
-        await sleep(500);
+        await sleep(1000);
 
         startModal.classList.add("pane-end");
         openingAnimation(duration, smoothStep3);
     });
+
+    await sleep(duration);
+
     let testKind = document.getElementById("test-kind");
     testKind.innerHTML = dlText;
 
@@ -624,8 +628,7 @@ async function onend() {
 
     await sleep(duration);
 
-    slideRight(buttonEl, width, 0);
-    slideRight(testEl, width, 0);
+    slideRight([buttonEl, testEl], width, 0);
     slideRight(completeModal, 0, -width);
 
     await sleep(1000);
@@ -638,6 +641,13 @@ window.onload = function() {
     onload();
 };
 
-document.getElementById("start-btn").addEventListener("click", function(e) {
-    onstart();
-});
+document.getElementById("start-btn").addEventListener(
+    "click",
+    debounce(
+        function() {
+            onstart();
+        },
+        1000,
+        true
+    )
+);

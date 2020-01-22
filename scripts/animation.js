@@ -49,7 +49,7 @@ export function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function debounce(func, wait, immediate) {
+export function debounce(func, wait, immediate = false) {
     var timeout;
     return function() {
         var context = this;
@@ -75,7 +75,6 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     function draw() {
         let c = clamp(clock.elapsedTicks, 0, duration);
         let v = timingFunc(c, from, distance, duration);
-        v = round(v, 3);
         let t = normalize(v, from, to);
 
         let b = transformFunc(v, t) || false;
@@ -156,8 +155,17 @@ export function slideRight(el, to, from, duration) {
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
 
+    let elArray;
+    if (!(el instanceof Array)) {
+        elArray = [el];
+    } else {
+        elArray = el;
+    }
+
     let transformFunc = function(v) {
-        el.style.transform = `translateX(${v}px)`;
+        for (let el of elArray) {
+            el.style.transform = `translateX(${v}px)`;
+        }
     };
 
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
@@ -168,8 +176,17 @@ export function slideLeft(el, to, from, duration) {
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
 
+    let elArray;
+    if (!(el instanceof Array)) {
+        elArray = [el];
+    } else {
+        elArray = el;
+    }
+
     let transformFunc = function(v) {
-        el.style.transform = `translateX(${v}px)`;
+        for (let el of elArray) {
+            el.style.transform = `translateX(${v}px)`;
+        }
     };
 
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
@@ -180,8 +197,17 @@ export function fadeOut(el, duration) {
     let to = 1;
     let from = 0;
 
+    let elArray;
+    if (!(el instanceof Array)) {
+        elArray = [el];
+    } else {
+        elArray = el;
+    }
+
     let transformFunc = function(v) {
-        el.style.opacity = to - v;
+        for (let el of elArray) {
+            el.style.opacity = to - v;
+        }
     };
 
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
@@ -194,9 +220,18 @@ export function rotateElement(el, to, from, duration, rad = false) {
 
     let suffix = rad ? "rad" : "deg";
 
+    let elArray;
+    if (!(el instanceof Array)) {
+        elArray = [el];
+    } else {
+        elArray = el;
+    }
+
     let transformFunc = function(v, t) {
-        el.style.transform = `rotate(${v}${suffix})`;
-        el.setAttribute("rotation", v);
+        for (let el of elArray) {
+            el.style.transform = `rotate(${v}${suffix})`;
+            el.setAttribute("rotation", v);
+        }
     };
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }
@@ -228,8 +263,6 @@ export function animateProgressBar(el, to, from, duration) {
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
 
-    el.setAttribute("percent-complete", to);
-
     let setProgressBar = function(el, t) {
         let n = el.children.length || 1;
         let step = 1 / n;
@@ -251,8 +284,21 @@ export function animateProgressBar(el, to, from, duration) {
         }
     };
 
+    let elArray;
+    if (!(el instanceof Array)) {
+        elArray = [el];
+    } else {
+        elArray = el;
+    }
+
+    for (let el of elArray) {
+        el.setAttribute("percent-complete", to);
+    }
+
     let transformFunc = function(v, t) {
-        setProgressBar(el, v);
+        for (let el of elArray) {
+            setProgressBar(el, v);
+        }
     };
 
     smoothAnimate(to, from, duration, transformFunc, easeInOutCubic);

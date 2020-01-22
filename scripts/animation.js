@@ -1,15 +1,13 @@
 import {clamp, lerp, round, normalize, bounceInEase} from "./math.js";
 
 export class Clock {
-    constructor(autoStart = true, timeStep = 1000 / 60) {
+    constructor(autoStart = true, timeStep = 1000 / 60, timeOut = 120) {
         this.autoStart = autoStart;
         this.timeStep = Math.floor(timeStep);
+        this.timeOut = timeOut;
     }
     start() {
-        this.startTime = (typeof performance === "undefined"
-            ? Date
-            : performance
-        ).now();
+        this.startTime = Date.now();
         this.prevTime = this.startTime;
         this.elapsedTime = 0;
         this.elapsedTicks = 0;
@@ -27,10 +25,8 @@ export class Clock {
         if (this.autoStart && !this.running) {
             this.start();
         } else if (this.running) {
-            let currentTime = (typeof performance === "undefined"
-                ? Date
-                : performance
-            ).now();
+            let currentTime = Date.now();
+
             this.delta = currentTime - this.prevTime;
             this.prevTime = currentTime;
             this.elapsedTime += this.delta;
@@ -88,7 +84,7 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
             clock.tick();
 
             update();
-            if (updateSteps++ >= 120) {
+            if (updateSteps++ >= clock.timeOut || force) {
                 break;
             }
         }
@@ -103,8 +99,8 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     requestAnimationFrame(animationLoop);
 }
 
-export function animationLoopOuter(updateFunc, drawFunc) {
-    let clock = new Clock();
+export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
+    let clock = new Clock(true, timeStep, timeOut);
 
     function update() {
         return updateFunc(clock.elapsedTicks);
@@ -126,7 +122,8 @@ export function animationLoopOuter(updateFunc, drawFunc) {
             clock.tick();
 
             force = update();
-            if (updateSteps++ >= 120 || force) {
+
+            if (updateSteps++ >= clock.timeOut || force) {
                 break;
             }
         }
@@ -177,5 +174,19 @@ export function fadeOut(el, duration) {
         el.style.opacity = to - v;
     };
 
+    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+}
+
+export function rotateElement(el, to, from, duration, rad = false) {
+    to = to === undefined ? window.innerWidth : to;
+    from = from === undefined ? 0 : from;
+    duration = duration === undefined ? 1000 : duration;
+
+    let suffix = rad ? "rad" : "deg";
+
+    let transformFunc = function(v, t) {
+        el.style.transform = `rotate(${v}${suffix})`;
+        el.setAttribute("rotation", v);
+    };
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }

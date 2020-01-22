@@ -1,13 +1,13 @@
 @use "sass:math";
 
-$meter-width: 35rem;
-$meter-height: 30rem;
+$meter-width: 32rem;
+$meter-height: 32rem;
 $meter-padding: 10rem;
 $meter-outer-radius: 30rem;
 
 $screen-size-xs: 320px;
 $screen-size-sm: 480px;
-$screen-size-md: 768px;
+$screen-size-md: 782px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
@@ -62,8 +62,12 @@ body {
     background: var(--background-color-primary);
     height: 100%;
     margin: 0;
-    padding: 0;
+
+    padding: 1rem;
     width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .main-content {
@@ -78,19 +82,17 @@ body {
         "info"
         "button";
 
-    max-width: var(--meter-width);
+    max-width: $meter-width;
+    max-height: $meter-height * 2;
 
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr 0.5fr;
+    grid-template-rows: 1fr 1fr 1fr;
 
     justify-content: center;
     align-items: center;
     justify-items: center;
 
-    padding: 1rem;
     row-gap: 1rem;
-
-    margin: auto;
 
     height: 100%;
     width: 100%;
@@ -245,7 +247,7 @@ body {
     align-items: center;
     justify-content: center;
 
-    --font-size-lg: 4rem;
+    --font-size-lg: 3rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
 
@@ -284,7 +286,7 @@ body {
 
 .box-shadow {
     border-radius: var(--border-radius-primary);
-    box-shadow: 1rem 1rem 40px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
 }
 
 .pane {
@@ -302,7 +304,8 @@ body {
     .text {
         text-align: center;
         font-size: 1.5rem;
-        h1, h2 {
+        h1,
+        h2 {
             color: var(--ul-color-1);
         }
     }
@@ -326,14 +329,14 @@ body {
     transition: transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
     .ul {
         i {
-            color: var(--ul-color-1);
+            // color: var(--ul-color-1);
             transform: rotate(180deg);
         }
     }
 
     .dl {
         i {
-            color: var(--dl-color-2);
+            // color: var(--dl-color-2);
         }
     }
 
@@ -390,12 +393,11 @@ body {
         }
 
         .test-info-container {
-            align-self: center;
+            align-self: end;
         }
     }
 
     .test-container {
-        padding: 1em;
         .info {
             grid-template-areas: "amount kind";
             grid-template-rows: 1fr;
@@ -407,6 +409,7 @@ body {
     .test-info-container {
         flex-direction: column;
         justify-content: center;
+        padding: 2rem;
 
         .info {
             display: flex;
@@ -415,16 +418,11 @@ body {
             align-items: center;
 
             .test-kind {
-                font-size: 1rem;
-                text-align: center;
-                i {
-                    font-size: 1.25rem;
-                }
+                margin-left: 0;
             }
 
             .unit-container {
                 margin-right: 0;
-                text-align: center;
             }
         }
     }

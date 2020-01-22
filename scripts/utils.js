@@ -76,11 +76,15 @@ export function toggle(el, firstCallback, secondCallback) {
     return;
 }
 
-export function toggleOnce(el, firstCallback) {
+export function toggleOnce(el, firstCallback, force = false) {
     let toggled = el.getAttribute("toggled") === "true";
-    if (!toggled) {
+    if (!toggled || force) {
         firstCallback(el);
-        el.setAttribute("toggled", true);
+        if (force) {
+            el.setAttribute("toggled", !toggled);
+        } else {
+            el.setAttribute("toggled", true);
+        }
     }
     return;
 }

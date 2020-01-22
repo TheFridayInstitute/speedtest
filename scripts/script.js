@@ -40,6 +40,7 @@ import {
     slideRight,
     sleep,
     slideLeft,
+    rotateElement,
 } from "./animation.js";
 
 import {
@@ -119,6 +120,58 @@ let makeGlowColor = function(value, index) {
     return [stop, newColor.colorString];
 };
 
+var speedTestStateMapping = {
+    0: "not_started",
+    1: "started",
+    2: "download",
+    3: "ping",
+    4: "upload",
+    5: "finished",
+    6: "aborted",
+};
+
+/**
+ * test state object mapping:
+ * -1: not started;
+ * 0: started;
+ * 1: active;
+ * 2: finished;
+ */
+
+var testStateObj = {ping: -1, download: -1, upload: -1, prev_state: -1};
+
+function updateTestState(speedtestState, testStateObj) {
+    let testKind = speedTestStateMapping[speedtestState];
+    let prevState = testStateObj["prev_state"];
+    let prevKey = speedTestStateMapping[prevState];
+
+    if (testKind === "aborted") {
+        for (let [key, value] of Object.entries(testStateObj)) {
+            testStateObj[key] = -1;
+        }
+    } else {
+        for (let [key, value] of Object.entries(testStateObj)) {
+            let state = value + 1;
+
+            if (key === testKind) {
+                if (value < 1) {
+                    testStateObj[key] = state;
+                } else if (value === 2 && speedtestState !== prevState) {
+                    testStateObj[key] = 0;
+                }
+            } else if (
+                key === prevKey &&
+                value > 0 &&
+                speedtestState !== prevState
+            ) {
+                testStateObj[prevKey] = state;
+            }
+        }
+        testStateObj["prev_state"] = speedtestState;
+    }
+    return testStateObj;
+}
+
 function startStop() {
     let data = null;
     if (speedtestObj.getState() == 3) {
@@ -137,9 +190,9 @@ function startStop() {
 
             if (data.testState === 4) {
                 let ip = String(UI_DATA.clientIp);
-                if (ip.length < 100 && ip.length > 0) {
-                    ip = ip.split("-")[0].trim(); // CHANGE THIS LATER!!
-                }
+                // if (ip.length < 100 && ip.length > 0) {
+                //     ip = ip.split("-")[0].trim(); // CHANGE THIS LATER!!
+                // }
 
                 $.post("backend/record.php", {
                     id: urlParams.id || -1,
@@ -156,16 +209,21 @@ function startStop() {
         speedtestObj.onend = function(aborted) {
             document.getElementById("start-btn").innerText = "Start";
             document.getElementById("start-btn").classList.remove("running");
+
             if (aborted) {
-                toggleOnce(document.getElementById("test-kind"), function(el) {
+                if (testStateObj["upload"] > -1) {
                     rotateElement(
-                        el,
+                        document.getElementById("test-kind"),
                         0,
-                        el.getAttribute("rotation"),
+                        parseFloat(
+                            document
+                                .getElementById("test-kind")
+                                .getAttribute("rotation")
+                        ),
                         1000,
                         false
                     );
-                });
+                }
             }
             drawFunc();
         };
@@ -443,7 +501,13 @@ let drawFunc = function(t) {
         return false;
     }
 
-    if (UI_DATA.testState === 1) {
+    testStateObj = updateTestState(UI_DATA.testState + 1, testStateObj);
+
+    if (testStateObj["ping"] === 0) {
+        document.getElementById("ping-amount").innerText = Math.round(
+            UI_DATA.pingStatus
+        );
+    } else if (testStateObj["download"] === 1) {
         drawMeterLoop(
             UI_DATA.testState,
             document.getElementById("test-amount"),
@@ -452,15 +516,19 @@ let drawFunc = function(t) {
             dlProgressColor,
             dlProgressGlowColor
         );
-    } else if (UI_DATA.testState === 3) {
-        toggleOnce(document.getElementById("test-kind"), function(el) {
-            rotateElement(el, 180, 0, 1000, false);
-        });
+    } else if (testStateObj["upload"] === 0) {
+        rotateElement(
+            document.getElementById("test-kind"),
+            180,
+            0,
+            1000,
+            false
+        );
 
         document.getElementById("dl-amount").innerHTML = Number(
             UI_DATA.dlStatus
         ).toPrecision(3);
-
+    } else if (testStateObj["upload"] === 1) {
         drawMeterLoop(
             UI_DATA.testState,
             document.getElementById("test-amount"),
@@ -474,15 +542,8 @@ let drawFunc = function(t) {
             UI_DATA.ulStatus
         ).toPrecision(3);
         document.getElementById("test-kind").classList.remove("ul");
-
-        setTimeout(function() {
-            onend();
-        }, 1000);
+        onend();
     }
-
-    document.getElementById("ping-amount").innerText = Math.round(
-        UI_DATA.pingStatus
-    );
 };
 
 function onload() {
@@ -490,35 +551,15 @@ function onload() {
     let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
 
-    // let width = window.innerWidth;
-    // testEl.style.transform = `translateX(${width}px)`;
-    // completeModal.style.transform = `translateX(${-width}px)`;
-
-    let testKind = document.getElementById("test-kind");
-    testKind.innerHTML = dlText;
-
-    // document.getElementById("test-amount").innerHTML = "0";
-    // document.getElementById("ping-amount").innerHTML = "0";
+    let width = window.innerWidth;
+    testEl.style.transform = `translateX(${width}px)`;
+    completeModal.style.transform = `translateX(${-width}px)`;
 
     initFunc();
 }
 
-export function rotateElement(el, to, from, duration, rad = false) {
-    to = to === undefined ? window.innerWidth : to;
-    from = from === undefined ? 0 : from;
-    duration = duration === undefined ? 1000 : duration;
-
-    let suffix = rad ? "rad" : "deg";
-
-    let transformFunc = function(v, t) {
-        el.style.transform = `rotate(${v}${suffix})`;
-        el.setAttribute("rotation", v);
-    };
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
-}
-
 async function onstart() {
-    let duration = 1000;
+    let duration = 2000;
 
     toggleOnce(document.getElementById("start-btn"), async function() {
         let testEl = document.getElementById("test-container");
@@ -532,17 +573,21 @@ async function onstart() {
         slideLeft(startModal, -width, 0);
         slideLeft(testEl, 0, width);
 
-        await sleep(1000);
+        await sleep(500);
 
         startModal.classList.add("pane-end");
         openingAnimation(duration, smoothStep3);
     });
+    let testKind = document.getElementById("test-kind");
+    testKind.innerHTML = dlText;
+
     UI_DATA = startStop();
     animationLoopOuter(updateFunc, drawFunc);
 }
 
 async function onend() {
     let duration = 2000;
+
     closingAnimation(duration, easeInOutCubic);
 
     let testEl = document.getElementById("test-container");
@@ -566,10 +611,7 @@ async function onend() {
     testEl.classList.add("pane-end");
 }
 
-let dots = `<div class="dot-container dot-overtaking"></div>`;
-
 window.onload = function() {
-    // document.getElementById("test-kind").innerHTML = dots;
     onload();
 };
 

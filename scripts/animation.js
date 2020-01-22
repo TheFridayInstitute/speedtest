@@ -1,4 +1,13 @@
-import {clamp, lerp, round, normalize, bounceInEase} from "./math.js";
+import {
+    clamp,
+    lerp,
+    round,
+    normalize,
+    bounceInEase,
+    easeInOutCubic,
+} from "./math.js";
+
+import {setAttributes} from "./utils.js";
 
 export class Clock {
     constructor(autoStart = true, timeStep = 1000 / 60, timeOut = 120) {
@@ -66,6 +75,7 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     function draw() {
         let c = clamp(clock.elapsedTicks, 0, duration);
         let v = timingFunc(c, from, distance, duration);
+        v = round(v, 3);
         let t = normalize(v, from, to);
 
         let b = transformFunc(v, t) || false;
@@ -189,4 +199,73 @@ export function rotateElement(el, to, from, duration, rad = false) {
         el.setAttribute("rotation", v);
     };
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+}
+
+export function createProgessBar(el, colors, leftAttrs, rightAttrs) {
+    let i = 0;
+    for (let color of colors) {
+        let shape = document.createElement("div");
+
+        if (i === 0) {
+            setAttributes(shape, leftAttrs);
+        } else if (i === colors.length - 1) {
+            setAttributes(shape, rightAttrs);
+        }
+
+        shape.classList.add("progress-bar");
+        if (String(color).indexOf("gradient") !== -1) {
+            shape.style.backgroundImage = color;
+        } else {
+            shape.style.backgroundColor = color;
+        }
+        el.appendChild(shape);
+        i++;
+    }
+}
+
+export function animateProgressBar(el, to, from, duration) {
+    to = to === undefined ? 1 : to;
+    from = from === undefined ? 0 : from;
+    duration = duration === undefined ? 1000 : duration;
+
+    el.setAttribute("percent-complete", to);
+
+    let setProgressBar = function(el, t) {
+        let n = el.children.length || 1;
+        let step = 1 / n;
+        let s = t;
+        let v = 0;
+
+        for (let child of el.children) {
+            if (s > 0) {
+                if (s - step > 0) {
+                    v = step;
+                } else {
+                    v = s;
+                }
+                child.style.width = `${round(100 * v, 2)}%`;
+                s -= step;
+            } else {
+                break;
+            }
+        }
+    };
+
+    let transformFunc = function(v, t) {
+        setProgressBar(el, v);
+    };
+
+    smoothAnimate(to, from, duration, transformFunc, easeInOutCubic);
+}
+
+export function animateProgressBarWrapper(el, duration) {
+    duration = duration === undefined ? 1000 : duration;
+
+    let n = el.children.length || 1;
+    let step = 1 / n;
+
+    let from = parseFloat(el.getAttribute("percent-complete")) || 0;
+    let to = clamp(from + step, 0, 1);
+
+    animateProgressBar(el, to, from, duration);
 }

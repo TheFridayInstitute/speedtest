@@ -11,13 +11,6 @@ $screen-size-md: 782px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
-$screen-landscape-scale: 1.5;
-
-$screen-xs-scale: 1.4;
-$screen-sm-scale: 1.4;
-$screen-md-scale: 1.2;
-$screen-lg-scale: 1.1;
-
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
     --background-color-primary-dark: rgb(37, 37, 37);
@@ -29,11 +22,13 @@ $screen-lg-scale: 1.1;
     --color-secondary-dark: #2ead34;
     --font-family-primary: verdana, geneva, sans-serif;
 
-    --dl-color-1: #8343ab;
+    --dl-color-1: #8630e6;
     --dl-color-2: #f71e6a;
 
     --ul-color-1: #ff8000;
     --ul-color-2: #ff0000;
+
+    --meter-background-color: rgba(0, 0, 0, 0.25);
 
     --meter-width: #{$meter-width};
     --meter-height: #{$meter-height};
@@ -44,7 +39,6 @@ $screen-lg-scale: 1.1;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.5em;
-    --mobile-scale: #{$screen-sm-scale};
 }
 
 html,
@@ -54,23 +48,25 @@ body {
     margin: 0;
     overflow: hidden;
     padding: 0;
-    width: 100%;
     user-select: none;
+    width: 100%;
+  
 }
 
 .outer-content {
+    align-items: center;
     background: var(--background-color-primary);
+    display: flex;
     height: 100%;
+    justify-content: center;
     margin: 0;
 
     padding: 1rem;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .main-content {
+    align-items: center;
     background: var(--background-color-primary);
 
     color: var(--font-color-primary);
@@ -82,22 +78,21 @@ body {
         "info"
         "button";
 
-    max-width: $meter-width;
-    max-height: $meter-height * 2;
-
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr 1fr;
 
-    justify-content: center;
-    align-items: center;
-    justify-items: center;
-
-    row-gap: 1rem;
-
     height: 100%;
-    width: 100%;
+
+    justify-content: center;
+    justify-items: center;
+    max-height: $meter-height * 2;
+
+    max-width: $meter-width;
 
     position: relative;
+
+    row-gap: 1rem;
+    width: 100%;
 
     .start-btn-container {
         grid-area: button;
@@ -114,7 +109,7 @@ body {
 
 .start-btn {
     align-items: center;
-    background-color: rgb(46, 206, 46);
+    background-color: var(--color-secondary);
     border-radius: 4px;
     color: rgb(0, 0, 0);
     cursor: pointer;
@@ -133,7 +128,9 @@ body {
 }
 
 .test-container {
+    align-items: center;
     border-radius: var(--border-radius-primary);
+    box-sizing: border-box;
     display: grid;
 
     grid-template-areas:
@@ -142,38 +139,35 @@ body {
 
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 0.1fr;
-    position: relative;
     justify-content: center;
+
+    justify-content: center;
+    max-height: 100%;
+    position: relative;
 
     row-gap: 0;
-    align-items: center;
 
     width: 100%;
-    max-height: 100%;
-
-    justify-content: center;
-    box-sizing: border-box;
 
     .info {
-        box-sizing: border-box;
         align-self: start;
-        grid-area: info;
-        // padding: 1em;
-
-        margin-top: calc((-100%) + 50% + 50% * (0.6));
+        box-sizing: border-box;
 
         display: grid;
+        grid-area: info;
         grid-template-areas:
             "amount"
             "kind";
-        grid-template-rows: 1fr 1fr;
         grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
 
         justify-items: center;
 
+        margin-top: calc((-100%) + 50% + 50% * (0.6));
+
         .test-kind {
-            grid-area: kind;
             font-size: 4rem;
+            grid-area: kind;
         }
 
         .amount-container {
@@ -186,39 +180,40 @@ body {
         box-sizing: border-box;
         grid-area: test;
 
+        z-index: 1;
+
         canvas {
             padding: 1em;
         }
-
-        z-index: 1;
     }
 }
 
 .square-box {
     height: 0%;
-    width: 100%;
     padding-bottom: 100%;
     position: relative;
+    width: 100%;
 
     * {
+        height: 100%;
         position: absolute;
         width: 100%;
-        height: 100%;
     }
 }
 
 .test-info-container {
     border-radius: var(--border-radius-primary);
     display: flex;
-    justify-content: space-around;
+    justify-content: space-evenly;
+    max-width: $meter-width;
     padding: 1em;
     width: 100%;
-    max-width: $meter-width;
+    position: relative;
 
     .info {
         display: flex;
-        justify-content: center;
         flex-direction: column;
+        justify-content: center;
 
         .test-kind {
             font-size: 1rem;
@@ -228,36 +223,38 @@ body {
             }
         }
     }
+
+    .progress-bar-container {
+    }
 }
 
 .unit-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 90% 10%;
-    grid-template-areas:
-        "amount"
-        "unit";
-
-    column-gap: 0;
-    row-gap: 0;
-    padding: 0;
-    margin: auto;
-
-    text-align: center;
-    align-items: center;
-    justify-content: center;
-
     --font-size-lg: 3rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
+    align-items: center;
+
+    column-gap: 0;
+    display: grid;
+    grid-template-areas:
+        "amount"
+        "unit";
+    grid-template-columns: 1fr;
+    grid-template-rows: 90% 10%;
 
     height: var(--height);
+    justify-content: center;
+    margin: auto;
+    padding: 0;
+    row-gap: 0;
+
+    text-align: center;
     width: var(--height);
 
     .amount {
-        text-align: center;
-        grid-area: amount;
         font-size: var(--font-size-lg);
+        grid-area: amount;
+        text-align: center;
     }
 
     .unit {
@@ -267,43 +264,27 @@ body {
     }
 }
 
-.meter-numbers {
-    display: flex;
-    font-family: var(--font-family-primary);
-    font-size: 1em;
-    font-weight: bold;
-    height: 100%;
-    position: absolute;
-    width: 100%;
-
-    z-index: 1;
-
-    div {
-        position: absolute;
-        transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
-    }
-}
-
 .box-shadow {
     border-radius: var(--border-radius-primary);
     box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
+    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
 .pane {
-    position: absolute;
-    display: flex;
-    justify-content: center;
     align-items: center;
+    display: flex;
     flex-direction: column;
-
-    padding: 1rem;
-    width: 100%;
     height: 100%;
+    justify-content: center;
     max-width: var(--meter-width);
 
+    padding: 1rem;
+    position: absolute;
+    width: 100%;
+
     .text {
-        text-align: center;
         font-size: 1.5rem;
+        text-align: center;
         h1,
         h2 {
             color: var(--ul-color-1);
@@ -311,9 +292,8 @@ body {
     }
 
     i {
-        font-style: normal;
-        // color: var(--color-secondary);
         font-size: 12rem;
+        font-style: normal;
     }
 }
 
@@ -346,6 +326,24 @@ body {
     }
 }
 
+.progress-bar-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    padding: 0.5rem;
+    height: 1rem;
+
+    .progress-bar {
+        border-radius: 0;
+        height: 1rem;
+        width: 0;
+    }
+}
+
 @media all and (max-width: $screen-size-md) {
     html,
     body {
@@ -369,6 +367,8 @@ body {
 
 @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
     .main-content {
+        align-items: center;
+        column-gap: 1rem;
         grid-template-areas:
             "test info"
             "test button";
@@ -376,13 +376,11 @@ body {
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
         justify-content: center;
-        align-items: center;
-        column-gap: 1rem;
-        row-gap: 2rem;
-        width: 100%;
 
         max-height: 100%;
         max-width: 100%;
+        row-gap: 2rem;
+        width: 100%;
 
         .start-btn-container {
             align-self: center;
@@ -399,10 +397,10 @@ body {
 
     .test-container {
         .info {
-            grid-template-areas: "amount kind";
-            grid-template-rows: 1fr;
-            grid-template-columns: 1fr 1fr;
             align-items: center;
+            grid-template-areas: "amount kind";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr;
         }
     }
 
@@ -412,10 +410,10 @@ body {
         padding: 2rem;
 
         .info {
-            display: flex;
-            justify-content: space-between;
-            flex-direction: row;
             align-items: center;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
 
             .test-kind {
                 margin-left: 0;

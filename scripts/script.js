@@ -41,9 +41,19 @@ import {
     sleep,
     slideLeft,
     rotateElement,
+    createProgessBar,
+    animateProgressBar,
+    animateProgressBarWrapper,
 } from "./animation.js";
 
-import {emToPixels, getOffset, toggleOnce, toggle} from "./utils.js";
+import {
+    emToPixels,
+    getOffset,
+    toggleOnce,
+    toggle,
+    getComputedVariable,
+    setAttributes,
+} from "./utils.js";
 
 import {Color} from "./colors.js";
 
@@ -67,6 +77,7 @@ var innerMeter;
 var meterDot;
 var progressBarMesh;
 var progressIntervals;
+var progressBarEl;
 
 let alpha0 = Math.PI * 0.8;
 let alpha1 = 2 * Math.PI * 1.1;
@@ -84,8 +95,23 @@ var innerRadius;
 
 var meterDotSize = 60;
 
-let backgroundColor = "rgba(0, 0, 0, 0.25)";
+let backgroundColor = getComputedVariable("--meter-background-color");
+
 let progressBarColor = "#fff";
+
+let dlColor1 = getComputedVariable("--dl-color-1");
+
+let dlColor2 = getComputedVariable("--dl-color-2");
+
+let ulColor1 = getComputedVariable("--ul-color-1");
+
+let ulColor2 = getComputedVariable("--ul-color-2");
+
+let dlColorGradient = `linear-gradient(to right, ${dlColor1}, ${dlColor2})`;
+let ulColorGradient = `linear-gradient(to right, ${ulColor1}, ${ulColor2})`;
+let backgroundColorGradient = `linear-gradient(to right, white, ${progressBarColor})`;
+
+let borderRadiusPrimary = getComputedVariable("--border-radius-primary");
 
 let dlColorStops = [
     ["0", "#8630e6"],
@@ -203,6 +229,13 @@ function startStop() {
             document.getElementById("start-btn").classList.remove("running");
 
             if (aborted) {
+                animateProgressBar(
+                    progressBarEl,
+                    0,
+                    parseFloat(progressBarEl.getAttribute("percent-complete")),
+                    1000
+                );
+
                 if (testStateObj["upload"] > -1) {
                     rotateElement(
                         document.getElementById("test-kind"),
@@ -499,6 +532,8 @@ let drawFunc = function(t) {
         document.getElementById("ping-amount").innerText = Math.round(
             UI_DATA.pingStatus
         );
+
+        animateProgressBarWrapper(progressBarEl);
     }
     if (testStateObj["download"] === 1 || testStateObj["download"] === 0) {
         drawMeterLoop(
@@ -511,6 +546,7 @@ let drawFunc = function(t) {
         );
     }
     if (testStateObj["upload"] === 0) {
+        animateProgressBarWrapper(progressBarEl);
         rotateElement(
             document.getElementById("test-kind"),
             180,
@@ -534,6 +570,8 @@ let drawFunc = function(t) {
         );
     }
     if (UI_DATA.testState === 4) {
+        animateProgressBarWrapper(progressBarEl);
+
         document.getElementById("ul-amount").innerHTML = Number(
             UI_DATA.ulStatus
         ).toPrecision(3);
@@ -550,6 +588,24 @@ function onload() {
     let width = window.innerWidth;
     testEl.style.transform = `translateX(${width}px)`;
     completeModal.style.transform = `translateX(${-width}px)`;
+
+    progressBarEl = document.getElementById("progress-bar");
+    createProgessBar(
+        progressBarEl,
+        [backgroundColorGradient, dlColorGradient, ulColorGradient],
+        {
+            styles: {
+                "border-top-left-radius": borderRadiusPrimary,
+                "border-bottom-left-radius": borderRadiusPrimary,
+            },
+        },
+        {
+            styles: {
+                "border-top-right-radius": borderRadiusPrimary,
+                "border-bottom-right-radius": borderRadiusPrimary,
+            },
+        }
+    );
 
     initFunc();
 }

@@ -177,3 +177,26 @@ export function emToPixels(em) {
 
     return emNumber * fontSize;
 }
+
+export function getComputedVariable(v) {
+    return window
+        .getComputedStyle(document.documentElement)
+        .getPropertyValue(v);
+}
+
+export function setAttributes(el, attrs) {
+    for (var [key, value] of Object.entries(attrs)) {
+        if (
+            (key === "styles" || key === "style") &&
+            typeof value === "object"
+        ) {
+            for (var prop in value) {
+                el.style[prop] = value[prop];
+            }
+        } else if (key === "html") {
+            el.innerHTML = value;
+        } else {
+            el.setAttribute(key, value);
+        }
+    }
+}

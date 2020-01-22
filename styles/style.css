@@ -269,6 +269,12 @@ body {
   row-gap: 0;
   text-align: center;
   width: var(--height);
+  -webkit-transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+  transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+}
+
+.unit-container.in-progress {
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .unit-container .amount {
@@ -296,8 +302,6 @@ body {
   border-radius: var(--border-radius-primary);
   -webkit-box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
           box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
-  -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
-  transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
 .pane {
@@ -345,21 +349,9 @@ body {
   pointer-events: none;
 }
 
-.test-icon {
-  -webkit-transition: -webkit-transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-  transition: -webkit-transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-  transition: transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-  transition: transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms, -webkit-transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-}
-
 .test-icon .ul i {
   -webkit-transform: rotate(180deg);
           transform: rotate(180deg);
-}
-
-.test-icon .amount,
-.test-icon .unit {
-  color: white;
 }
 
 .progress-bar-container {

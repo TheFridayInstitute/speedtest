@@ -247,6 +247,11 @@ body {
 
     text-align: center;
     width: var(--height);
+    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+
+    &.in-progress {
+        color: rgba(255, 255, 255, 0.25);
+    }
 
     .amount {
         font-size: var(--font-size-lg);
@@ -269,7 +274,6 @@ body {
 .box-shadow {
     border-radius: var(--border-radius-primary);
     box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
-    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 }
 
 .pane {
@@ -309,7 +313,6 @@ body {
 }
 
 .test-icon {
-    transition: transform cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
     .ul {
         i {
             // color: var(--ul-color-1);
@@ -325,7 +328,6 @@ body {
 
     .amount,
     .unit {
-        color: white;
     }
 }
 

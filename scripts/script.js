@@ -223,7 +223,7 @@ function startStop() {
                 let id = urlObj.searchParams.get("id");
                 let ip = String(UI_DATA.clientIp);
 
-                if (id !== undefined) {
+                if (id) {
                     $.post("backend/record.php", {
                         id: id,
                         dlStatus: data.dlStatus,
@@ -241,6 +241,12 @@ function startStop() {
             document.getElementById("start-btn").classList.remove("running");
 
             if (aborted) {
+                document
+                    .querySelectorAll(".test-info-container .unit-container")
+                    .forEach((el) => {
+                        el.classList.add("in-progress");
+                    });
+
                 animateProgressBar(
                     progressBarEl,
                     0,
@@ -384,6 +390,9 @@ let drawFunc = function(t) {
 
     if (testStateObj["ping"] === 2 && testStateObj["download"] === 0) {
         animateProgressBarWrapper(progressBarEl);
+        document
+            .getElementById("ping-amount")
+            .parentElement.classList.remove("in-progress");
         document.getElementById("ping-amount").innerText = Math.round(
             parseFloat(UI_DATA.pingStatus)
         );
@@ -407,7 +416,9 @@ let drawFunc = function(t) {
             1000,
             false
         );
-
+        document
+            .getElementById("dl-amount")
+            .parentElement.classList.remove("in-progress");
         document.getElementById("dl-amount").innerHTML = parseFloat(
             UI_DATA.dlStatus
         ).toPrecision(3);
@@ -424,7 +435,9 @@ let drawFunc = function(t) {
     }
     if (UI_DATA.testState === 4) {
         animateProgressBarWrapper(progressBarEl);
-
+        document
+            .getElementById("ul-amount")
+            .parentElement.classList.remove("in-progress");
         document.getElementById("ul-amount").innerHTML = parseFloat(
             UI_DATA.ulStatus
         ).toPrecision(3);
@@ -608,7 +621,7 @@ async function onstart() {
         openingAnimation(duration, smoothStep3);
     });
 
-    // await sleep(duration);
+    await sleep(duration);
 
     let testKind = document.getElementById("test-kind");
     testKind.innerHTML = dlText;

@@ -552,6 +552,8 @@ let initFunc = function(t) {
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
+// NEED TO FIX THE LANDSCAPE SLIDE LEFT BUG!
+
 function onload() {
     let testEl = document.getElementById("test-container");
     let startModal = document.getElementById("start-modal");
@@ -578,8 +580,6 @@ function onload() {
             },
         }
     );
-
-    initFunc();
 }
 
 async function onstart() {
@@ -639,6 +639,7 @@ async function onend() {
 
 window.onload = function() {
     onload();
+    initFunc();
 };
 
 document.getElementById("start-btn").addEventListener(
@@ -651,3 +652,11 @@ document.getElementById("start-btn").addEventListener(
         true
     )
 );
+
+// window.addEventListener(
+//     "resize",
+//     debounce(function() {
+//         console.log("RESIZED");
+//         onload();
+//     }, 500)
+// );

@@ -260,6 +260,11 @@ body {
     }
 }
 
+.constrained-container {
+    max-width: $meter-width;
+    max-height: $meter-height;
+}
+
 .box-shadow {
     border-radius: var(--border-radius-primary);
     box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
@@ -299,7 +304,7 @@ body {
 
 .pane-end {
     opacity: 0;
-    // display: none;
+    pointer-events: none;
 }
 
 .test-icon {
@@ -342,8 +347,6 @@ body {
     body {
         font-size: 0.8rem;
     }
-
-   
 }
 
 @media all and (max-width: $screen-size-sm) {
@@ -353,7 +356,7 @@ body {
     }
 
     .unit-container {
-        --font-size-lg: 2.5rem
+        --font-size-lg: 2.5rem;
     }
 }
 
@@ -364,7 +367,7 @@ body {
     }
 
     .unit-container {
-        --font-size-lg: 2.5rem
+        --font-size-lg: 2.5rem;
     }
 }
 
@@ -389,6 +392,8 @@ body {
         }
 
         .test-container {
+            max-height: $meter-height * 2;
+            max-width: $meter-width;
             height: 100%;
             align-self: center;
         }

@@ -285,6 +285,11 @@ body {
   text-align: center;
 }
 
+.constrained-container {
+  max-width: 32rem;
+  max-height: 32rem;
+}
+
 .box-shadow {
   border-radius: var(--border-radius-primary);
   -webkit-box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
@@ -335,6 +340,7 @@ body {
 
 .pane-end {
   opacity: 0;
+  pointer-events: none;
 }
 
 .test-icon {
@@ -386,8 +392,7 @@ body {
     font-size: 0.8rem;
   }
   .unit-container {
-    --font-size-lg: 2.5rem
-    ;
+    --font-size-lg: 2.5rem;
   }
 }
 
@@ -397,8 +402,7 @@ body {
     font-size: 0.7rem;
   }
   .unit-container {
-    --font-size-lg: 2.5rem
-    ;
+    --font-size-lg: 2.5rem;
   }
 }
 
@@ -427,6 +431,8 @@ body {
         align-self: center;
   }
   .main-content .test-container {
+    max-height: 64rem;
+    max-width: 32rem;
     height: 100%;
     -ms-flex-item-align: center;
         -ms-grid-row-align: center;

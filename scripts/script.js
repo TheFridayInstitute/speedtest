@@ -375,13 +375,13 @@ let drawFunc = function(t) {
     }
 
     testStateObj = updateTestState(UI_DATA.testState + 1, testStateObj);
+    console.log(UI_DATA.pingStatus);
 
-    if (testStateObj["ping"] === 0) {
-        document.getElementById("ping-amount").innerText = Math.round(
-            UI_DATA.pingStatus
-        );
+    if (testStateObj["ping"] === 2 && testStateObj["download"] === 0) {
+        document.getElementById("ping-amount").innerText = UI_DATA.pingStatus;
 
         animateProgressBarWrapper(progressBarEl);
+        console.log(testStateObj, UI_DATA.pingStatus);
     }
     if (testStateObj["download"] === 1 || testStateObj["download"] === 0) {
         drawMeterLoop(
@@ -603,7 +603,7 @@ async function onstart() {
         openingAnimation(duration, smoothStep3);
     });
 
-    await sleep(duration);
+    // await sleep(duration);
 
     let testKind = document.getElementById("test-kind");
     testKind.innerHTML = dlText;

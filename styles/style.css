@@ -66,8 +66,8 @@ body {
       grid-template-areas: "test" "info" "button";
   -ms-grid-columns: 1fr;
       grid-template-columns: 1fr;
-  -ms-grid-rows: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr 1fr;
+  -ms-grid-rows: 1fr 1fr 0.1fr;
+      grid-template-rows: 1fr 1fr 0.1fr;
   height: 100%;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
@@ -163,11 +163,11 @@ body {
   -ms-grid-rows: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
   justify-items: center;
-  margin-top: calc((-100%) + 50% + 50% * (0.6));
+  margin-top: calc((-100%) + 50% + 50% * (0.55));
 }
 
 .test-container .info .test-kind {
-  font-size: 4rem;
+  font-size: 3.5rem;
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: kind;
@@ -191,7 +191,7 @@ body {
 }
 
 .test-container .square-box canvas {
-  padding: 1em;
+  padding: 2.5rem;
 }
 
 .square-box {
@@ -243,7 +243,7 @@ body {
 }
 
 .unit-container {
-  --font-size-lg: 3rem;
+  --font-size-lg: 3.5rem;
   --font-size-sm: calc(var(--font-size-lg) / 4);
   --height: calc(var(--font-size-lg) + var(--font-size-sm) * 1.5);
   -webkit-box-align: center;
@@ -382,7 +382,7 @@ body {
 @media all and (max-width: 782px) {
   html,
   body {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -391,8 +391,8 @@ body {
   body {
     font-size: 0.8rem;
   }
-  .unit-container {
-    --font-size-lg: 2.5rem;
+  .test-info-container > .info .unit-container {
+    --font-size-lg: 3rem;
   }
 }
 
@@ -401,7 +401,7 @@ body {
   body {
     font-size: 0.7rem;
   }
-  .unit-container {
+  .test-info-container > .info .unit-container {
     --font-size-lg: 2.5rem;
   }
 }

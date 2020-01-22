@@ -186,7 +186,8 @@ function startStop() {
         speedtestObj.onupdate = function(data) {
             UI_DATA = data;
 
-            let urlParams = getUrlParams(window.location.href);
+            let urlObj = new URL(window.location.href);
+            let id = urlObj.searchParams.get("id");
 
             if (data.testState === 4) {
                 let ip = String(UI_DATA.clientIp);
@@ -195,13 +196,12 @@ function startStop() {
                 // }
 
                 $.post("backend/record.php", {
-                    id: urlParams.id || -1,
+                    id: id || -1,
                     dlStatus: data.dlStatus,
                     ulStatus: data.ulStatus,
                     pingStatus: data.pingStatus,
                     jitterStatus: data.jitterStatus,
                     ip: ip,
-                    date: Date.now(),
                 });
             }
         };

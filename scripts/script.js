@@ -499,7 +499,8 @@ let drawFunc = function(t) {
         document.getElementById("ping-amount").innerText = Math.round(
             UI_DATA.pingStatus
         );
-    } else if (testStateObj["download"] === 1) {
+    }
+    if (testStateObj["download"] === 1 || testStateObj["download"] === 0) {
         drawMeterLoop(
             UI_DATA.testState,
             document.getElementById("test-amount"),
@@ -508,7 +509,8 @@ let drawFunc = function(t) {
             dlProgressColor,
             dlProgressGlowColor
         );
-    } else if (testStateObj["upload"] === 0) {
+    }
+    if (testStateObj["upload"] === 0) {
         rotateElement(
             document.getElementById("test-kind"),
             180,
@@ -520,7 +522,8 @@ let drawFunc = function(t) {
         document.getElementById("dl-amount").innerHTML = Number(
             UI_DATA.dlStatus
         ).toPrecision(3);
-    } else if (testStateObj["upload"] === 1) {
+    }
+    if (testStateObj["upload"] === 1 || testStateObj["upload"] === 0) {
         drawMeterLoop(
             UI_DATA.testState,
             document.getElementById("test-amount"),
@@ -529,7 +532,8 @@ let drawFunc = function(t) {
             ulProgressColor,
             ulProgressGlowColor
         );
-    } else if (UI_DATA.testState === 4) {
+    }
+    if (UI_DATA.testState === 4) {
         document.getElementById("ul-amount").innerHTML = Number(
             UI_DATA.ulStatus
         ).toPrecision(3);

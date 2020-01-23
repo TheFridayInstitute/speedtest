@@ -78,11 +78,10 @@ export function throttle(func, wait, immediate = false) {
         } else {
             delta = clock.tick();
         }
-
+        clock.tick();
         if (delta < wait) {
             return false;
         } else {
-            console.log("Applied");
             func.apply(context, args);
             return true;
         }
@@ -267,7 +266,8 @@ export function createProgessBar(el, colors, leftAttrs, rightAttrs) {
 
         if (i === 0) {
             setAttributes(shape, leftAttrs);
-        } else if (i === colors.length - 1) {
+        }
+        if (i === colors.length - 1) {
             setAttributes(shape, rightAttrs);
         }
 
@@ -282,29 +282,33 @@ export function createProgessBar(el, colors, leftAttrs, rightAttrs) {
     }
 }
 
-export function animateProgressBar(el, to, from, duration) {
+export function animateProgressBar(el, to, from, duration, stops) {
     to = to === undefined ? 1 : to;
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
+    stops = stops === undefined ? el.children.length : stops;
+    let elStep = Math.floor(stops / el.children.length);
 
     let setProgressBar = function(el, t) {
-        let n = el.children.length || 1;
-        let step = 1 / n;
+        let step = 1 / stops;
         let s = t;
-        let v = 0;
 
         for (let child of el.children) {
-            if (s > 0) {
-                if (s - step > 0) {
-                    v = step;
+            let v = 0;
+            for (let i = 0; i < elStep; i++) {
+                if (s > 0) {
+                    if (s - step > 0) {
+                        v += step;
+                    } else {
+                        v += s;
+                    }
+
+                    s -= step;
                 } else {
-                    v = s;
+                    break;
                 }
-                child.style.width = `${100 * v}%`;
-                s -= step;
-            } else {
-                break;
             }
+            child.style.width = `${100 * v}%`;
         }
     };
 
@@ -328,14 +332,14 @@ export function animateProgressBar(el, to, from, duration) {
     smoothAnimate(to, from, duration, transformFunc, easeInOutCubic);
 }
 
-export function animateProgressBarWrapper(el, duration) {
+export function animateProgressBarWrapper(el, duration, stops) {
     duration = duration === undefined ? 1000 : duration;
+    stops = stops === undefined ? el.children.length : stops;
 
-    let n = el.children.length || 1;
-    let step = 1 / n;
+    let step = 1 / stops;
 
     let from = parseFloat(el.getAttribute("percent-complete")) || 0;
     let to = clamp(from + step, 0, 1);
 
-    animateProgressBar(el, to, from, duration);
+    animateProgressBar(el, to, from, duration, stops);
 }

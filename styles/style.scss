@@ -327,22 +327,25 @@ body {
     pointer-events: none;
 }
 
-.test-icon {
+.test-kind {
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-    .ul {
+
+    &.rotate {
+        i {
+            transform: rotate(180deg);
+        }
+    }
+
+    &.ul {
         i {
             color: var(--ul-color-1);
         }
     }
 
-    .dl {
+    &.dl {
         i {
             color: var(--dl-color-2);
         }
-    }
-
-    .amount,
-    .unit {
     }
 }
 
@@ -447,6 +450,7 @@ body {
             justify-content: space-between;
 
             .test-kind {
+                font-size: 1.5rem;
                 margin-left: 0;
             }
 

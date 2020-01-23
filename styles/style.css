@@ -360,16 +360,21 @@ body {
   pointer-events: none;
 }
 
-.test-icon {
+.test-kind {
   -webkit-transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
   transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 }
 
-.test-icon .ul i {
+.test-kind.rotate i {
+  -webkit-transform: rotate(180deg);
+          transform: rotate(180deg);
+}
+
+.test-kind.ul i {
   color: var(--ul-color-1);
 }
 
-.test-icon .dl i {
+.test-kind.dl i {
   color: var(--dl-color-2);
 }
 
@@ -493,6 +498,7 @@ body {
             justify-content: space-between;
   }
   .test-info-container .info .test-kind {
+    font-size: 1.5rem;
     margin-left: 0;
   }
   .test-info-container .info .unit-container {

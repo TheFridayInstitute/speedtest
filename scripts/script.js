@@ -395,7 +395,7 @@ let drawFunc = function(t) {
     testStateObj = updateTestState(UI_DATA.testState + 1, testStateObj);
 
     if (testStateObj["ping"] === 2 && testStateObj["download"] === 0) {
-        animateProgressBarWrapper(progressBarEl);
+        animateProgressBarWrapper(progressBarEl, 1000, 3);
         document
             .getElementById("ping-amount")
             .parentElement.classList.remove("in-progress");
@@ -415,7 +415,7 @@ let drawFunc = function(t) {
         );
     }
     if (testStateObj["upload"] === 0) {
-        animateProgressBarWrapper(progressBarEl);
+        animateProgressBarWrapper(progressBarEl, 1000, 3);
         rotateElement(
             document.getElementById("test-kind"),
             180,
@@ -443,7 +443,7 @@ let drawFunc = function(t) {
         );
     }
     if (UI_DATA.testState === 4) {
-        animateProgressBarWrapper(progressBarEl);
+        animateProgressBarWrapper(progressBarEl, 1000, 3);
         document
             .getElementById("ul-amount")
             .parentElement.classList.remove("in-progress");
@@ -593,7 +593,7 @@ function onload() {
     progressBarEl = document.getElementById("progress-bar");
     createProgessBar(
         progressBarEl,
-        [backgroundColorGradient, dlColorGradient, ulColorGradient],
+        [ulColorGradient],
         {
             styles: {
                 "border-top-left-radius": borderRadiusPrimary,
@@ -671,6 +671,8 @@ window.onload = function() {
 document.getElementById("start-btn").addEventListener(
     "click",
     throttle(function() {
-        onstart();
-    }, 1000)
+        if (testStateObj["upload"] < 1) {
+            onstart();
+        }
+    }, 500)
 );

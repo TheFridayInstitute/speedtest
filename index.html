@@ -43,11 +43,17 @@
                 </div>
 
                 <div
-                    class="container-fluid flex-column d-flex constrained-container"
+                    class="container-fluid flex-column d-flex p-0 constrained-container"
                 >
                     <div class="test-info-container box-shadow">
                         <div class="info">
-                            <div class="test-kind">Latency</div>
+                            <div class="test-kind">
+                                Latency<i
+                                    class="fa fa-arrow-circle-o-down"
+                                    aria-hidden="true"
+                                    style="opacity: 0;"
+                                ></i>
+                            </div>
 
                             <div class="unit-container in-progress">
                                 <div id="ping-amount" class="amount">0</div>
@@ -56,7 +62,7 @@
                         </div>
 
                         <div class="info test-icon">
-                            <div class="test-kind dl">
+                            <div class="test-kind">
                                 Download
                                 <i
                                     class="fa fa-arrow-circle-o-down"
@@ -70,7 +76,7 @@
                         </div>
 
                         <div class="info test-icon">
-                            <div class="test-kind ul">
+                            <div class="test-kind">
                                 Upload
                                 <i
                                     class="fa fa-arrow-circle-o-down"
@@ -97,7 +103,7 @@
 
                     <div class="info test-icon">
                         <div id="test-kind" class="test-kind">
-                            <div><i class="fa fa-arrow-circle-o-down"></i></div>
+                            <div class="dot-container dot-typing"></div>
                         </div>
                         <div class="unit-container">
                             <div id="test-amount" class="amount">0</div>
@@ -114,7 +120,8 @@
                         <h2>
                             Speed test complete!
                         </h2>
-                        Click the Next button to finish the survey.
+                        Click the <span class="start-color">Next</span> button
+                        to finish the survey.
                     </div>
                     <i class="fa fa-check" aria-hidden="true"></i>
                 </div>
@@ -122,14 +129,16 @@
                 <div class="test-container box-shadow pane" id="start-modal">
                     <div class="text">
                         We will now test the speed of your current internet
-                        connection. This test may use up to 100 MB of data.
+                        connection. This test may use up to
+                        <span class="ul-color">100 MB</span> of data.
 
                         <br />
                         <br />
 
                         If you have a low data cap or would like to skip the
-                        speed test, press the Next button. Otherwise, press the
-                        Start button.
+                        speed test, press the
+                        <span class="start-color">Next</span> button. Otherwise,
+                        press the <span class="start-color">Start</span> button.
                     </div>
                 </div>
             </div>

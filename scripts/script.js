@@ -45,6 +45,7 @@ import {
     animateProgressBar,
     animateProgressBarWrapper,
     debounce,
+    throttle,
 } from "./animation.js";
 
 import {
@@ -77,7 +78,6 @@ var outerMeter;
 var innerMeter;
 var meterDot;
 var progressBarMesh;
-var progressIntervals;
 var progressBarEl;
 
 var alpha0 = Math.PI * 0.8;
@@ -127,12 +127,13 @@ var dlProgressGlowColor;
 var ulProgressColor;
 var ulProgressGlowColor;
 
-var dlText = `<div><i class="fa fa-arrow-circle-o-down"></i></div>`;
+var dlText = `<i class="fa fa-arrow-circle-o-down"></i>`;
+var dots = `<div class="dot-container dot-typing"></div>`;
 
 let makeGlowColor = function(value, index) {
     let [stop, color] = value;
     let newColor = new Color(color);
-    newColor.opacity = 0.2;
+    newColor.opacity = 0.3;
     return [stop, newColor.colorString];
 };
 
@@ -240,7 +241,26 @@ function startStop() {
             document.getElementById("start-btn").innerText = "Start";
             document.getElementById("start-btn").classList.remove("running");
 
+            document.getElementById("test-kind").classList.remove("ul");
+            document.getElementById("test-kind").classList.add("dl");
+            document.getElementById("test-kind").innerHTML = dots;
+
+            if (testStateObj["upload"] > -1) {
+                rotateElement(
+                    document.getElementById("test-kind"),
+                    0,
+                    parseFloat(
+                        document
+                            .getElementById("test-kind")
+                            .getAttribute("rotation")
+                    ),
+                    1000,
+                    false
+                );
+            }
+
             if (aborted) {
+                openingAnimation(1000, smoothStep3);
                 document
                     .querySelectorAll(".test-info-container .unit-container")
                     .forEach((el) => {
@@ -253,20 +273,6 @@ function startStop() {
                     parseFloat(progressBarEl.getAttribute("percent-complete")),
                     1000
                 );
-
-                if (testStateObj["upload"] > -1) {
-                    rotateElement(
-                        document.getElementById("test-kind"),
-                        0,
-                        parseFloat(
-                            document
-                                .getElementById("test-kind")
-                                .getAttribute("rotation")
-                        ),
-                        1000,
-                        false
-                    );
-                }
             }
             drawFunc();
         };
@@ -396,6 +402,7 @@ let drawFunc = function(t) {
         document.getElementById("ping-amount").innerText = Math.round(
             parseFloat(UI_DATA.pingStatus)
         );
+        document.getElementById("test-kind").classList.add("dl");
     }
     if (testStateObj["download"] === 1 || testStateObj["download"] === 0) {
         drawMeterLoop(
@@ -416,6 +423,8 @@ let drawFunc = function(t) {
             1000,
             false
         );
+        document.getElementById("test-kind").classList.remove("dl");
+        document.getElementById("test-kind").classList.add("ul");
         document
             .getElementById("dl-amount")
             .parentElement.classList.remove("in-progress");
@@ -623,8 +632,7 @@ async function onstart() {
 
     await sleep(duration);
 
-    let testKind = document.getElementById("test-kind");
-    testKind.innerHTML = dlText;
+    document.getElementById("test-kind").innerHTML = dlText;
 
     UI_DATA = startStop();
     animationLoopOuter(updateFunc, drawFunc);
@@ -662,19 +670,7 @@ window.onload = function() {
 
 document.getElementById("start-btn").addEventListener(
     "click",
-    debounce(
-        function() {
-            onstart();
-        },
-        1000,
-        true
-    )
+    throttle(function() {
+        onstart();
+    }, 1000)
 );
-
-// window.addEventListener(
-//     "resize",
-//     debounce(function() {
-//         console.log("RESIZED");
-//         onload();
-//     }, 500)
-// );

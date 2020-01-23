@@ -56,12 +56,36 @@ export function debounce(func, wait, immediate = false) {
         var args = arguments;
         var later = function() {
             timeout = null;
-            if (!immediate) func.apply(context, args);
+            if (immediate) func.apply(context, args);
         };
         var callNow = immediate && !timeout;
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
         if (callNow) func.apply(context, args);
+    };
+}
+
+export function throttle(func, wait, immediate = false) {
+    var clock = new Clock();
+    let delta = null;
+
+    return function() {
+        var context = this;
+        var args = arguments;
+
+        if (delta === null) {
+            delta = wait;
+        } else {
+            delta = clock.tick();
+        }
+
+        if (delta < wait) {
+            return false;
+        } else {
+            console.log("Applied");
+            func.apply(context, args);
+            return true;
+        }
     };
 }
 
@@ -276,7 +300,7 @@ export function animateProgressBar(el, to, from, duration) {
                 } else {
                     v = s;
                 }
-                child.style.width = `${round(100 * v, 2)}%`;
+                child.style.width = `${100 * v}%`;
                 s -= step;
             } else {
                 break;

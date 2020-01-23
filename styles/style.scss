@@ -4,10 +4,12 @@ $meter-width: 32rem;
 $meter-height: 32rem;
 $meter-padding: 10rem;
 $meter-outer-radius: 30rem;
+$max-height-multiplier: 2;
 
+$screen-size-ss: 256px;
 $screen-size-xs: 320px;
 $screen-size-sm: 480px;
-$screen-size-md: 782px;
+$screen-size-md: 768px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
@@ -78,20 +80,19 @@ body {
         "info"
         "button";
 
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr 0.1fr;
-
-    height: 100%;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+    row-gap: 1rem;
+    height: calc(100% + 1rem);
 
     justify-content: center;
     justify-items: center;
 
-    max-height: $meter-height * 2;
+    max-height: $meter-height * $max-height-multiplier;
     max-width: $meter-width;
 
     position: relative;
 
-    row-gap: 1rem;
     width: 100%;
 
     .start-btn-container {
@@ -107,7 +108,19 @@ body {
     }
 }
 
+.start-color {
+    background-color: var(--color-secondary);
+    border-radius: 0.25rem;
+    color: rgb(0, 0, 0);
+    padding: 0.2rem;
+}
+
+.ul-color {
+    color: var(--ul-color-1);
+}
+
 .start-btn {
+    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
     align-items: center;
     background-color: var(--color-secondary);
     border-radius: 4px;
@@ -137,21 +150,20 @@ body {
         "test"
         "info";
 
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 0.1fr;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: auto;
     justify-content: center;
 
     justify-content: center;
     max-height: 100%;
     position: relative;
 
-    row-gap: 0;
-
     width: 100%;
+    height: 100%;
 
     .info {
         align-self: start;
-        box-sizing: border-box;
+        box-sizing: content-box;
 
         display: grid;
         grid-area: info;
@@ -162,10 +174,12 @@ body {
         grid-template-rows: 1fr 1fr;
 
         justify-items: center;
-
-        margin-top: calc((-100%) + 50% + 50% * (0.55));
+        padding: 0.5rem;
+        margin-top: -25%;
 
         .test-kind {
+            height: 3.5rem;
+            width: 3.5rem;
             font-size: 3.5rem;
             grid-area: kind;
         }
@@ -204,10 +218,12 @@ body {
 .test-info-container {
     border-radius: var(--border-radius-primary);
     display: flex;
-    justify-content: space-around;
+    justify-content: space-evenly;
     max-width: $meter-width;
-    padding: 1em;
+    padding: 1rem;
     width: 100%;
+    box-sizing: border-box;
+
     position: relative;
 
     .info {
@@ -216,11 +232,9 @@ body {
         justify-content: center;
 
         .test-kind {
-            font-size: 1rem;
             text-align: center;
-            i {
-                font-size: 1.25rem;
-            }
+        }
+        .amount-container {
         }
     }
 }
@@ -273,7 +287,7 @@ body {
 
 .box-shadow {
     border-radius: var(--border-radius-primary);
-    box-shadow: 0.5rem 0.5rem 40px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 4px 0px 20px 0px rgba(0, 0, 0, 0.5);
 }
 
 .pane {
@@ -313,16 +327,16 @@ body {
 }
 
 .test-icon {
+    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
     .ul {
         i {
-            // color: var(--ul-color-1);
-            transform: rotate(180deg);
+            color: var(--ul-color-1);
         }
     }
 
     .dl {
         i {
-            // color: var(--dl-color-2);
+            color: var(--dl-color-2);
         }
     }
 
@@ -399,7 +413,7 @@ body {
         }
 
         .test-container {
-            max-height: $meter-height * 2;
+            max-height: $meter-height * $max-height-multiplier;
             max-width: $meter-width;
             height: 100%;
             align-self: center;

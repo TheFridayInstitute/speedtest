@@ -90,6 +90,7 @@ body {
 
     max-height: $meter-height * $max-height-multiplier;
     max-width: $meter-width;
+    align-items: center;
 
     position: relative;
 
@@ -110,9 +111,10 @@ body {
 
 .start-color {
     background-color: var(--color-secondary);
-    border-radius: 0.25rem;
+    border-radius: 0.25em;
     color: rgb(0, 0, 0);
-    padding: 0.2rem;
+    padding: 0.1rem;
+    margin: auto;
 }
 
 .ul-color {
@@ -120,7 +122,7 @@ body {
 }
 
 .start-btn {
-    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
     align-items: center;
     background-color: var(--color-secondary);
     border-radius: 4px;
@@ -174,12 +176,9 @@ body {
         grid-template-rows: 1fr 1fr;
 
         justify-items: center;
-        padding: 0.5rem;
         margin-top: -25%;
 
         .test-kind {
-            height: 3.5rem;
-            width: 3.5rem;
             font-size: 3.5rem;
             grid-area: kind;
         }
@@ -232,6 +231,7 @@ body {
         justify-content: center;
 
         .test-kind {
+            font-size: 1.2rem;
             text-align: center;
         }
         .amount-container {
@@ -322,7 +322,7 @@ body {
 }
 
 .pane-end {
-    opacity: 0;
+    visibility: hidden;
     pointer-events: none;
 }
 
@@ -362,7 +362,7 @@ body {
 @media all and (max-width: $screen-size-md) {
     html,
     body {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 }
 
@@ -382,7 +382,7 @@ body {
 @media all and (max-width: $screen-size-xs) {
     html,
     body {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
     .test-info-container > .info {
@@ -426,6 +426,7 @@ body {
 
     .test-container {
         .info {
+            padding: 0.5rem;
             align-items: center;
             grid-template-areas: "amount kind";
             grid-template-columns: 1fr 1fr;

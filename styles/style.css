@@ -76,6 +76,7 @@ body {
   justify-items: center;
   max-height: 64rem;
   max-width: 32rem;
+  align-items: center;
   position: relative;
   width: 100%;
 }
@@ -100,9 +101,10 @@ body {
 
 .start-color {
   background-color: var(--color-secondary);
-  border-radius: 0.25rem;
+  border-radius: 0.25em;
   color: black;
-  padding: 0.2rem;
+  padding: 0.1rem;
+  margin: auto;
 }
 
 .ul-color {
@@ -110,8 +112,8 @@ body {
 }
 
 .start-btn {
-  -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-  transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+  -webkit-transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+  transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
@@ -174,13 +176,10 @@ body {
   -ms-grid-rows: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
   justify-items: center;
-  padding: 0.5rem;
   margin-top: -25%;
 }
 
 .test-container .info .test-kind {
-  height: 3.5rem;
-  width: 3.5rem;
   font-size: 3.5rem;
   -ms-grid-row: 2;
   -ms-grid-column: 1;
@@ -251,6 +250,7 @@ body {
 }
 
 .test-info-container .info .test-kind {
+  font-size: 1.2rem;
   text-align: center;
 }
 
@@ -355,7 +355,7 @@ body {
 }
 
 .pane-end {
-  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
@@ -394,7 +394,7 @@ body {
 @media all and (max-width: 768px) {
   html,
   body {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -411,7 +411,7 @@ body {
 @media all and (max-width: 320px) {
   html,
   body {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
   .test-info-container > .info .unit-container {
     --font-size-lg: 2.5rem;
@@ -456,6 +456,7 @@ body {
         align-self: center;
   }
   .test-container .info {
+    padding: 0.5rem;
     -webkit-box-align: center;
         -ms-flex-align: center;
             align-items: center;

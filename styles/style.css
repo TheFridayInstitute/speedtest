@@ -180,7 +180,8 @@ body {
 }
 
 .test-container .info .test-kind {
-  font-size: 3.5rem;
+  font-size: 3rem;
+  bottom: 0;
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: kind;

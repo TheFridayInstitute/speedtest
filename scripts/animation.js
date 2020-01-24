@@ -82,6 +82,7 @@ export function throttle(func, wait, immediate = false) {
         if (delta < wait) {
             return false;
         } else {
+            console.log("Applied");
             func.apply(context, args);
             return true;
         }

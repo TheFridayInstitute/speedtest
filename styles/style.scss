@@ -114,7 +114,6 @@ body {
     border-radius: 0.25em;
     color: rgb(0, 0, 0);
     padding: 0.1rem;
-    margin: auto;
 }
 
 .ul-color {
@@ -327,6 +326,8 @@ body {
     pointer-events: none;
 }
 
+
+
 .test-kind {
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
@@ -339,15 +340,23 @@ body {
     &.ul {
         i {
             color: var(--ul-color-1);
+            &.white {
+                color: white;
+            }
         }
     }
 
     &.dl {
         i {
             color: var(--dl-color-2);
+            &.white {
+                color: white;
+            }
         }
     }
 }
+
+
 
 .progress-bar-container {
     display: flex;

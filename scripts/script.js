@@ -207,7 +207,8 @@ function setRoundedArcColor(roundedArc, color) {
 
 function startStop() {
     let data = null;
-    if (speedtestObj.getState() == 3) {
+
+    if (speedtestObj.getState() === 3) {
         speedtestObj.abort();
         data = null;
         document.getElementById("start-btn").classList.remove("running");
@@ -240,8 +241,7 @@ function startStop() {
             document.getElementById("start-btn").classList.remove("running");
 
             document.getElementById("test-kind").classList.remove("ul");
-            document.getElementById("test-kind").classList.add("dl");
-            document.getElementById("test-kind").innerHTML = dots;
+            document.getElementById("test-kind").classList.remove("dl");
 
             if (testStateObj["upload"] > -1) {
                 rotateElement(
@@ -255,6 +255,11 @@ function startStop() {
                     1000,
                     false
                 );
+                setTimeout(function() {
+                    document.getElementById("test-kind").innerHTML = dots;
+                }, 1000);
+            } else {
+                document.getElementById("test-kind").innerHTML = dots;
             }
 
             if (aborted) {
@@ -271,8 +276,9 @@ function startStop() {
                     parseFloat(progressBarEl.getAttribute("percent-complete")),
                     1000
                 );
+            } else {
+                drawFunc();
             }
-            drawFunc();
         };
 
         speedtestObj.start();
@@ -440,7 +446,7 @@ let drawFunc = function(t) {
             ulProgressGlowColor
         );
     }
-    if (UI_DATA.testState === 4) {
+    if (testStateObj["upload"] === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
         document
             .getElementById("ul-amount")
@@ -577,8 +583,6 @@ let initFunc = function(t) {
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
-// NEED TO FIX THE LANDSCAPE SLIDE LEFT BUG!
-
 function onload() {
     let testEl = document.getElementById("test-container");
     let startModal = document.getElementById("start-modal");
@@ -626,14 +630,11 @@ async function onstart() {
 
         startModal.classList.add("pane-end");
         openingAnimation(duration, smoothStep3);
+
+        await sleep(duration);
     });
-
-    await sleep(duration);
-
     document.getElementById("test-kind").innerHTML = dlText;
-
     UI_DATA = startStop();
-    animationLoopOuter(updateFunc, drawFunc);
 }
 
 async function onend() {
@@ -664,13 +665,12 @@ async function onend() {
 window.onload = function() {
     onload();
     initFunc();
+    animationLoopOuter(updateFunc, drawFunc);
 };
 
 document.getElementById("start-btn").addEventListener(
     "click",
     throttle(function() {
-        if (testStateObj["upload"] < 1) {
-            onstart();
-        }
-    }, 500)
+        onstart();
+    }, 250)
 );

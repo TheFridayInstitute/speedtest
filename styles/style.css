@@ -104,7 +104,6 @@ body {
   border-radius: 0.25em;
   color: black;
   padding: 0.1rem;
-  margin: auto;
 }
 
 .ul-color {
@@ -374,8 +373,16 @@ body {
   color: var(--ul-color-1);
 }
 
+.test-kind.ul i.white {
+  color: white;
+}
+
 .test-kind.dl i {
   color: var(--dl-color-2);
+}
+
+.test-kind.dl i.white {
+  color: white;
 }
 
 .progress-bar-container {

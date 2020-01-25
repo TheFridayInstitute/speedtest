@@ -5,9 +5,12 @@ import {
     normalize,
     bounceInEase,
     easeInOutCubic,
+    smoothStep3
 } from "./math.js";
 
-import {setAttributes} from "./utils.js";
+import { getOffset } from "./utils.js";
+
+import { setAttributes } from "./utils.js";
 
 export class Clock {
     constructor(autoStart = true, timeStep = 1000 / 60, timeOut = 120) {
@@ -65,7 +68,7 @@ export function debounce(func, wait, immediate = false) {
     };
 }
 
-export function throttle(func, wait, immediate = false) {
+export function throttle(func, wait) {
     var clock = new Clock();
     let delta = null;
 
@@ -343,4 +346,25 @@ export function animateProgressBarWrapper(el, duration, stops) {
     let to = clamp(from + step, 0, 1);
 
     animateProgressBar(el, to, from, duration, stops);
+}
+
+export function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
+    let buttonOffset = getOffset(buttonEl);
+    let x = ev.clientX;
+    let y = ev.clientY;
+
+    x -= buttonOffset.left + buttonOffset.width / 2;
+    y -= buttonOffset.top + buttonOffset.height / 2;
+
+    rippleEl.style.transform = `translate(${x}px, ${y}px)`;
+    rippleEl.style.width = 0;
+    rippleEl.style.height = 0;
+
+    let transformFunc = function(v, t) {
+        let r = `${v}rem`;
+        rippleEl.style.width = r;
+        rippleEl.style.height = r;
+        rippleEl.style.opacity = 1 - t;
+    };
+    smoothAnimate(to, from, duration, transformFunc, smoothStep3);
 }

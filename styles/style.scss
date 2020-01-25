@@ -109,38 +109,6 @@ body {
     }
 }
 
-.start-color {
-    background-color: var(--color-secondary);
-    border-radius: 0.25em;
-    color: rgb(0, 0, 0);
-    padding: 0.1rem;
-}
-
-.ul-color {
-    color: var(--ul-color-1);
-}
-
-.start-btn {
-    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-    align-items: center;
-    background-color: var(--color-secondary);
-    border-radius: 4px;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
-    display: flex;
-    font-size: 2em;
-    font-weight: normal;
-    height: 2.5em;
-    justify-content: center;
-    position: relative;
-
-    width: 10em;
-
-    &.running {
-        background-color: var(--dl-color-2);
-    }
-}
-
 .test-container {
     align-items: center;
     border-radius: var(--border-radius-primary);
@@ -326,8 +294,6 @@ body {
     pointer-events: none;
 }
 
-
-
 .test-kind {
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
@@ -355,8 +321,6 @@ body {
         }
     }
 }
-
-
 
 .progress-bar-container {
     display: flex;

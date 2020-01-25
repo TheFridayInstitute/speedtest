@@ -9,7 +9,7 @@ import {
     generateRadialGradient,
     generateGradient,
     roundedArc,
-    roundedRectangle,
+    roundedRectangle
 } from "./canvas.js";
 
 import {
@@ -31,7 +31,7 @@ import {
     distance,
     rotate,
     range,
-    lerpIn,
+    lerpIn
 } from "./math.js";
 
 import {
@@ -46,6 +46,7 @@ import {
     animateProgressBarWrapper,
     debounce,
     throttle,
+    rippleButton
 } from "./animation.js";
 
 import {
@@ -54,10 +55,29 @@ import {
     toggleOnce,
     toggle,
     getComputedVariable,
-    setAttributes,
+    setAttributes
 } from "./utils.js";
 
-import {Color} from "./colors.js";
+import { Color } from "./colors.js";
+
+function msieversion() {
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf("MSIE ");
+
+    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+        document.body.style.display = "none";
+        alert(
+            `Browser not supported.
+
+            To take the speed test, please use either Chrome, Firefox, Edge or Safari.
+            
+            To continue, click the Next button.`
+        );
+    }
+
+    return false;
+}
+msieversion();
 
 window.requestAnimationFrame =
     window.requestAnimationFrame ||
@@ -112,13 +132,13 @@ var backgroundColorGradient = `linear-gradient(to right, white, ${progressBarCol
 var dlColorStops = [
     ["0", "#8630e6"],
     ["0.5", "#d359ff"],
-    ["1.0", "#f71e6a"],
+    ["1.0", "#f71e6a"]
 ];
 
 var ulColorStops = [
     ["0", "#FF8000"],
     ["0.5", "#FF8000"],
-    ["1.0", "#FF0000"],
+    ["1.0", "#FF0000"]
 ];
 
 var dlProgressColor;
@@ -144,7 +164,7 @@ var speedTestStateMapping = {
     3: "ping",
     4: "upload",
     5: "finished",
-    6: "aborted",
+    6: "aborted"
 };
 
 /**
@@ -161,7 +181,7 @@ var speedTestStateMapping = {
  *
  */
 
-var testStateObj = {ping: -1, download: -1, upload: -1, prev_state: -1};
+var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
 function updateTestState(speedtestState, testStateObj) {
     let testKind = speedTestStateMapping[speedtestState];
@@ -212,10 +232,8 @@ function startStop() {
         speedtestObj.abort();
         data = null;
         document.getElementById("start-btn").classList.remove("running");
-        document.getElementById("start-btn").innerText = "Start";
     } else {
         document.getElementById("start-btn").classList.add("running");
-        document.getElementById("start-btn").innerText = "Stop";
 
         speedtestObj.onupdate = function(data) {
             UI_DATA = data;
@@ -231,13 +249,12 @@ function startStop() {
                     ulStatus: data.ulStatus,
                     pingStatus: data.pingStatus,
                     jitterStatus: data.jitterStatus,
-                    ip: ip,
+                    ip: ip
                 });
             }
         };
 
         speedtestObj.onend = function(aborted) {
-            document.getElementById("start-btn").innerText = "Start";
             document.getElementById("start-btn").classList.remove("running");
 
             document.getElementById("test-kind").classList.remove("ul");
@@ -499,7 +516,7 @@ let initFunc = function(t) {
     // Initializing polygons
     let base = [
         [0, 0],
-        [dialBase, 0],
+        [dialBase, 0]
     ];
 
     let points = slerpPoints(base[0], base[1]);
@@ -507,7 +524,7 @@ let initFunc = function(t) {
     let meterPoints = [
         ...points,
         [dialBase - dialTop, -dialHeight],
-        [dialTop, -dialHeight],
+        [dialTop, -dialHeight]
     ];
 
     meterDial = new Polygon(meterPoints, null, null, "white");
@@ -593,20 +610,23 @@ function onload() {
     completeModal.style.transform = `translateX(${-width}px)`;
 
     progressBarEl = document.getElementById("progress-bar");
+    // document.getElementById("start-btn").firstElementChild = 2;
+
+    console.log(document.getElementById("start-btn").children);
     createProgessBar(
         progressBarEl,
         [ulColorGradient],
         {
             styles: {
                 "border-top-left-radius": borderRadiusPrimary,
-                "border-bottom-left-radius": borderRadiusPrimary,
-            },
+                "border-bottom-left-radius": borderRadiusPrimary
+            }
         },
         {
             styles: {
                 "border-top-right-radius": borderRadiusPrimary,
-                "border-bottom-right-radius": borderRadiusPrimary,
-            },
+                "border-bottom-right-radius": borderRadiusPrimary
+            }
         }
     );
 }
@@ -668,9 +688,19 @@ window.onload = function() {
     animationLoopOuter(updateFunc, drawFunc);
 };
 
-document.getElementById("start-btn").addEventListener(
-    "click",
+document.getElementById("start-btn").addEventListener("click", function(ev) {
+    let duration = 1000;
+
+    rippleButton(
+        ev,
+        this,
+        document.querySelector("#start-btn .ripple"),
+        15,
+        0,
+        duration
+    );
+
     throttle(function() {
         onstart();
-    }, 250)
-);
+    }, 250)();
+});

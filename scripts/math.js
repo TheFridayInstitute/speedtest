@@ -82,7 +82,7 @@ export function slerpPoints(xy1, xy2, neg = 1) {
 
     let midpoint = [
         Math.abs(xy2[0] - xy1[0]) / 2 + minX,
-        Math.abs(xy2[1] - xy1[1]) / 2 + minY,
+        Math.abs(xy2[1] - xy1[1]) / 2 + minY
     ];
 
     let r = distance(midpoint, xy2);
@@ -114,7 +114,7 @@ export function slerpPoints(xy1, xy2, neg = 1) {
         let v = lerp(t, alpha0, alpha1);
         points.push([
             neg * r * Math.cos(v) + midpoint[0],
-            r * Math.sin(v) + midpoint[1],
+            r * Math.sin(v) + midpoint[1]
         ]);
     }
     return points;
@@ -225,6 +225,23 @@ export function logerp(t, from, to) {
     from = from === 0 ? 1e-9 : from;
     let tt = from * Math.pow(to / from, t);
     return tt;
+}
+
+export function interpBezier(t, points) {
+    let x = points.map((xy) => xy[0]);
+    let y = points.map((xy) => xy[1]);
+    return [DeCasteljau(t, x), DeCasteljau(t, y)];
+}
+
+export function bounceInEaseHalf(t, from, distance, duration) {
+    let points = [
+        [0, 0],
+        [0.026, 1.746],
+        [0.633, 1.06],
+        [1, 0]
+    ];
+    t = interpBezier(t / duration, points)[1];
+    return distance * t + from;
 }
 
 export function round(n, d, mode = 0) {

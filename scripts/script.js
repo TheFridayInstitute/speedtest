@@ -63,6 +63,7 @@ import { Color } from "./colors.js";
 function msieversion() {
     let msie = window.navigator.userAgent.indexOf("MSIE");
     if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+        console.log("**Browser not compatible!");
         document.body.style.display = "none";
         alert(
             "Browser not supported." +

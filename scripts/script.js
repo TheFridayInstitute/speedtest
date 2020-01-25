@@ -686,10 +686,10 @@ async function onend() {
 }
 
 var isIE = false;
+isIE = msieversion();
+console.log(window.navigator.userAgent);
 
 window.onload = function() {
-    isIE = msieversion();
-
     if (!isIE) {
         onload();
         initFunc();

@@ -1,8 +1,9 @@
 function msieversion() {
-    let userAgentStrings = ["msie", "trident"];
-    let isIE = false;
+    var userAgentStrings = ["msie", "trident"];
+    var isIE = false;
 
-    for (let ua of userAgentStrings) {
+    for (var i = 0; i < userAgentStrings.length; i++) {
+        var ua = userAgentStrings[i];
         if (window.navigator.userAgent.toLowerCase().indexOf(ua) !== -1) {
             isIE = true;
             break;

@@ -17,10 +17,11 @@ function msieversion() {
                 "\n\nTo take the speed test, please use either Chrome, Firefox, Edge or Safari." +
                 "\n\nTo continue, click the Next button"
         );
+        return true;
     }
     return false;
 }
 
 var isIE = false;
 isIE = msieversion();
-console.log(window.navigator.userAgent);
+console.log(window.navigator.userAgent, isIE);

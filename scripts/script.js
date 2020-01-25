@@ -60,28 +60,6 @@ import {
 
 import { Color } from "./colors.js";
 
-function msieversion() {
-    let userAgentStrings = ["msie", "trident"];
-    let isIE = false;
-
-    for (let ua of userAgentStrings) {
-        if (window.navigator.userAgent.toLowerCase().indexOf(ua) !== -1) {
-            isIE = true;
-            break;
-        }
-    }
-    if (isIE) {
-        console.log("**Browser not compatible!");
-        document.body.style.display = "none";
-        alert(
-            "Browser not supported." +
-                "\n\nTo take the speed test, please use either Chrome, Firefox, Edge or Safari." +
-                "\n\nTo continue, click the Next button"
-        );
-    }
-    return false;
-}
-
 window.requestAnimationFrame =
     window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -613,9 +591,6 @@ function onload() {
     completeModal.style.transform = `translateX(${-width}px)`;
 
     progressBarEl = document.getElementById("progress-bar");
-    // document.getElementById("start-btn").firstElementChild = 2;
-
-    console.log(document.getElementById("start-btn").children);
     createProgessBar(
         progressBarEl,
         [ulColorGradient],
@@ -685,16 +660,10 @@ async function onend() {
     testEl.classList.add("pane-end");
 }
 
-var isIE = false;
-isIE = msieversion();
-console.log(window.navigator.userAgent);
-
 window.onload = function() {
-    if (!isIE) {
-        onload();
-        initFunc();
-        animationLoopOuter(updateFunc, drawFunc);
-    }
+    onload();
+    initFunc();
+    animationLoopOuter(updateFunc, drawFunc);
 };
 
 document.getElementById("start-btn").addEventListener("click", function(ev) {
@@ -708,9 +677,8 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
         0,
         duration
     );
-    if (!isIE) {
-        throttle(function() {
-            onstart();
-        }, 250)();
-    }
+
+    throttle(function() {
+        onstart();
+    }, 250)();
 });

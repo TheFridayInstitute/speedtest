@@ -61,23 +61,17 @@ import {
 import { Color } from "./colors.js";
 
 function msieversion() {
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf("MSIE ");
-
+    let msie = window.navigator.userAgent.indexOf("MSIE");
     if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
         document.body.style.display = "none";
         alert(
-            `Browser not supported.
-
-            To take the speed test, please use either Chrome, Firefox, Edge or Safari.
-            
-            To continue, click the Next button.`
+            "Browser not supported." +
+                "\nTo take the speed test, please use either Chrome, Firefox, Edge or Safari." +
+                "\nTo continue, click the Next button"
         );
     }
-
     return false;
 }
-msieversion();
 
 window.requestAnimationFrame =
     window.requestAnimationFrame ||
@@ -682,10 +676,16 @@ async function onend() {
     testEl.classList.add("pane-end");
 }
 
+var isIE = false;
+
 window.onload = function() {
-    onload();
-    initFunc();
-    animationLoopOuter(updateFunc, drawFunc);
+    isIE = msieversion();
+
+    if (!isIE) {
+        onload();
+        initFunc();
+        animationLoopOuter(updateFunc, drawFunc);
+    }
 };
 
 document.getElementById("start-btn").addEventListener("click", function(ev) {
@@ -699,8 +699,9 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
         0,
         duration
     );
-
-    throttle(function() {
-        onstart();
-    }, 250)();
+    if (!isIE) {
+        throttle(function() {
+            onstart();
+        }, 250)();
+    }
 });

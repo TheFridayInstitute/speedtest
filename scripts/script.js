@@ -75,8 +75,8 @@ function msieversion() {
         document.body.style.display = "none";
         alert(
             "Browser not supported." +
-                "\nTo take the speed test, please use either Chrome, Firefox, Edge or Safari." +
-                "\nTo continue, click the Next button"
+                "\n\nTo take the speed test, please use either Chrome, Firefox, Edge or Safari." +
+                "\n\nTo continue, click the Next button"
         );
     }
     return false;

@@ -67,7 +67,8 @@ body {
   font-family: var(--font-family-primary);
       grid-template-areas: "test" "info" "button";
   grid-auto-columns: 1fr;
-  grid-auto-rows: 1fr;
+  -ms-grid-rows: 1fr 1fr 0.5fr;
+      grid-template-rows: 1fr 1fr 0.5fr;
   row-gap: 1rem;
   height: calc(100% + 1rem);
   -webkit-box-pack: center;

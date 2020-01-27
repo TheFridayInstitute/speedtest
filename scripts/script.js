@@ -224,6 +224,11 @@ function startStop() {
                 let id = urlObj.searchParams.get("id");
                 let ip = String(UI_DATA.clientIp);
 
+                ip = ip
+                    .trim()
+                    .split(" ")[0]
+                    .trim();
+
                 $.post("backend/record.php", {
                     id: id || -1,
                     dlStatus: data.dlStatus,

@@ -1,0 +1,84 @@
+.start-color {
+  background-color: var(--color-secondary);
+  border-radius: 0.25em;
+  color: black;
+  padding: 0.1rem 1rem;
+  margin: 0.1rem;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+}
+
+.ul-color {
+  color: var(--ul-color-1);
+}
+
+.start-btn {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background-color: var(--color-secondary);
+  border-radius: var(--border-radius-primary);
+  color: black;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 2em;
+  font-weight: normal;
+  height: 2.5em;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  position: relative;
+  width: 10em;
+}
+
+.start-btn.running {
+  background-color: var(--dl-color-2);
+}
+
+.start-btn.running::after {
+  content: "Stop";
+}
+
+.start-btn::after {
+  content: "Start";
+}
+
+.btn-prime {
+  position: relative;
+  overflow: hidden;
+  --border-size: 0.2rem;
+  --box-shadow-hl: 2px;
+  --box-shadow-vl: 0px;
+  --box-shadow-br: 10px;
+  --box-shadow-sr: 0px;
+  --box-shadow-color: rgba(0, 0, 0, 0.5);
+  -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+  transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+  -webkit-box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+          box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+}
+
+.btn-prime:hover {
+  --box-shadow-vl: 7px;
+  -webkit-transform: translateY(-5px);
+          transform: translateY(-5px);
+  -webkit-box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+          box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+}
+
+.ripple {
+  border-radius: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  width: 0;
+  height: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto;
+}

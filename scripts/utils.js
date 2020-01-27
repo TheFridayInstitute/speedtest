@@ -51,28 +51,6 @@ export function setMeterNumbers(
     });
 }
 
-export function getUrlParams(query) {
-    var vars = query.split("&");
-    var query_string = {};
-    for (var i = 0; i < vars.length; i++) {
-        var pair = vars[i].split("=");
-        var key = decodeURIComponent(pair[0]);
-        var value = decodeURIComponent(pair[1]);
-        // If first entry with this name
-        if (typeof query_string[key] === "undefined") {
-            query_string[key] = decodeURIComponent(value);
-            // If second entry with this name
-        } else if (typeof query_string[key] === "string") {
-            var arr = [query_string[key], decodeURIComponent(value)];
-            query_string[key] = arr;
-            // If third or later entry with this name
-        } else {
-            query_string[key].push(decodeURIComponent(value));
-        }
-    }
-    return query_string;
-}
-
 export function toggle(el, firstCallback, secondCallback) {
     let toggled = el.getAttribute("toggled") === "true";
     if (!toggled) {
@@ -84,11 +62,15 @@ export function toggle(el, firstCallback, secondCallback) {
     return;
 }
 
-export function toggleOnce(el, firstCallback) {
+export function toggleOnce(el, firstCallback, force = false) {
     let toggled = el.getAttribute("toggled") === "true";
-    if (!toggled) {
+    if (!toggled || force) {
         firstCallback(el);
-        el.setAttribute("toggled", true);
+        if (force) {
+            el.setAttribute("toggled", !toggled);
+        } else {
+            el.setAttribute("toggled", true);
+        }
     }
     return;
 }
@@ -194,4 +176,27 @@ export function emToPixels(em) {
     );
 
     return emNumber * fontSize;
+}
+
+export function getComputedVariable(v) {
+    return window
+        .getComputedStyle(document.documentElement)
+        .getPropertyValue(v);
+}
+
+export function setAttributes(el, attrs) {
+    for (var [key, value] of Object.entries(attrs)) {
+        if (
+            (key === "styles" || key === "style") &&
+            typeof value === "object"
+        ) {
+            for (var prop in value) {
+                el.style[prop] = value[prop];
+            }
+        } else if (key === "html") {
+            el.innerHTML = value;
+        } else {
+            el.setAttribute(key, value);
+        }
+    }
 }

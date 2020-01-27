@@ -34,7 +34,6 @@
     top: 0;
     width: inherit;
 
-
     z-index: 0;
 }
 @keyframes arrow {
@@ -98,6 +97,17 @@
     }
 }
 
+$dotWidth: 10px;
+$dotHeight: 10px;
+$dotRadius: $dotWidth/2;
+
+$dotColor: white;
+$dotBgColor: $dotColor;
+$dotBeforeColor: $dotColor;
+$dotAfterColor: $dotColor;
+
+$dotSpacing: $dotWidth + $dotWidth/2;
+
 .filter-contrast {
     filter: contrast(5);
 }
@@ -116,13 +126,11 @@
     width: $width;
 }
 
-$dot-color: white;
-
 .dot-container {
     align-items: center;
     display: flex;
     justify-content: center;
-    margin: auto;
+    margin: 1rem auto;
     position: relative;
 }
 
@@ -131,7 +139,7 @@ $dot-color: white;
     border-radius: 6px;
     box-shadow: 0 -20px 0 0;
 
-    color: $dot-color;
+    color: $dotColor;
     filter: blur(2px);
     height: 12px;
 
@@ -148,7 +156,7 @@ $dot-color: white;
 
         box-shadow: 0 -20px 0 0;
 
-        color: $dot-color;
+        color: $dotColor;
         content: "";
         display: inline-block;
         filter: blur(2px);
@@ -181,11 +189,55 @@ $dot-color: white;
     }
 }
 
-.test-iframe {
-    border: none;
-    display: block;
-    height: 35rem;
-    margin: 0;
-    overflow: hidden;
-    width: 100%;
+$leftPos: -9999px;
+$x1: -$leftPos - $dotSpacing;
+$x2: -$leftPos;
+$x3: -$leftPos + $dotSpacing;
+
+.dot-typing {
+    position: relative;
+    left: $leftPos;
+
+    @include dot;
+
+    box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+        $x3 0 0 0 $dotAfterColor;
+    animation: dotTyping 1.5s infinite linear;
+}
+
+@keyframes dotTyping {
+    0% {
+        box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+            $x3 0 0 0 $dotAfterColor;
+    }
+
+    16.667% {
+        box-shadow: $x1 -10px 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+            $x3 0 0 0 $dotAfterColor;
+    }
+
+    33.333% {
+        box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+            $x3 0 0 0 $dotAfterColor;
+    }
+
+    50% {
+        box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 -10px 0 0 $dotColor,
+            $x3 0 0 0 $dotAfterColor;
+    }
+
+    66.667% {
+        box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+            $x3 0 0 0 $dotAfterColor;
+    }
+
+    83.333% {
+        box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+            $x3 -10px 0 0 $dotAfterColor;
+    }
+
+    100% {
+        box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
+            $x3 0 0 0 $dotAfterColor;
+    }
 }

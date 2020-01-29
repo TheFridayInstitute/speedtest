@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta
             name="viewport"
@@ -35,12 +35,15 @@
 
     <body>
         <div class="outer-content">
-            <div class="main-content" id="main-content">
+            <main class="main-content" id="main-content">
                 <div class="start-btn-container">
-                    
-                    <div class="start-btn btn-prime" id="start-btn">
+                    <button
+                        class="start-btn btn-prime"
+                        id="start-btn"
+                        aria-label="start-button"
+                    >
                         <div class="ripple"></div>
-                    </div>
+                    </button>
                 </div>
 
                 <div
@@ -57,7 +60,13 @@
                             </div>
 
                             <div class="unit-container in-progress">
-                                <div id="ping-amount" class="amount">0</div>
+                                <div
+                                    id="ping-amount"
+                                    class="amount"
+                                    aria-label="latency"
+                                >
+                                    0
+                                </div>
                                 <div class="unit">ms</div>
                             </div>
                         </div>
@@ -71,7 +80,13 @@
                                 ></i>
                             </div>
                             <div class="unit-container in-progress">
-                                <div id="dl-amount" class="amount">0</div>
+                                <div
+                                    id="dl-amount"
+                                    class="amount"
+                                    aria-label="download-speed"
+                                >
+                                    0
+                                </div>
                                 <div class="unit">Mbps</div>
                             </div>
                         </div>
@@ -85,7 +100,13 @@
                                 ></i>
                             </div>
                             <div class="unit-container in-progress">
-                                <div id="ul-amount" class="amount">0</div>
+                                <div
+                                    id="ul-amount"
+                                    class="amount"
+                                    aria-label="upload-speed"
+                                >
+                                    0
+                                </div>
                                 <div class="unit">Mbps</div>
                             </div>
                         </div>
@@ -107,7 +128,13 @@
                             <div class="dot-container dot-typing"></div>
                         </div>
                         <div class="unit-container">
-                            <div id="test-amount" class="amount">0</div>
+                            <div
+                                id="test-amount"
+                                class="amount"
+                                aria-label="active-test-speed"
+                            >
+                                0
+                            </div>
                             <div id="test-amount-unit" class="unit">Mbps</div>
                         </div>
                     </div>
@@ -121,7 +148,7 @@
                         <h2>
                             Speed test complete!
                         </h2>
-                        Click the <span class="start-color">Next &#8594</span> button
+                        Click the <span class="start-color">Next →</span> button
                         to finish the survey.
                     </div>
                     <i class="fa fa-check" aria-hidden="true"></i>
@@ -138,13 +165,13 @@
 
                         If you have a low data cap or would like to skip the
                         speed test, press the
-                        <span class="start-color">Next &#8594</span>
+                        <span class="start-color">Next →</span>
                         button. Otherwise, press the
                         <span class="start-color">Start</span>
                         button.
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
 
         <script

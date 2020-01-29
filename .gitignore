@@ -2,3 +2,4 @@
 .prettierrc
 /assets/
 /.vscode
+.DS_Store

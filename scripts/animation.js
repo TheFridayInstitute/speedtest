@@ -12,8 +12,9 @@ import { getOffset } from "./utils.js";
 
 import { setAttributes } from "./utils.js";
 
+// Potentially change this back to 1000/60
 export class Clock {
-    constructor(autoStart = true, timeStep = 1000 / 60, timeOut = 120) {
+    constructor(autoStart = true, timeStep = 1000 / 30, timeOut = 120) {
         this.autoStart = autoStart;
         this.timeStep = Math.floor(timeStep);
         this.timeOut = timeOut;
@@ -124,7 +125,9 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
                 break;
             }
         }
+
         force = draw();
+
         if (force || clock.elapsedTicks / duration > 1) {
             return true;
         } else {

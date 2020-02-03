@@ -82,14 +82,18 @@ body {
   border-radius: var(--border-radius-primary);
 }
 
-.pane-container .text {
+.pane-info {
   font-size: 1.5em;
   text-align: center;
 }
 
-.pane-container .text h1,
-.pane-container .text h2 {
+.pane-info h1,
+.pane-info h2 {
   color: var(--ul-color-1);
+}
+
+.pane-info .icon-lg {
+  font-size: 10em;
 }
 
 .pane-hidden {

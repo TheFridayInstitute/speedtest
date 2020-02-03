@@ -27,7 +27,7 @@ html,
 body {
   background: var(--background-color-primary);
   margin: 0;
-  overflow-x: hidden;
+  overflow: hidden;
   overflow-y: scroll;
   padding: 0;
   height: 100%;
@@ -52,7 +52,9 @@ body {
       grid-template-rows: auto;
   row-gap: 1em;
   max-width: 32rem;
+  max-height: 100vh;
   padding: 1em;
+  width: 100%;
 }
 
 .main-content .start-btn-container {
@@ -100,6 +102,12 @@ body {
 .pane-hidden {
   visibility: hidden;
   pointer-events: none;
+}
+
+.test-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
 }
 
 .test-container .info {
@@ -302,7 +310,8 @@ body {
         grid-template-columns: 1fr 1fr;
     -ms-grid-rows: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
-    max-width: 64rem;
+    max-width: 100%;
+    max-height: 100vh;
   }
   .main-content .start-btn-container {
     -ms-flex-item-align: center;
@@ -340,6 +349,20 @@ body {
     -webkit-box-pack: justify;
         -ms-flex-pack: justify;
             justify-content: space-between;
+  }
+}
+
+@media all and (orientation: landscape) and (max-height: 768px) {
+  html,
+  body {
+    font-size: 0.85em;
+  }
+}
+
+@media all and (orientation: landscape) and (max-height: 480px) {
+  html,
+  body {
+    font-size: 0.8em;
   }
 }
 

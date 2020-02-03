@@ -105,19 +105,19 @@ body {
 }
 
 .test-container {
-  display: -ms-grid;
-  display: grid;
-      grid-template-areas: "test" "info";
-  -ms-grid-rows: auto;
-      grid-template-rows: auto;
-  -ms-grid-columns: auto;
-      grid-template-columns: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 .test-container .info {
-  -ms-grid-row: 2;
-  -ms-grid-column: 1;
-  grid-area: info;
   display: -ms-grid;
   display: grid;
       grid-template-areas: "amount" "kind";
@@ -161,9 +161,6 @@ body {
 }
 
 .test-container .square-box {
-  -ms-grid-row: 1;
-  -ms-grid-column: 1;
-  grid-area: test;
   z-index: 1;
 }
 

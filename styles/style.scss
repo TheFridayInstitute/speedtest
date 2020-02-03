@@ -119,15 +119,11 @@ body {
 }
 
 .test-container {
-    display: grid;
-    grid-template-areas:
-        "test"
-        "info";
-    grid-template-rows: auto;
-    grid-template-columns: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     .info {
-        grid-area: info;
         display: grid;
         grid-template-areas:
             "amount"
@@ -160,7 +156,6 @@ body {
     }
 
     .square-box {
-        grid-area: test;
         z-index: 1;
         canvas {
             padding: $row-gap;

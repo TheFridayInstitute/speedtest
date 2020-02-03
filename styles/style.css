@@ -105,12 +105,19 @@ body {
 }
 
 .test-container {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
+  display: -ms-grid;
+  display: grid;
+      grid-template-areas: "test" "info";
+  -ms-grid-rows: auto;
+      grid-template-rows: auto;
+  -ms-grid-columns: auto;
+      grid-template-columns: auto;
 }
 
 .test-container .info {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: info;
   display: -ms-grid;
   display: grid;
       grid-template-areas: "amount" "kind";
@@ -118,7 +125,7 @@ body {
       grid-template-columns: auto;
   -ms-grid-rows: auto auto;
       grid-template-rows: auto auto;
-  row-gap: 0.25em;
+  row-gap: 0.5em;
   justify-items: center;
   -webkit-box-align: center;
       -ms-flex-align: center;
@@ -154,7 +161,14 @@ body {
 }
 
 .test-container .square-box {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: test;
   z-index: 1;
+}
+
+.test-container .square-box canvas {
+  padding: 1em;
 }
 
 .square-box {
@@ -182,6 +196,9 @@ body {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
@@ -310,8 +327,7 @@ body {
         grid-template-columns: 1fr 1fr;
     -ms-grid-rows: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
-    max-width: 100%;
-    max-height: 100vh;
+    max-width: 64rem;
   }
   .main-content .start-btn-container {
     -ms-flex-item-align: center;
@@ -330,8 +346,8 @@ body {
   }
   .test-container .info {
         grid-template-areas: "amount kind";
-    -ms-grid-columns: auto;
-        grid-template-columns: auto;
+    -ms-grid-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
     -ms-grid-rows: auto;
         grid-template-rows: auto;
   }

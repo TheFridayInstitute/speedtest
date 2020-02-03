@@ -119,16 +119,23 @@ body {
 }
 
 .test-container {
-    display: flex;
+    display: grid;
+    grid-template-areas:
+        "test"
+        "info";
+    grid-template-rows: auto;
+    grid-template-columns: auto;
+
     .info {
+        grid-area: info;
         display: grid;
         grid-template-areas:
             "amount"
             "kind";
         grid-template-columns: auto;
         grid-template-rows: auto auto;
-        row-gap: 0.25em;
 
+        row-gap: 0.5em;
         justify-items: center;
         align-items: center;
         margin-top: calc(-25% + 1em);
@@ -153,7 +160,11 @@ body {
     }
 
     .square-box {
+        grid-area: test;
         z-index: 1;
+        canvas {
+            padding: $row-gap;
+        }
     }
 }
 
@@ -175,7 +186,7 @@ body {
     .info {
         display: flex;
         flex-direction: column;
-        // justify-content: center;
+        justify-content: center;
         align-items: center;
         text-align: center;
 
@@ -295,10 +306,8 @@ body {
 
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
-        max-width: 100%;
 
-        // max-width: $meter-height;
-        max-height: 100vh;
+        max-width: $meter-height;
 
         .start-btn-container {
             align-self: center;
@@ -316,7 +325,7 @@ body {
     .test-container {
         .info {
             grid-template-areas: "amount kind";
-            grid-template-columns: auto;
+            grid-template-columns: 1fr 1fr;
             grid-template-rows: auto;
         }
     }

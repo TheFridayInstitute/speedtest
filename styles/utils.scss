@@ -1,3 +1,51 @@
+@mixin attr-x(
+    $attr,
+    $attr-count: 10,
+    $attr-steps: 10,
+    $unit: "%",
+    $attr-abrv: null
+) {
+    $attr-list: null;
+
+    @if not $attr-abrv {
+        $attr-abrv: $attr;
+    }
+
+    @for $i from 1 through $attr-count {
+        $attr-value: $attr-steps * $i;
+
+        .#{$attr-abrv}-#{$attr-value} {
+            #{$attr}: #{$attr-value}#{$unit};
+        }
+
+        $attr-list: append(
+            $attr-list,
+            unquote(".#{$attr}-#{$attr-value}"),
+            comma
+        );
+    }
+
+    #{$attr-list} {
+        //append style to all classes
+    }
+}
+
+@include attr-x("max-height", 4, 25, "vh", "mvh");
+@include attr-x("max-width", 4, 25, "vw", "mvw");
+
+.box-shadow {
+    border-radius: var(--border-radius-primary);
+    box-shadow: 4px 0px 20px 0px rgba(0, 0, 0, 0.5);
+}
+
+.justify-content-space-evenly {
+    justify-content: space-evenly;
+}
+
+.justify-items-center {
+    justify-items: center;
+}
+
 .start-color {
     background-color: var(--color-secondary);
     border-radius: 0.25em;

@@ -34,9 +34,13 @@
     </head>
 
     <body>
-        <div class="outer-content">
-            <main class="main-content" id="main-content">
-                <div class="start-btn-container">
+        <div
+            class="d-flex justify-content-center align-items-center p-0 h-100 w-100"
+        >
+            <main class="main-content mvh-100" id="main-content">
+                <div
+                    class="container-fluid d-flex justify-content-center start-btn-container"
+                >
                     <div
                         class="start-btn btn-prime"
                         id="start-btn"
@@ -46,77 +50,84 @@
                     </div>
                 </div>
 
-                <div
-                    class="container-fluid flex-column d-flex p-0 constrained-container"
-                >
-                    <div class="test-info-container box-shadow">
-                        <div class="info">
-                            <div class="test-kind">
-                                Latency<i
-                                    class="fa fa-arrow-circle-o-down"
-                                    aria-hidden="true"
-                                    style="opacity: 0;"
-                                ></i>
+                <div class="container-fluid d-flex flex-column">
+                    <div class="row">
+                        <div
+                            class="d-flex justify-content-space-evenly w-100 test-info-container box-shadow"
+                        >
+                            <div class="info">
+                                <div class="test-kind">
+                                    Latency<i
+                                        class="fa fa-arrow-circle-o-down"
+                                        aria-hidden="true"
+                                        style="opacity: 0;"
+                                    ></i>
+                                </div>
+
+                                <div class="unit-container in-progress">
+                                    <div
+                                        id="ping-amount"
+                                        class="amount"
+                                        aria-label="latency"
+                                    >
+                                        99.9
+                                    </div>
+                                    <div class="unit">ms</div>
+                                </div>
                             </div>
 
-                            <div class="unit-container in-progress">
-                                <div
-                                    id="ping-amount"
-                                    class="amount"
-                                    aria-label="latency"
-                                >
-                                    0
+                            <div class="info test-icon">
+                                <div class="test-kind dl">
+                                    Download
+                                    <i
+                                        class="fa fa-arrow-circle-o-down white"
+                                        aria-hidden="true"
+                                    ></i>
                                 </div>
-                                <div class="unit">ms</div>
+                                <div class="unit-container in-progress">
+                                    <div
+                                        id="dl-amount"
+                                        class="amount"
+                                        aria-label="download-speed"
+                                    >
+                                        99.9
+                                    </div>
+                                    <div class="unit">Mbps</div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="info test-icon">
-                            <div class="test-kind dl">
-                                Download
-                                <i
-                                    class="fa fa-arrow-circle-o-down white"
-                                    aria-hidden="true"
-                                ></i>
-                            </div>
-                            <div class="unit-container in-progress">
-                                <div
-                                    id="dl-amount"
-                                    class="amount"
-                                    aria-label="download-speed"
-                                >
-                                    0
+                            <div class="info test-icon">
+                                <div class="test-kind ul rotate">
+                                    Upload
+                                    <i
+                                        class="fa fa-arrow-circle-o-down white"
+                                        aria-hidden="true"
+                                    ></i>
                                 </div>
-                                <div class="unit">Mbps</div>
-                            </div>
-                        </div>
-
-                        <div class="info test-icon">
-                            <div class="test-kind ul rotate">
-                                Upload
-                                <i
-                                    class="fa fa-arrow-circle-o-down white"
-                                    aria-hidden="true"
-                                ></i>
-                            </div>
-                            <div class="unit-container in-progress">
-                                <div
-                                    id="ul-amount"
-                                    class="amount"
-                                    aria-label="upload-speed"
-                                >
-                                    0
+                                <div class="unit-container in-progress">
+                                    <div
+                                        id="ul-amount"
+                                        class="amount"
+                                        aria-label="upload-speed"
+                                    >
+                                        99.9
+                                    </div>
+                                    <div class="unit">Mbps</div>
                                 </div>
-                                <div class="unit">Mbps</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="progress-bar-container" id="progress-bar"></div>
+                    <div class="row">
+                        <div
+                            class="progress-bar-container"
+                            id="progress-bar"
+                        ></div>
+                    </div>
                 </div>
 
                 <div
-                    class="test-container box-shadow pane-end"
+                    class="pane-container test-container box-shadow pane-hidden"
                     id="test-container"
                 >
                     <div class="square-box">
@@ -124,9 +135,6 @@
                     </div>
 
                     <div class="info test-icon">
-                        <div id="test-kind" class="test-kind">
-                            <div class="dot-container dot-typing"></div>
-                        </div>
                         <div class="unit-container">
                             <div
                                 id="test-amount"
@@ -137,24 +145,30 @@
                             </div>
                             <div id="test-amount-unit" class="unit">Mbps</div>
                         </div>
+                        <div id="test-kind" class="test-kind">
+                            <div class="dot-container dot-typing"></div>
+                        </div>
                     </div>
                 </div>
 
                 <div
-                    class="test-container box-shadow pane pane-end"
+                    class="pane-container d-flex align-items-center box-shadow pane-hidden"
                     id="complete-modal"
                 >
+                    <h2>
+                        Speed test complete!
+                    </h2>
                     <div class="text">
-                        <h2>
-                            Speed test complete!
-                        </h2>
                         Click the <span class="start-color">Next →</span> button
                         to finish the survey.
                     </div>
                     <i class="fa fa-check" aria-hidden="true"></i>
                 </div>
 
-                <div class="test-container box-shadow pane" id="start-modal">
+                <div
+                    class="pane-container d-flex align-items-center box-shadow"
+                    id="start-modal"
+                >
                     <div class="text">
                         We will now test the speed of your current internet
                         connection. This test may use up to

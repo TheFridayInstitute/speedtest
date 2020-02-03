@@ -29,6 +29,7 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+  overflow-y: scroll;
   padding: 0;
   -webkit-user-select: none;
      -moz-user-select: none;

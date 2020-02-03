@@ -622,7 +622,7 @@ async function onstart() {
         let startModal = document.getElementById("start-modal");
         let completeModal = document.getElementById("complete-modal");
 
-        testEl.classList.remove("pane-end");
+        testEl.classList.remove("pane-hidden");
 
         let width = window.innerWidth;
 
@@ -631,7 +631,7 @@ async function onstart() {
 
         await sleep(1000);
 
-        startModal.classList.add("pane-end");
+        startModal.classList.add("pane-hidden");
         openingAnimation(duration, smoothStep3);
 
         await sleep(duration);
@@ -652,7 +652,7 @@ async function onend() {
 
     let width = window.innerWidth;
 
-    completeModal.classList.remove("pane-end");
+    completeModal.classList.remove("pane-hidden");
 
     await sleep(duration);
 
@@ -661,8 +661,8 @@ async function onend() {
 
     await sleep(1000);
 
-    buttonEl.classList.add("pane-end");
-    testEl.classList.add("pane-end");
+    buttonEl.classList.add("pane-hidden");
+    testEl.classList.add("pane-hidden");
 }
 
 window.onload = function() {

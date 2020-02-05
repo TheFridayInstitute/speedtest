@@ -159,7 +159,6 @@ var speedTestStateMapping = {
  *
  * 2: just finished;
  * 3: finished;
- *
  */
 
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
@@ -305,7 +304,7 @@ function drawMeterLoop(
     if (status === 1 && meterAmount === 0) {
         meterTextEl.innerHTML = "0";
     } else {
-        meterTextEl.innerHTML = meterAmount.toPrecision(3);
+        meterTextEl.innerHTML = clamp(meterAmount.toPrecision(3), 0, 999);
     }
 
     let t = normalize(
@@ -406,8 +405,11 @@ let drawFunc = function(t) {
         document
             .getElementById("ping-amount")
             .parentElement.classList.remove("in-progress");
-        document.getElementById("ping-amount").innerText = Math.round(
-            parseFloat(UI_DATA.pingStatus)
+
+        document.getElementById("ping-amount").innerText = clamp(
+            Math.round(parseFloat(UI_DATA.pingStatus)),
+            0,
+            999
         );
         document.getElementById("test-kind").classList.add("dl");
     }
@@ -435,9 +437,12 @@ let drawFunc = function(t) {
         document
             .getElementById("dl-amount")
             .parentElement.classList.remove("in-progress");
-        document.getElementById("dl-amount").innerHTML = parseFloat(
-            UI_DATA.dlStatus
-        ).toPrecision(3);
+
+        document.getElementById("dl-amount").innerHTML = clamp(
+            parseFloat(UI_DATA.dlStatus).toPrecision(3),
+            0,
+            999
+        );
     }
     if (testStateObj["upload"] === 1 || testStateObj["upload"] === 0) {
         drawMeterLoop(
@@ -454,9 +459,12 @@ let drawFunc = function(t) {
         document
             .getElementById("ul-amount")
             .parentElement.classList.remove("in-progress");
-        document.getElementById("ul-amount").innerHTML = parseFloat(
-            UI_DATA.ulStatus
-        ).toPrecision(3);
+
+        document.getElementById("ul-amount").innerHTML = clamp(
+            parseFloat(UI_DATA.ulStatus).toPrecision(3),
+            0,
+            999
+        );
 
         onend();
     }

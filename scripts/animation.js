@@ -96,14 +96,14 @@ export function throttle(func, wait) {
 export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     let distance = to - from;
 
-    var clock = new Clock();
+    let clock = new Clock();
 
     function update() {}
 
     function draw() {
         let c = clamp(clock.elapsedTicks, 0, duration);
         let v = timingFunc(c, from, distance, duration);
-        let t = normalize(v, from, to);
+        let t = timingFunc(c, 0, 1, duration);
 
         let b = transformFunc(v, t) || false;
         return b;
@@ -128,7 +128,7 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
 
         force = draw();
 
-        if (force || clock.elapsedTicks / duration > 1) {
+        if (force || clock.elapsedTicks / duration >= 1) {
             return true;
         } else {
             requestAnimationFrame(animationLoop);

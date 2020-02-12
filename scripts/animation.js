@@ -68,27 +68,23 @@ export function debounce(func, wait, immediate = true) {
         if (callNow) func.apply(context, args);
     };
 }
+
 let clock = new Clock();
+let started = false;
+let delta = clock.tick();
 
 export function throttle(func, wait) {
-    var delta = 0;
-
-    var f = function() {
+    return function() {
         var context = this;
         var args = arguments;
+        delta = clock.tick();
 
-        if (delta === null) {
-            delta = wait;
-        } else {
-            delta = clock.tick();
-        }
-
-        if (delta >= wait) {
-            console.log("Applied");
+        if (!started || delta >= wait) {
+            console.log("Applied", started);
             func.apply(context, args);
         }
+        started = !started ? true : started;
     };
-    return f;
 }
 
 export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {

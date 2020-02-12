@@ -622,7 +622,7 @@ function onload() {
     );
 }
 
-async function onstart() {
+function onstart() {
     let duration = 1500;
 
     toggleOnce(document.getElementById("start-btn"), async function() {
@@ -634,21 +634,21 @@ async function onstart() {
 
         let width = window.innerWidth;
 
-        slideLeft(startModal, -width, 0);
-        slideLeft(testEl, 0, width);
+        setTimeout(() => {
+            slideLeft(startModal, -width, 0);
+            slideLeft(testEl, 0, width);
+        }, duration);
 
-        await sleep(1000);
-
-        startModal.classList.add("pane-hidden");
-        openingAnimation(duration, smoothStep3);
-
-        await sleep(duration);
+        setTimeout(() => {
+            startModal.classList.add("pane-hidden");
+            openingAnimation(duration, smoothStep3);
+        }, 1000);
     });
     document.getElementById("test-kind").innerHTML = dlText;
     UI_DATA = startStop();
 }
 
-async function onend() {
+function onend() {
     let duration = 2000;
 
     closingAnimation(duration, easeInOutCubic);
@@ -662,15 +662,15 @@ async function onend() {
 
     completeModal.classList.remove("pane-hidden");
 
-    await sleep(duration);
+    setTimeout(() => {
+        slideRight([buttonEl, testEl], width, 0);
+        slideRight(completeModal, 0, -width);
+    }, duration);
 
-    slideRight([buttonEl, testEl], width, 0);
-    slideRight(completeModal, 0, -width);
-
-    await sleep(1000);
-
-    buttonEl.classList.add("pane-hidden");
-    testEl.classList.add("pane-hidden");
+    setTimeout(() => {
+        buttonEl.classList.add("pane-hidden");
+        testEl.classList.add("pane-hidden");
+    }, 1000);
 }
 
 window.onload = function() {

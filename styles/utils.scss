@@ -47,7 +47,8 @@
 }
 
 .start-color {
-    background-color: var(--color-secondary);
+    // background-color: var(--color-secondary);
+    background-color: white;
     border-radius: 0.25em;
     color: rgb(0, 0, 0);
     padding: 0.1rem 1rem;
@@ -108,14 +109,14 @@
     box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br)
         var(--box-shadow-sr) var(--box-shadow-color);
 
-    &:hover {
-        --box-shadow-vl: 7px;
+    // &:hover {
+    //     --box-shadow-vl: 7px;
 
-        transform: translateY(-5px);
+    //     transform: translateY(-5px);
 
-        box-shadow: var(--box-shadow-hl) var(--box-shadow-vl)
-            var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
-    }
+    //     box-shadow: var(--box-shadow-hl) var(--box-shadow-vl)
+    //         var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+    // }
 }
 
 .ripple {

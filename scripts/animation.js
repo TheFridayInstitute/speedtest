@@ -80,7 +80,6 @@ export function throttle(func, wait) {
         delta = clock.tick();
 
         if (!started || delta >= wait) {
-            console.log("Applied", started);
             func.apply(context, args);
         }
         started = !started ? true : started;

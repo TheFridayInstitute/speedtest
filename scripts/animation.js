@@ -14,11 +14,10 @@ import { setAttributes } from "./utils.js";
 
 // Potentially change this back to 1000/60
 export class Clock {
-    constructor(autoStart = true, timeStep = 1000 / 30, timeOut = 120) {
+    constructor(autoStart = true, timeStep = 1000 / 60, timeOut = 120) {
         this.autoStart = autoStart;
         this.timeStep = Math.floor(timeStep);
         this.timeOut = timeOut;
-        this.running = false;
     }
     start() {
         this.startTime = Date.now();
@@ -54,7 +53,7 @@ export function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function debounce(func, wait, immediate = false) {
+export function debounce(func, wait, immediate = true) {
     var timeout;
     return function() {
         var context = this;
@@ -69,12 +68,12 @@ export function debounce(func, wait, immediate = false) {
         if (callNow) func.apply(context, args);
     };
 }
+let clock = new Clock();
 
 export function throttle(func, wait) {
-    var clock = new Clock();
-    var delta = null;
+    var delta = 0;
 
-    return function() {
+    var f = function() {
         var context = this;
         var args = arguments;
 
@@ -83,18 +82,13 @@ export function throttle(func, wait) {
         } else {
             delta = clock.tick();
         }
-        clock.tick();
 
-        console.log(clock.elapsedTime);
-
-        if (delta < wait) {
-            return false;
-        } else {
+        if (delta >= wait) {
             console.log("Applied");
             func.apply(context, args);
-            return true;
         }
     };
+    return f;
 }
 
 export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {

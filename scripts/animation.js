@@ -18,6 +18,7 @@ export class Clock {
         this.autoStart = autoStart;
         this.timeStep = Math.floor(timeStep);
         this.timeOut = timeOut;
+        this.running = false;
     }
     start() {
         this.startTime = Date.now();
@@ -71,7 +72,7 @@ export function debounce(func, wait, immediate = false) {
 
 export function throttle(func, wait) {
     var clock = new Clock();
-    let delta = null;
+    var delta = null;
 
     return function() {
         var context = this;
@@ -83,6 +84,9 @@ export function throttle(func, wait) {
             delta = clock.tick();
         }
         clock.tick();
+
+        console.log(clock.elapsedTime);
+
         if (delta < wait) {
             return false;
         } else {

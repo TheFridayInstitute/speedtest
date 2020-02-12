@@ -693,5 +693,5 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
 
     throttle(function() {
         onstart();
-    }, 250)();
+    }, 1000)();
 });

@@ -707,18 +707,9 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
  */
 
 function receiveMessage(event) {
-    eventSource = event;
+    eventObj = event;
     event.source.postMessage("helm", event.origin);
-
     onstart();
-    // if (event.data === "start") {
-    //     onstart();
-    //     // while (testStateObj["upload"] !== 2) {}
-
-    //     // setTimeout(function() {
-    //     //     onend();
-    //     // }, 2000);
-    // }
 }
 
 window.addEventListener("message", receiveMessage, false);

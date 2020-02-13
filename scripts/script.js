@@ -704,6 +704,7 @@ var eventSource;
 
 function receiveMessage(event) {
     eventSource = event.source;
+    event.source.postMessage("helm", event.origin);
 
     if (event.data === "start") {
         onstart();

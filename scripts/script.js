@@ -708,11 +708,11 @@ function receiveMessage(event) {
 
     if (event.data === "start") {
         onstart();
-        while (testStateObj["upload"] !== 2) {}
+        // while (testStateObj["upload"] !== 2) {}
 
-        setTimeout(function() {
-            onend();
-        }, 2000);
+        // setTimeout(function() {
+        //     onend();
+        // }, 2000);
     }
 
     event.source.postMessage("done", event.origin);

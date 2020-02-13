@@ -69,6 +69,8 @@ window.requestAnimationFrame =
         setTimeout(callback, 1000 / 60);
     };
 
+var eventObj = null;
+
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
 
@@ -671,6 +673,10 @@ function onend() {
         buttonEl.classList.add("pane-hidden");
         testEl.classList.add("pane-hidden");
     }, 1000);
+
+    if (eventObj !== null) {
+        eventObj.source.postMessage("done", eventObj.origin);
+    }
 }
 
 window.onload = function() {
@@ -700,10 +706,8 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
  * In the popup's scripts, running on <http://example.com>:
  */
 
-var eventSource;
-
 function receiveMessage(event) {
-    eventSource = event.source;
+    eventSource = event;
     event.source.postMessage("helm", event.origin);
 
     onstart();
@@ -715,8 +719,6 @@ function receiveMessage(event) {
     //     //     onend();
     //     // }, 2000);
     // }
-
-    // event.source.postMessage("done", event.origin);
 }
 
 window.addEventListener("message", receiveMessage, false);

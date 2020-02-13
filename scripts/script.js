@@ -708,7 +708,6 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
 
 function receiveMessage(event) {
     eventObj = event;
-    event.source.postMessage("helm", event.origin);
     onstart();
 }
 

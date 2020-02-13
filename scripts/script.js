@@ -706,6 +706,7 @@ function receiveMessage(event) {
     eventSource = event.source;
     event.source.postMessage("helm", event.origin);
 
+    onstart();
     // if (event.data === "start") {
     //     onstart();
     //     // while (testStateObj["upload"] !== 2) {}
@@ -715,7 +716,7 @@ function receiveMessage(event) {
     //     // }, 2000);
     // }
 
-    event.source.postMessage("done", event.origin);
+    // event.source.postMessage("done", event.origin);
 }
 
 window.addEventListener("message", receiveMessage, false);

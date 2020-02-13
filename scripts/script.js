@@ -703,7 +703,6 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
 // Called sometime after postMessage is called
 function receiveMessage(event) {
     // Do we trust the sender of this message?
-    if (event.origin !== "http://example.com:8080") return;
 
     // event.source is window.opener
     // event.data is "hello there!"

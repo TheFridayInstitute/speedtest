@@ -708,7 +708,6 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
  */
 
 function receiveMessage(event) {
-    alert(event.data);
     if (event.data === "start") {
         eventObj = event;
     }

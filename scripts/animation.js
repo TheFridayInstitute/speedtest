@@ -71,7 +71,7 @@ export function debounce(func, wait, immediate = true) {
 let clock = new Clock();
 
 export function throttle(func, wait) {
-    var delta = 0;
+    var delta = wait;
 
     var f = function() {
         var context = this;

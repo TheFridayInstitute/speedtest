@@ -679,7 +679,16 @@ function onend() {
     }
 }
 
-function startButton() {
+window.onload = function() {
+    onload();
+    initFunc();
+    animationLoopOuter(updateFunc, drawFunc);
+    throttle(function() {
+        onstart();
+    }, 1000)();
+};
+
+document.getElementById("start-btn").addEventListener("click", function(ev) {
     let duration = 1000;
 
     rippleButton(
@@ -694,17 +703,6 @@ function startButton() {
     throttle(function() {
         onstart();
     }, 1000)();
-}
-
-window.onload = function() {
-    onload();
-    initFunc();
-    animationLoopOuter(updateFunc, drawFunc);
-    startButton();
-};
-
-document.getElementById("start-btn").addEventListener("click", function(ev) {
-    startButton();
 });
 
 /*

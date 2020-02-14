@@ -683,9 +683,7 @@ window.onload = function() {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);
-    throttle(function() {
-        onstart();
-    }, 1000)();
+    onstart();
 };
 
 document.getElementById("start-btn").addEventListener("click", function(ev) {

@@ -683,6 +683,7 @@ window.onload = function() {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);
+    onstart();
 };
 
 document.getElementById("start-btn").addEventListener("click", function(ev) {
@@ -711,7 +712,6 @@ function receiveMessage(event) {
     if (event.data === "start") {
         eventObj = event;
     }
-    onstart();
 }
 
 window.addEventListener("message", receiveMessage, false);

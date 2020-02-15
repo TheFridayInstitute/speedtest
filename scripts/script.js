@@ -681,7 +681,7 @@ window.onload = async function() {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);
-    onstart();
+    // onstart();
 };
 
 document.getElementById("start-btn").addEventListener("click", function(ev) {
@@ -700,10 +700,6 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
         onstart();
     }, 1000)();
 });
-
-/*
- * In the popup's scripts, running on <http://example.com>:
- */
 
 function receiveMessage(event) {
     eventObj = event;

@@ -703,7 +703,7 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
 
 function receiveMessage(event) {
     eventObj = event;
-    event.source.postMessage("helm", event.origin);
+    event.source.postMessage(event);
 }
 
 window.addEventListener("message", receiveMessage, false);

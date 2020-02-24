@@ -682,7 +682,6 @@ window.onload = async function() {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);
-    onstart();
 };
 
 document.getElementById("start-btn").addEventListener("click", function(ev) {

@@ -69,6 +69,9 @@ window.requestAnimationFrame =
         setTimeout(callback, 1000 / 60);
     };
 
+var eventObj = null;
+var eventObjs = [];
+
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
 
@@ -637,12 +640,10 @@ async function onstart() {
         slideLeft(startModal, -width, 0);
         slideLeft(testEl, 0, width);
 
-        await sleep(1000);
+        await sleep(duration / 2);
 
         startModal.classList.add("pane-hidden");
         openingAnimation(duration, smoothStep3);
-
-        await sleep(duration);
     });
     document.getElementById("test-kind").innerHTML = dlText;
     UI_DATA = startStop();
@@ -662,18 +663,22 @@ async function onend() {
 
     completeModal.classList.remove("pane-hidden");
 
-    await sleep(duration);
-
     slideRight([buttonEl, testEl], width, 0);
     slideRight(completeModal, 0, -width);
 
-    await sleep(1000);
+    await sleep(duration);
 
     buttonEl.classList.add("pane-hidden");
     testEl.classList.add("pane-hidden");
+
+    await sleep(1000);
+
+    if (eventObj !== null) {
+        eventObj.source.postMessage("done", eventObj.origin);
+    }
 }
 
-window.onload = function() {
+window.onload = async function() {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);
@@ -695,3 +700,12 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
         onstart();
     }, 1000)();
 });
+
+function receiveMessage(event) {
+    if (event.data === "start") {
+        eventObj = event;
+    }
+    console.log(`Received event of ${event}`);
+}
+
+window.addEventListener("message", receiveMessage, false);

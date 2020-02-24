@@ -702,11 +702,10 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
 });
 
 function receiveMessage(event) {
-    eventObj = event;
-    eventObjs.push(event);
-    console.log(eventObjs);
-    event.source.postMessage(eventObjs);
-
+    if (event.data === "start") {
+        eventObj = event;
+    }
+    console.log(`Received event of ${event}`);
 }
 
 window.addEventListener("message", receiveMessage, false);

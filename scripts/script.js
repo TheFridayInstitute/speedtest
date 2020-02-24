@@ -70,6 +70,7 @@ window.requestAnimationFrame =
     };
 
 var eventObj = null;
+var eventObjs = [];
 
 var speedtestObj = new Speedtest();
 var UI_DATA = null;
@@ -703,7 +704,10 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
 
 function receiveMessage(event) {
     eventObj = event;
-    event.source.postMessage(event);
+    eventObjs.push(event);
+    console.log(eventObjs);
+    event.source.postMessage(eventObjs);
+
 }
 
 window.addEventListener("message", receiveMessage, false);

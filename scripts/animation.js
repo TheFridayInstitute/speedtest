@@ -76,7 +76,7 @@ let delta = clock.tick();
 export function throttle(func, wait) {
     var delta = null;
 
-    var f = function() {
+    return function() {
         var context = this;
         var args = arguments;
         delta = clock.tick();

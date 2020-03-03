@@ -666,6 +666,9 @@ async function onend() {
     };
 
     if (eventObj !== null) {
+        console.log(
+            `Payload of speedtest data received: ${speedtestData.dlStatus}`
+        );
         eventObj.source.postMessage(speedtestData, eventObj.origin);
     }
     $.post("backend/record.php", speedtestData);

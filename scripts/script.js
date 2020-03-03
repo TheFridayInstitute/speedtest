@@ -577,20 +577,11 @@ function onload() {
     speedtestObj.setParameter("getIp_ispInfo", false);
     speedtestObj.setParameter("getIp_ispInfo_distance", false);
 
-    // Intro sliding animation.
-    let testEl = document.getElementById("test-container");
-    let startModal = document.getElementById("start-modal");
-    let completeModal = document.getElementById("complete-modal");
-
-    let width = window.innerWidth;
-    testEl.style.transform = `translateX(${width}px)`;
-    completeModal.style.transform = `translateX(${-width}px)`;
-
     // Creation of progress bar.
     progressBarEl = document.getElementById("progress-bar");
     createProgessBar(
         progressBarEl,
-        [ulColorGradient],
+        [backgroundColorGradient, dlColorGradient, ulColorGradient],
         {
             styles: {
                 "border-top-left-radius": borderRadiusPrimary,
@@ -610,20 +601,6 @@ async function onstart() {
     let duration = 1500;
 
     toggleOnce(document.getElementById("start-btn"), async function() {
-        let testEl = document.getElementById("test-container");
-        let startModal = document.getElementById("start-modal");
-        let completeModal = document.getElementById("complete-modal");
-
-        testEl.classList.remove("pane-hidden");
-
-        let width = window.innerWidth;
-
-        slideLeft(startModal, -width, 0);
-        slideLeft(testEl, 0, width);
-
-        await sleep(duration / 2);
-
-        startModal.classList.add("pane-hidden");
         openingAnimation(duration, smoothStep3);
     });
     document.getElementById("test-kind").innerHTML = dlText;
@@ -635,24 +612,7 @@ async function onend() {
 
     closingAnimation(duration, easeInOutCubic);
 
-    let testEl = document.getElementById("test-container");
-    let startModal = document.getElementById("start-modal");
-    let completeModal = document.getElementById("complete-modal");
-    let buttonEl = document.getElementById("start-btn");
-
-    let width = window.innerWidth;
-
-    completeModal.classList.remove("pane-hidden");
-
-    slideRight([buttonEl, testEl], width, 0);
-    slideRight(completeModal, 0, -width);
-
     await sleep(duration);
-
-    buttonEl.classList.add("pane-hidden");
-    testEl.classList.add("pane-hidden");
-
-    await sleep(1000);
 
     let urlObj = new URL(window.location.href);
     let id = urlObj.searchParams.get("id");
@@ -666,7 +626,7 @@ async function onend() {
     };
 
     if (eventObj !== null) {
-        eventObj.source.postMessage("done", eventObj.origin);
+        console.log(`Posted speedtest payload of ${speedtestData}.`);
         eventObj.source.postMessage(speedtestData, eventObj.origin);
     }
     $.post("backend/record.php", speedtestData);

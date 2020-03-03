@@ -666,7 +666,6 @@ async function onend() {
     };
 
     if (eventObj !== null) {
-        eventObj.source.postMessage("done", eventObj.origin);
         eventObj.source.postMessage(speedtestData, eventObj.origin);
     }
     $.post("backend/record.php", speedtestData);

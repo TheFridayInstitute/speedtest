@@ -656,13 +656,20 @@ async function onend() {
 
     let urlObj = new URL(window.location.href);
     let id = urlObj.searchParams.get("id");
+    let ip = String(uiData.clientIp);
+
+    ip = ip
+        .trim()
+        .split(" ")[0]
+        .trim();
 
     let speedtestData = {
         id: id || -1,
         dlStatus: uiData.dlStatus,
         ulStatus: uiData.ulStatus,
         pingStatus: uiData.pingStatus,
-        jitterStatus: uiData.jitterStatus
+        jitterStatus: uiData.jitterStatus,
+        ip: ip
     };
 
     if (eventObj !== null) {

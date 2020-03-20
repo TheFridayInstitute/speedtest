@@ -679,7 +679,7 @@ async function onend() {
             eventObj.origin
         );
     }
-    $.post("backend/record.php", speedtestData);
+    // $.post("backend/record.php", speedtestData);
 }
 
 window.onload = function() {

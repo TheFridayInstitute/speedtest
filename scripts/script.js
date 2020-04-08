@@ -646,7 +646,7 @@ async function onend() {
 
     await sleep(duration);
 
-    buttonEl.classList.add("pane-hidden");
+    // buttonEl.classList.add("pane-hidden");
     testEl.classList.add("pane-hidden");
 
     await sleep(1000);

@@ -9,7 +9,7 @@ import {
     generateRadialGradient,
     generateGradient,
     roundedArc,
-    roundedRectangle
+    roundedRectangle,
 } from "./canvas.js";
 
 import {
@@ -31,7 +31,7 @@ import {
     distance,
     rotate,
     range,
-    lerpIn
+    lerpIn,
 } from "./math.js";
 
 import {
@@ -46,7 +46,7 @@ import {
     animateProgressBarWrapper,
     debounce,
     throttle,
-    rippleButton
+    rippleButton,
 } from "./animation.js";
 
 import {
@@ -55,7 +55,7 @@ import {
     toggleOnce,
     toggle,
     getComputedVariable,
-    setAttributes
+    setAttributes,
 } from "./utils.js";
 
 import { Color } from "./colors.js";
@@ -65,7 +65,7 @@ window.requestAnimationFrame =
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     window.msRequestAnimationFrame ||
-    function(callback, element) {
+    function (callback, element) {
         setTimeout(callback, 1000 / 60);
     };
 
@@ -112,13 +112,13 @@ var backgroundColorGradient = `linear-gradient(to right, white, ${progressBarCol
 var dlColorStops = [
     ["0", "#8630e6"],
     ["0.5", "#d359ff"],
-    ["1.0", "#f71e6a"]
+    ["1.0", "#f71e6a"],
 ];
 
 var ulColorStops = [
     ["0", "#FF8000"],
     ["0.5", "#FF8000"],
-    ["1.0", "#FF0000"]
+    ["1.0", "#FF0000"],
 ];
 
 var dlProgressColor;
@@ -130,7 +130,7 @@ var ulProgressGlowColor;
 var dlText = `<i class="fa fa-arrow-circle-o-down"></i>`;
 var dotsText = `<div class="dot-container dot-typing"></div>`;
 
-let makeGlowColor = function(value, index) {
+let makeGlowColor = function (value, index) {
     let [stop, color] = value;
     let newColor = new Color(color);
     newColor.opacity = 0.3;
@@ -144,7 +144,7 @@ var speedTestStateMapping = {
     3: "ping",
     4: "upload",
     5: "finished",
-    6: "aborted"
+    6: "aborted",
 };
 
 /**
@@ -214,11 +214,11 @@ function startStop() {
     } else {
         document.getElementById("start-btn").classList.add("running");
 
-        speedtestObj.onupdate = function(data) {
+        speedtestObj.onupdate = function (data) {
             uiData = data;
         };
 
-        speedtestObj.onend = function(aborted) {
+        speedtestObj.onend = function (aborted) {
             document.getElementById("start-btn").classList.remove("running");
             document.getElementById("test-kind").classList.remove("ul");
             document.getElementById("test-kind").classList.remove("dl");
@@ -235,7 +235,7 @@ function startStop() {
                     1000,
                     false
                 );
-                setTimeout(function() {
+                setTimeout(function () {
                     document.getElementById("test-kind").innerHTML = dotsText;
                 }, 1000);
             } else {
@@ -310,16 +310,13 @@ function drawMeterLoop(
 
     meterDot.draw(canvasObj);
 
-    meterDial
-        .rotate(theta, true)
-        .draw(canvasObj)
-        .rotate(-theta, true);
+    meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
 
     progressBarMesh.draw(canvasObj, clamp(progressAmount, 0, 1));
 }
 
-let openingAnimation = function(duration, timingFunc) {
-    let transformFunc = function(v, t) {
+let openingAnimation = function (duration, timingFunc) {
+    let transformFunc = function (v, t) {
         canvasObj.clear();
 
         outerMeter.radius = outerRadius * t;
@@ -342,8 +339,8 @@ let openingAnimation = function(duration, timingFunc) {
     smoothAnimate(ALPHA_1, ALPHA_0, duration, transformFunc, timingFunc);
 };
 
-let closingAnimation = function(duration, timingFunc) {
-    let transformFunc = function(v, t) {
+let closingAnimation = function (duration, timingFunc) {
+    let transformFunc = function (v, t) {
         canvasObj.clear();
         t = clamp(1 - t, 0.0001, 1);
 
@@ -367,11 +364,11 @@ let closingAnimation = function(duration, timingFunc) {
     smoothAnimate(ALPHA_1, ALPHA_0, duration, transformFunc, timingFunc);
 };
 
-let updateFunc = function(t) {
+let updateFunc = function (t) {
     return false;
 };
 
-let drawFunc = function(t) {
+let drawFunc = function (t) {
     if (speedtestObj.getState() != 3 || uiData === null) {
         return false;
     }
@@ -450,7 +447,7 @@ let drawFunc = function(t) {
 var prevT = 0;
 var eps = 0.05;
 
-let initFunc = function(t) {
+let initFunc = function (t) {
     let canvas = document.getElementById("test-meter");
     let ctx = canvas.getContext("2d");
 
@@ -487,7 +484,7 @@ let initFunc = function(t) {
     // Initializing polygons
     let base = [
         [0, 0],
-        [dialBase, 0]
+        [dialBase, 0],
     ];
 
     let points = slerpPoints(base[0], base[1]);
@@ -495,7 +492,7 @@ let initFunc = function(t) {
     let meterPoints = [
         ...points,
         [dialBase - dialTop, -dialHeight],
-        [dialTop, -dialHeight]
+        [dialTop, -dialHeight],
     ];
 
     meterDial = new Polygon(meterPoints, null, null, "white");
@@ -563,7 +560,7 @@ let initFunc = function(t) {
         outerRadius / 1.5 - barHeight / 2
     );
 
-    progressBarMesh.draw = function(ctx, t) {
+    progressBarMesh.draw = function (ctx, t) {
         this.shapes[0].draw(ctx, 1);
         this.shapes[1].draw(ctx, t);
     };
@@ -594,14 +591,14 @@ function onload() {
         {
             styles: {
                 "border-top-left-radius": borderRadiusPrimary,
-                "border-bottom-left-radius": borderRadiusPrimary
-            }
+                "border-bottom-left-radius": borderRadiusPrimary,
+            },
         },
         {
             styles: {
                 "border-top-right-radius": borderRadiusPrimary,
-                "border-bottom-right-radius": borderRadiusPrimary
-            }
+                "border-bottom-right-radius": borderRadiusPrimary,
+            },
         }
     );
 }
@@ -609,7 +606,7 @@ function onload() {
 async function onstart() {
     let duration = 1500;
 
-    toggleOnce(document.getElementById("start-btn"), async function() {
+    toggleOnce(document.getElementById("start-btn"), async function () {
         let testEl = document.getElementById("test-container");
         let startModal = document.getElementById("start-modal");
         let completeModal = document.getElementById("complete-modal");
@@ -644,7 +641,7 @@ async function onend() {
 
     completeModal.classList.remove("pane-hidden");
 
-    slideRight([buttonEl, testEl], width, 0);
+    slideRight([testEl], width, 0);
     slideRight(completeModal, 0, -width);
 
     await sleep(duration);
@@ -658,10 +655,7 @@ async function onend() {
     let id = urlObj.searchParams.get("id");
     let ip = String(uiData.clientIp);
 
-    ip = ip
-        .trim()
-        .split(" ")[0]
-        .trim();
+    ip = ip.trim().split(" ")[0].trim();
 
     let speedtestData = {
         id: id || -1,
@@ -669,7 +663,7 @@ async function onend() {
         ulStatus: uiData.ulStatus,
         pingStatus: uiData.pingStatus,
         jitterStatus: uiData.jitterStatus,
-        ip: ip
+        ip: ip,
     };
 
     if (eventObj !== null) {
@@ -682,13 +676,13 @@ async function onend() {
     $.post("backend/record.php", speedtestData);
 }
 
-window.onload = function() {
+window.onload = function () {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);
 };
 
-document.getElementById("start-btn").addEventListener("click", function(ev) {
+document.getElementById("start-btn").addEventListener("click", function (ev) {
     let duration = 1000;
 
     rippleButton(
@@ -700,8 +694,13 @@ document.getElementById("start-btn").addEventListener("click", function(ev) {
         duration
     );
 
-    throttle(function() {
-        onstart();
+    throttle(function () {
+        if (testStateObj["upload"] === 2 && eventObj !== null) {
+            console.log("Posting next message.");
+            eventObj.source.postMessage("next", eventObj.origin);
+        } else {
+            onstart();
+        }
     }, 1000)();
 });
 

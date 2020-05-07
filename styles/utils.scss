@@ -77,18 +77,10 @@
     width: 10em;
 
     &.running {
-        &::after {
-            content: "Stop";
-        }
-
         background-color: var(--dl-color-2);
     }
 
     &:hover {
-    }
-
-    &::after {
-        content: "Start";
     }
 }
 

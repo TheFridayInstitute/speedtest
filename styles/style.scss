@@ -273,86 +273,86 @@ body {
     }
 }
 
-@media all and (max-width: $screen-size-md) {
-    html,
-    body {
-        font-size: 0.85rem;
-    }
-}
+// @media all and (max-width: $screen-size-md) {
+//     html,
+//     body {
+//         font-size: 0.85rem;
+//     }
+// }
 
-@media all and (max-width: $screen-size-sm) {
-    html,
-    body {
-        font-size: 0.8rem;
-    }
-}
+// @media all and (max-width: $screen-size-sm) {
+//     html,
+//     body {
+//         font-size: 0.8rem;
+//     }
+// }
 
-@media all and (max-width: $screen-size-xs) {
-    html,
-    body {
-        font-size: 0.75rem;
-    }
-}
+// @media all and (max-width: $screen-size-xs) {
+//     html,
+//     body {
+//         font-size: 0.75rem;
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-lg) {
-    .main-content {
-        column-gap: 1em;
-        grid-template-areas:
-            "test info"
-            "test button";
+// @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
+//     .main-content {
+//         column-gap: 1em;
+//         grid-template-areas:
+//             "test info"
+//             "test button";
 
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
+//         grid-template-columns: 1fr 1fr;
+//         grid-template-rows: 1fr 1fr;
 
-        max-width: $meter-height;
+//         max-width: $meter-height;
 
-        .start-btn-container {
-            align-self: center;
-        }
+//         .start-btn-container {
+//             align-self: center;
+//         }
 
-        .test-container {
-            align-self: center;
-        }
+//         .test-container {
+//             align-self: center;
+//         }
 
-        .test-info-container {
-            align-self: center;
-        }
-    }
+//         .test-info-container {
+//             align-self: center;
+//         }
+//     }
 
-    .test-container {
-        .info {
-            grid-template-areas: "amount kind";
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto;
-        }
-    }
+//     .test-container {
+//         .info {
+//             grid-template-areas: "amount kind";
+//             grid-template-columns: 1fr 1fr;
+//             grid-template-rows: auto;
+//         }
+//     }
 
-    .test-info-container {
-        flex-direction: column;
-        .info {
-            flex-direction: row;
-            justify-content: space-between;
-        }
-    }
-}
+//     .test-info-container {
+//         flex-direction: column;
+//         .info {
+//             flex-direction: row;
+//             justify-content: space-between;
+//         }
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-md) {
-    html,
-    body {
-        font-size: 0.85em;
-    }
-}
+// @media all and (orientation: landscape) and (max-height: $screen-size-md) {
+//     html,
+//     body {
+//         font-size: 0.85em;
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-sm) {
-    html,
-    body {
-        font-size: 0.8em;
-    }
-}
+// @media all and (orientation: landscape) and (max-height: $screen-size-sm) {
+//     html,
+//     body {
+//         font-size: 0.8em;
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-xs) {
-    html,
-    body {
-        font-size: 0.75em;
-    }
-}
+// @media all and (orientation: landscape) and (max-height: $screen-size-xs) {
+//     html,
+//     body {
+//         font-size: 0.75em;
+//     }
+// }

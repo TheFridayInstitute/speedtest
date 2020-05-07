@@ -87,14 +87,6 @@
   background-color: var(--dl-color-2);
 }
 
-.start-btn.running::after {
-  content: "Stop";
-}
-
-.start-btn::after {
-  content: "Start";
-}
-
 .btn-prime {
   position: relative;
   overflow: hidden;

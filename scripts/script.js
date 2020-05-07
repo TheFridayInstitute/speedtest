@@ -211,8 +211,10 @@ function startStop() {
         speedtestObj.abort();
         data = null;
         document.getElementById("start-btn").classList.remove("running");
+        document.querySelector("#start-btn .text").innerHTML = "Start";
     } else {
         document.getElementById("start-btn").classList.add("running");
+        document.querySelector("#start-btn .text").innerHTML = "Stop";
 
         speedtestObj.onupdate = function (data) {
             uiData = data;
@@ -220,6 +222,7 @@ function startStop() {
 
         speedtestObj.onend = function (aborted) {
             document.getElementById("start-btn").classList.remove("running");
+
             document.getElementById("test-kind").classList.remove("ul");
             document.getElementById("test-kind").classList.remove("dl");
 
@@ -568,7 +571,28 @@ let initFunc = function (t) {
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
-function onload() {
+async function slideRightWrap(el, to, from, duration, func) {
+    let width = window.innerWidth;
+
+    slideRight(el, width, from, duration);
+
+    await sleep(duration);
+
+    el.classList.add("pane-hidden");
+
+    let time = 333;
+
+    await sleep(time);
+    func();
+    slideLeft(el, -width, width, 10);
+
+    await sleep(time);
+
+    el.classList.remove("pane-hidden");
+    slideRight(el, to, from - width * 1.1, duration);
+}
+
+async function onload() {
     // Speed test object init.
     speedtestObj = new Speedtest();
     speedtestObj.setParameter("getIp_ispInfo", false);
@@ -578,6 +602,11 @@ function onload() {
     let testEl = document.getElementById("test-container");
     let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
+    let buttonEl = document.getElementById("start-btn");
+
+    // slideRightWrap(buttonEl, 0, 0, 1000, function () {
+    //     document.querySelector("#start-btn .text").innerHTML = "Next →";
+    // });
 
     let width = window.innerWidth;
     testEl.style.transform = `translateX(${width}px)`;
@@ -631,22 +660,23 @@ async function onend() {
     let duration = 2000;
 
     closingAnimation(duration, easeInOutCubic);
-
-    let testEl = document.getElementById("test-container");
-    let startModal = document.getElementById("start-modal");
-    let completeModal = document.getElementById("complete-modal");
     let buttonEl = document.getElementById("start-btn");
+    let testEl = document.getElementById("test-container");
+    let completeModal = document.getElementById("complete-modal");
 
     let width = window.innerWidth;
 
     completeModal.classList.remove("pane-hidden");
 
-    slideRight([testEl], width, 0);
+    slideRight(testEl, width, 0);
     slideRight(completeModal, 0, -width);
+
+    slideRightWrap(buttonEl, 0, 0, 500, function () {
+        document.querySelector("#start-btn .text").innerHTML = "Next →";
+    });
 
     await sleep(duration);
 
-    // buttonEl.classList.add("pane-hidden");
     testEl.classList.add("pane-hidden");
 
     await sleep(1000);
@@ -695,9 +725,11 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
     );
 
     throttle(function () {
-        if (testStateObj["upload"] === 2 && eventObj !== null) {
-            console.log("Posting next message.");
-            eventObj.source.postMessage("next", eventObj.origin);
+        if (testStateObj["upload"] === 2) {
+            if (eventObj !== null) {
+                console.log("Posting next message.");
+                eventObj.source.postMessage("next", eventObj.origin);
+            }
         } else {
             onstart();
         }

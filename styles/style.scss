@@ -13,7 +13,7 @@ $screen-size-md: 768px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
-$row-gap: 1em;
+$row-gap: 2em;
 
 // Need to fix alignment issues with info container when landscape.
 
@@ -47,22 +47,24 @@ $row-gap: 1em;
     --border-radius-primary: 0.5em;
 }
 
-html,
-body {
-    background: var(--background-color-primary);
-    margin: 0;
-    overflow: hidden;
-    overflow-y: scroll;
-    padding: 0;
+html {
     height: 100%;
     width: 100%;
-    user-select: none;
 }
 
-.main-content {
+body {
+    background: var(--background-color-primary);
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+main {
     background: var(--background-color-primary);
     color: var(--font-color-primary);
-    position: relative;
+    padding: 1em;
 
     display: grid;
     font-family: var(--font-family-primary);
@@ -72,12 +74,9 @@ body {
         "info"
         "button";
 
-    grid-template-columns: auto;
-    grid-template-rows: auto;
+    grid-template-rows: 2fr 1fr 1fr;
+    max-width: var(--meter-width);
     row-gap: $row-gap;
-    max-width: $meter-width;
-    max-height: 100vh;
-    padding: 1em;
     width: 100%;
 
     .start-btn-container {
@@ -94,66 +93,75 @@ body {
 }
 
 .pane-container {
+    border-radius: var(--border-radius-primary);
+    grid-area: test;
     height: 100%;
     width: 100%;
-    padding: 1em;
-
-    grid-area: test;
-    border-radius: var(--border-radius-primary);
+    
 }
 
 .pane-info {
+    text-align: center;
+    display: flex;
     h1,
     h2 {
         color: var(--ul-color-1);
     }
-    font-size: 1.5em;
-    text-align: center;
 
     .icon-lg {
-        font-size: 10em;
+        font-size: 10rem;
     }
 }
 
 .pane-hidden {
-    visibility: hidden;
     pointer-events: none;
+    visibility: hidden;
 }
 
 .test-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    position: relative;
 
     .info {
-        display: grid;
-        grid-template-areas:
-            "amount"
-            "kind";
-        grid-template-columns: auto;
-        grid-template-rows: auto auto;
+        background-color: var(--background-color-primary-dark);
+        border-top-left-radius: 1em;
+        border-top-right-radius: 1em;
+        
 
-        row-gap: 0.5em;
-        justify-items: center;
-        align-items: center;
-        margin-top: calc(-25% + 1em);
-
-        --font-size: 4em;
+        --font-size: 3.5em;
         --size: calc(var(--font-size) / 4);
+        align-items: center;
+        display: grid;
+        grid-template-areas: "unit kind";
+        justify-items: center;
+        grid-template-columns: 50% 50%;
+
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        position: absolute;
+        width: 75%;
 
         .test-kind {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: var(--size);
-            height: var(--size);
-            text-align: center;
-            font-size: var(--font-size);
             grid-area: kind;
+            align-items: center;
+            display: flex;
+            font-size: var(--font-size);
+            height: var(--size);
+            justify-content: center;
+            text-align: center;
+            width: var(--size);
         }
 
-        .amount-container {
-            grid-area: amount;
+        .unit-container {
+            grid-area: unit;
+            .unit {
+                left: calc(100%);
+                right: 0;
+                bottom: var(--font-size-sm);
+            }
         }
     }
 
@@ -165,32 +173,17 @@ body {
     }
 }
 
-.square-box {
-    height: 0%;
-    padding-bottom: 100%;
-    position: relative;
-    width: 100%;
-
-    * {
-        height: 100%;
-        width: 100%;
-        position: absolute;
-    }
-}
-
 .test-info-container {
-    padding: 1em;
+    padding: 0.5em;
     .info {
+        align-items: center;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;
         text-align: center;
 
         .test-kind {
-            font-size: 1.5em;
-        }
-        .amount-container {
+            font-size: 0.875em; // 3.5/4 = 0.875
         }
     }
 }
@@ -199,16 +192,10 @@ body {
     --font-size-lg: 3.5em;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
+    --padding: 0.2em;
 
-    display: grid;
-    grid-template-areas:
-        "amount"
-        "unit";
-    grid-template-columns: 1fr;
-    grid-template-rows: 90% 10%;
-
-    row-gap: 0.2em;
-
+    position: relative;
+    display: flex;
     text-align: center;
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
@@ -217,16 +204,16 @@ body {
     }
 
     .amount {
-        font-size: var(--font-size-lg);
-        grid-area: amount;
         align-self: start;
+        font-size: var(--font-size-lg);
     }
 
     .unit {
-        align-self: end;
+        position: absolute;
         font-size: var(--font-size-sm);
-        grid-area: unit;
-        margin-top: calc(-1 * var(--font-size-sm));
+        left: 0;
+        right: 0;
+        bottom: calc(-1 * var(--padding));
     }
 }
 
@@ -261,10 +248,11 @@ body {
 .progress-bar-container {
     display: flex;
     flex-direction: row;
-    width: 100%;
     height: 1em;
-    padding: $row-gap;
+    margin: 0.5em;
+    padding: 0.25em;
     position: relative;
+    width: 100%;
 
     .progress-bar {
         border-radius: 0;

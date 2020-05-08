@@ -46,6 +46,19 @@
     justify-items: center;
 }
 
+.square-box {
+    height: 0%;
+    padding-bottom: 100%;
+    position: relative;
+    width: 100%;
+
+    * {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+    }
+}
+
 .start-color {
     // background-color: var(--color-secondary);
     background-color: white;
@@ -63,14 +76,16 @@
 .start-btn {
     border: none;
     align-items: center;
-    background-color: var(--color-secondary);
+    // background-color: var(--color-secondary);
+
+    background-image: linear-gradient(to right, var(--ul-color-1), var(--dl-color-1));
     border-radius: var(--border-radius-primary);
-    color: rgba(0, 0, 0, 1);
+    color: black;
     cursor: pointer;
     display: flex;
     font-size: 2em;
     font-weight: normal;
-    height: 2.5em;
+    height: 2em;
     justify-content: center;
     position: relative;
 

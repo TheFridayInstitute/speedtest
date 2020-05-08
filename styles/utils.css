@@ -46,6 +46,19 @@
   justify-items: center;
 }
 
+.square-box {
+  height: 0%;
+  padding-bottom: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.square-box * {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}
+
 .start-color {
   background-color: white;
   border-radius: 0.25em;
@@ -66,7 +79,8 @@
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  background-color: var(--color-secondary);
+  background-image: -webkit-gradient(linear, left top, right top, from(var(--ul-color-1)), to(var(--dl-color-1)));
+  background-image: linear-gradient(to right, var(--ul-color-1), var(--dl-color-1));
   border-radius: var(--border-radius-primary);
   color: black;
   cursor: pointer;
@@ -75,7 +89,7 @@
   display: flex;
   font-size: 2em;
   font-weight: normal;
-  height: 2.5em;
+  height: 2em;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;

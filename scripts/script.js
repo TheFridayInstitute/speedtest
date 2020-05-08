@@ -593,7 +593,7 @@ async function slideRightWrap(el, to, from, duration, func) {
 }
 
 async function onload() {
-    // Speed test object init.
+    // // Speed test object init.
     speedtestObj = new Speedtest();
     speedtestObj.setParameter("getIp_ispInfo", false);
     speedtestObj.setParameter("getIp_ispInfo_distance", false);
@@ -604,15 +604,15 @@ async function onload() {
     let completeModal = document.getElementById("complete-modal");
     let buttonEl = document.getElementById("start-btn");
 
-    // slideRightWrap(buttonEl, 0, 0, 1000, function () {
-    //     document.querySelector("#start-btn .text").innerHTML = "Next →";
-    // });
+    // // slideRightWrap(buttonEl, 0, 0, 1000, function () {
+    // //     document.querySelector("#start-btn .text").innerHTML = "Next →";
+    // // });
 
-    let width = window.innerWidth;
-    testEl.style.transform = `translateX(${width}px)`;
-    completeModal.style.transform = `translateX(${-width}px)`;
+    // let width = window.innerWidth;
+    // testEl.style.transform = `translateX(${width}px)`;
+    // completeModal.style.transform = `translateX(${-width}px)`;
 
-    // Creation of progress bar.
+    // // Creation of progress bar.
     progressBarEl = document.getElementById("progress-bar");
     createProgessBar(
         progressBarEl,
@@ -744,6 +744,3 @@ function receiveMessage(event) {
 }
 
 window.addEventListener("message", receiveMessage, false);
-
-
-

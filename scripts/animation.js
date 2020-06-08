@@ -5,7 +5,7 @@ import {
     normalize,
     bounceInEase,
     easeInOutCubic,
-    smoothStep3
+    smoothStep3,
 } from "./math.js";
 
 import { getOffset } from "./utils.js";
@@ -55,10 +55,10 @@ export function sleep(ms) {
 
 export function debounce(func, wait, immediate = true) {
     var timeout;
-    return function() {
+    return function () {
         var context = this;
         var args = arguments;
-        var later = function() {
+        var later = function () {
             timeout = null;
             if (immediate) func.apply(context, args);
         };
@@ -76,7 +76,7 @@ let delta = clock.tick();
 export function throttle(func, wait) {
     var delta = null;
 
-    return function() {
+    return function () {
         var context = this;
         var args = arguments;
         delta = clock.tick();
@@ -187,7 +187,7 @@ export function slideRight(el, to, from, duration) {
         elArray = el;
     }
 
-    let transformFunc = function(v) {
+    let transformFunc = function (v) {
         for (let el of elArray) {
             el.style.transform = `translateX(${v}px)`;
         }
@@ -208,7 +208,7 @@ export function slideLeft(el, to, from, duration) {
         elArray = el;
     }
 
-    let transformFunc = function(v) {
+    let transformFunc = function (v) {
         for (let el of elArray) {
             el.style.transform = `translateX(${v}px)`;
         }
@@ -229,7 +229,7 @@ export function fadeOut(el, duration) {
         elArray = el;
     }
 
-    let transformFunc = function(v) {
+    let transformFunc = function (v) {
         for (let el of elArray) {
             el.style.opacity = to - v;
         }
@@ -252,7 +252,7 @@ export function rotateElement(el, to, from, duration, rad = false) {
         elArray = el;
     }
 
-    let transformFunc = function(v, t) {
+    let transformFunc = function (v, t) {
         for (let el of elArray) {
             el.style.transform = `rotate(${v}${suffix})`;
             el.setAttribute("rotation", v);
@@ -291,7 +291,7 @@ export function animateProgressBar(el, to, from, duration, stops) {
     stops = stops === undefined ? el.children.length : stops;
     let elStep = Math.floor(stops / el.children.length);
 
-    let setProgressBar = function(el, t) {
+    let setProgressBar = function (el, t) {
         let step = 1 / stops;
         let s = t;
 
@@ -325,7 +325,7 @@ export function animateProgressBar(el, to, from, duration, stops) {
         el.setAttribute("percent-complete", to);
     }
 
-    let transformFunc = function(v, t) {
+    let transformFunc = function (v, t) {
         for (let el of elArray) {
             setProgressBar(el, v);
         }
@@ -358,7 +358,7 @@ export function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
     rippleEl.style.width = 0;
     rippleEl.style.height = 0;
 
-    let transformFunc = function(v, t) {
+    let transformFunc = function (v, t) {
         let r = `${v}rem`;
         rippleEl.style.width = r;
         rippleEl.style.height = r;

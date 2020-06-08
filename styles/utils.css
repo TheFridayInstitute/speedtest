@@ -59,21 +59,6 @@
   position: absolute;
 }
 
-.start-color {
-  background-color: white;
-  border-radius: 0.25em;
-  color: black;
-  padding: 0.1rem 1rem;
-  margin: 0.1rem;
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-}
-
-.ul-color {
-  color: var(--ul-color-1);
-}
-
 .start-btn {
   border: none;
   -webkit-box-align: center;
@@ -112,6 +97,14 @@
   --box-shadow-color: rgba(0, 0, 0, 0.5);
   -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
   transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+  -webkit-box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+          box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+}
+
+.btn-prime:hover {
+  --box-shadow-vl: 7px;
+  -webkit-transform: translateY(-5px);
+          transform: translateY(-5px);
   -webkit-box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
           box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
 }

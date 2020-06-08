@@ -13,7 +13,7 @@ $screen-size-md: 768px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
-$row-gap: 2em;
+$row-gap: 2%;
 
 // Need to fix alignment issues with info container when landscape.
 
@@ -57,6 +57,7 @@ body {
     overflow-x: hidden;
     display: flex;
     justify-content: center;
+    align-items: center;
     height: 100%;
     width: 100%;
 }
@@ -64,7 +65,6 @@ body {
 main {
     background: var(--background-color-primary);
     color: var(--font-color-primary);
-    padding: 1em;
 
     display: grid;
     font-family: var(--font-family-primary);
@@ -75,19 +75,24 @@ main {
         "button";
 
     grid-template-rows: 2fr 1fr 1fr;
-    max-width: var(--meter-width);
+
+    max-width: $meter-width;
+    max-height: $meter-height;
     row-gap: $row-gap;
     width: 100%;
+    height: 100%;
+    
 
     .start-btn-container {
         grid-area: button;
+        width: 75%;
     }
 
     .test-container {
         grid-area: test;
     }
 
-    .test-info-container {
+    .test-info-progress-container {
         grid-area: info;
     }
 }
@@ -95,9 +100,8 @@ main {
 .pane-container {
     border-radius: var(--border-radius-primary);
     grid-area: test;
-    height: 100%;
-    width: 100%;
-    
+    // height: 100%;
+    // width: 100%;
 }
 
 .pane-info {
@@ -127,7 +131,6 @@ main {
         background-color: var(--background-color-primary-dark);
         border-top-left-radius: 1em;
         border-top-right-radius: 1em;
-        
 
         --font-size: 3.5em;
         --size: calc(var(--font-size) / 4);
@@ -158,7 +161,7 @@ main {
         .unit-container {
             grid-area: unit;
             .unit {
-                left: calc(100%);
+                left: 100%;
                 right: 0;
                 bottom: var(--font-size-sm);
             }
@@ -173,8 +176,16 @@ main {
     }
 }
 
+.test-info-progress-container {
+}
+
 .test-info-container {
     padding: 0.5em;
+    width: 100%;
+    justify-content: space-evenly;
+    display: flex;
+    flex-direction: row;
+
     .info {
         align-items: center;
         display: flex;
@@ -188,11 +199,27 @@ main {
     }
 }
 
+.progress-bar-container {
+    display: flex;
+    flex-direction: row;
+    height: 1em;
+    margin: 0.5em;
+    padding: 0.25em;
+    position: relative;
+    width: 100%;
+
+    .progress-bar {
+        border-radius: 0;
+        height: 1em;
+        width: 0;
+    }
+}
+
 .unit-container {
-    --font-size-lg: 3.5em;
+    --font-size-lg: 3.5rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
-    --padding: 0.2em;
+    --padding: 0.5rem;
 
     position: relative;
     display: flex;
@@ -245,84 +272,65 @@ main {
     }
 }
 
-.progress-bar-container {
-    display: flex;
-    flex-direction: row;
-    height: 1em;
-    margin: 0.5em;
-    padding: 0.25em;
-    position: relative;
-    width: 100%;
-
-    .progress-bar {
-        border-radius: 0;
-        height: 1em;
-        width: 0;
+@media all and (max-width: $screen-size-md) {
+    html,
+    body {
+        font-size: 0.85rem;
     }
 }
 
-// @media all and (max-width: $screen-size-md) {
-//     html,
-//     body {
-//         font-size: 0.85rem;
-//     }
-// }
+@media all and (max-width: $screen-size-sm) {
+    html,
+    body {
+        font-size: 0.8rem;
+    }
+}
 
-// @media all and (max-width: $screen-size-sm) {
-//     html,
-//     body {
-//         font-size: 0.8rem;
-//     }
-// }
+@media all and (max-width: $screen-size-xs) {
+    html,
+    body {
+        font-size: 0.75rem;
+    }
+}
 
-// @media all and (max-width: $screen-size-xs) {
-//     html,
-//     body {
-//         font-size: 0.75rem;
-//     }
-// }
+@media all and (orientation: landscape) and (max-height: $screen-size-lg) {
+    main {
+        column-gap: 1em;
+        grid-template-areas:
+            "test info"
+            "test button";
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
 
-// @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
-//     .main-content {
-//         column-gap: 1em;
-//         grid-template-areas:
-//             "test info"
-//             "test button";
 
-//         grid-template-columns: 1fr 1fr;
-//         grid-template-rows: 1fr 1fr;
 
-//         max-width: $meter-height;
+        max-width: $meter-height;
 
-//         .start-btn-container {
-//             align-self: center;
-//         }
+        .start-btn-container {
+            align-self: flex-start;
+        }
 
-//         .test-container {
-//             align-self: center;
-//         }
+        .test-container {
+            align-self: center;
+        }
 
-//         .test-info-container {
-//             align-self: center;
-//         }
-//     }
+        .test-info-progress-container {
+            align-self: center;
+            margin-top: 2em;
+            // align-self: flex-end;
+        }
+    }
 
-//     .test-container {
-//         .info {
-//             grid-template-areas: "amount kind";
-//             grid-template-columns: 1fr 1fr;
-//             grid-template-rows: auto;
-//         }
-//     }
-
-//     .test-info-container {
-//         flex-direction: column;
-//         .info {
-//             flex-direction: row;
-//             justify-content: space-between;
-//         }
-//     }
-// }
+    .test-info-progress-container {
+        .test-info-container {
+            flex-direction: column;
+            .info {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+    }
+}
 
 // @media all and (orientation: landscape) and (max-height: $screen-size-md) {
 //     html,

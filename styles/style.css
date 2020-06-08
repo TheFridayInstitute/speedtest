@@ -297,27 +297,6 @@ main .test-info-progress-container {
   color: white;
 }
 
-@media all and (max-width: 768px) {
-  html,
-  body {
-    font-size: 0.85rem;
-  }
-}
-
-@media all and (max-width: 480px) {
-  html,
-  body {
-    font-size: 0.8rem;
-  }
-}
-
-@media all and (max-width: 320px) {
-  html,
-  body {
-    font-size: 0.75rem;
-  }
-}
-
 @media all and (orientation: landscape) and (max-height: 992px) {
   main {
     -webkit-column-gap: 1em;

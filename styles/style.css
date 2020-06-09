@@ -29,8 +29,10 @@ html {
 }
 
 body {
-  background: var(--background-color-primary);
-  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -40,8 +42,6 @@ body {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  height: 100%;
-  width: 100%;
 }
 
 main {
@@ -51,21 +51,11 @@ main {
   display: grid;
   font-family: var(--font-family-primary);
       grid-template-areas: "test" "info" "button";
-  -ms-grid-rows: 2fr 1fr 1fr;
-      grid-template-rows: 2fr 1fr 1fr;
   max-width: 32rem;
   max-height: 64rem;
   row-gap: 2%;
-  width: 100%;
   height: 100%;
-  padding: 1em;
-}
-
-main .start-btn-container {
-  -ms-grid-row: 3;
-  -ms-grid-column: 1;
-  grid-area: button;
-  width: 75%;
+  width: 100%;
 }
 
 main .test-container {
@@ -78,6 +68,23 @@ main .test-info-progress-container {
   -ms-grid-row: 2;
   -ms-grid-column: 1;
   grid-area: info;
+}
+
+main .start-btn-container {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: button;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+main .start-btn-container button {
+  width: 75%;
+  height: 3rem;
 }
 
 .pane-container {
@@ -109,14 +116,17 @@ main .test-info-progress-container {
 }
 
 .test-container {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
   position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  border: 2px solid green;
 }
 
 .test-container .info {
@@ -134,31 +144,15 @@ main .test-info-progress-container {
   justify-items: center;
   -ms-grid-columns: 50% 50%;
       grid-template-columns: 50% 50%;
+  padding: 0;
+  margin: 0;
   bottom: 0;
   left: 0;
   right: 0;
   margin: auto;
-  position: absolute;
   width: 75%;
-}
-
-.test-container .info .test-kind {
-  -ms-grid-row: 1;
-  -ms-grid-column: 2;
-  grid-area: kind;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  font-size: var(--font-size);
-  height: var(--size);
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  text-align: center;
-  width: var(--size);
+  border: 2px dashed yellow;
+  height: 100%;
 }
 
 .test-container .info .unit-container {
@@ -178,12 +172,22 @@ main .test-info-progress-container {
 }
 
 .test-container .square-box canvas {
-  padding: 2%;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  border: 2px solid red;
+}
+
+.test-info-progress-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
 }
 
 .test-info-container {
-  padding: 0.5em;
-  width: 100%;
   -webkit-box-pack: space-evenly;
       -ms-flex-pack: space-evenly;
           justify-content: space-evenly;
@@ -269,73 +273,4 @@ main .test-info-progress-container {
   left: 0;
   right: 0;
   bottom: calc(-1 * var(--padding));
-}
-
-.test-kind {
-  -webkit-transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-  transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-}
-
-.test-kind.rotate i {
-  -webkit-transform: rotate(180deg);
-          transform: rotate(180deg);
-}
-
-.test-kind.ul i {
-  color: var(--ul-color-1);
-}
-
-.test-kind.ul i.white {
-  color: white;
-}
-
-.test-kind.dl i {
-  color: var(--dl-color-2);
-}
-
-.test-kind.dl i.white {
-  color: white;
-}
-
-@media all and (orientation: landscape) and (max-height: 992px) {
-  main {
-    -webkit-column-gap: 1em;
-            column-gap: 1em;
-        grid-template-areas: "test info" "test button";
-    -ms-grid-columns: (1fr)[2];
-        grid-template-columns: repeat(2, 1fr);
-    -ms-grid-rows: auto;
-        grid-template-rows: auto;
-    max-width: 64rem;
-  }
-  main .start-btn-container {
-    -ms-flex-item-align: start;
-        align-self: flex-start;
-  }
-  main .test-container {
-    -ms-flex-item-align: center;
-        -ms-grid-row-align: center;
-        align-self: center;
-  }
-  main .test-info-progress-container {
-    -ms-flex-item-align: center;
-        -ms-grid-row-align: center;
-        align-self: center;
-    margin-top: 2em;
-  }
-  .test-info-progress-container .test-info-container {
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
-  }
-  .test-info-progress-container .test-info-container .info {
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
-    -webkit-box-pack: justify;
-        -ms-flex-pack: justify;
-            justify-content: space-between;
-  }
 }

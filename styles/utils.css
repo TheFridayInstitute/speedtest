@@ -74,12 +74,10 @@
   display: flex;
   font-size: 2em;
   font-weight: normal;
-  height: 2em;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
   position: relative;
-  width: 10em;
 }
 
 .start-btn.running {

@@ -87,7 +87,8 @@ const ALPHA_1 = 2 * Math.PI * 1.1;
 const METER_MIN = 0;
 const METER_MAX = 100;
 
-var lineWidth = emToPixels("2.5em");
+// Keep this constant.
+var lineWidth = 32;
 
 const shadowColor = "rgba(0, 0, 0, 0.5)";
 const shadowBlur = 0;

@@ -51,13 +51,15 @@ html {
 }
 
 body {
-    background: var(--background-color-primary);
-    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+
+    // background: var(--background-color-primary);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    width: 100%;
 }
 
 main {
@@ -72,19 +74,11 @@ main {
         "info"
         "button";
 
-    grid-template-rows: 2fr 1fr 1fr;
-
     max-width: $meter-width;
     max-height: $meter-height;
     row-gap: $row-gap;
-    width: 100%;
     height: 100%;
-    padding: 1em;
-
-    .start-btn-container {
-        grid-area: button;
-        width: 75%;
-    }
+    width: 100%;
 
     .test-container {
         grid-area: test;
@@ -93,13 +87,21 @@ main {
     .test-info-progress-container {
         grid-area: info;
     }
+
+    .start-btn-container {
+        grid-area: button;
+        display: flex;
+        justify-content: center;
+        button {
+            width: 75%;
+            height: 3rem;
+        }
+    }
 }
 
 .pane-container {
     border-radius: var(--border-radius-primary);
     grid-area: test;
-    // height: 100%;
-    // width: 100%;
 }
 
 .pane-info {
@@ -120,10 +122,65 @@ main {
     visibility: hidden;
 }
 
+$PI: 3.14159265358929;
+$ALPHA_0: $PI*0.8;
+
+@function ipow($n, $exp) {
+    $value: 1;
+    @if $exp > 0 {
+        @for $i from 1 through $exp {
+            $value: $value * $n;
+        }
+    } @else if $exp < 0 {
+        @for $i from 1 through -$exp {
+            $value: $value / $n;
+        }
+    }
+    @return $value;
+}
+
+@function factorial($n) {
+    $value: 1;
+    @if $n > 0 {
+        @for $i from 1 through $n {
+            $value: $value * $i;
+        }
+    }
+    @return $value;
+}
+
+@function rad($theta) {
+    $unit: unit($theta);
+    $unitless: $theta / ($theta * 0 + 1);
+    @if $unit == deg {
+        $unitless: $unitless / 180 * $PI;
+    }
+    @return $unitless;
+}
+
+@function sin($theta) {
+    $sin: 0;
+    $theta: rad($theta);
+    @for $i from 0 through 10 {
+        $sin: $sin +
+            ipow(-1, $i) *
+            ipow($theta, (2 * $i + 1)) /
+            factorial(2 * $i + 1);
+    }
+    @return $sin;
+}
+
+@function cos($theta) {
+    @return sin($PI/2 - $theta);
+}
+
 .test-container {
-    display: flex;
     flex-direction: column;
     position: relative;
+    display: flex;
+
+    box-sizing: border-box;
+    border: 2px solid green;
 
     .info {
         background-color: var(--background-color-primary-dark);
@@ -138,22 +195,31 @@ main {
         justify-items: center;
         grid-template-columns: 50% 50%;
 
+        padding: 0;
+        margin: 0;
+
         bottom: 0;
+      
         left: 0;
         right: 0;
         margin: auto;
-        position: absolute;
+        // position: absolute;
         width: 75%;
+        border: 2px dashed yellow;
+        height: 100%;
+        // margin-top: -19%;
+        
+        // top: calc(100% * (1 - #{sin($ALPHA_0)}));
 
         .test-kind {
-            grid-area: kind;
-            align-items: center;
-            display: flex;
-            font-size: var(--font-size);
-            height: var(--size);
-            justify-content: center;
-            text-align: center;
-            width: var(--size);
+            // grid-area: kind;
+            // align-items: center;
+            // display: flex;
+            // font-size: var(--font-size);
+            // height: var(--size);
+            // justify-content: center;
+            // text-align: center;
+            // width: var(--size);
         }
 
         .unit-container {
@@ -168,18 +234,20 @@ main {
 
     .square-box {
         z-index: 1;
+
         canvas {
-            padding: $row-gap;
+            box-sizing: border-box;
+            border: 2px solid red;
         }
     }
 }
 
 .test-info-progress-container {
+    display: flex;
+    flex-direction: column;
 }
 
 .test-info-container {
-    padding: 0.5em;
-    width: 100%;
     justify-content: space-evenly;
     display: flex;
     flex-direction: row;
@@ -242,67 +310,39 @@ main {
     }
 }
 
-.test-kind {
-    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+// @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
+//     main {
+//         column-gap: 1em;
+//         grid-template-areas:
+//             "test info"
+//             "test button";
+//         grid-template-columns: repeat(2, 1fr);
+//         grid-template-rows: auto;
 
-    &.rotate {
-        i {
-            transform: rotate(180deg);
-        }
-    }
+//         max-width: $meter-height;
 
-    &.ul {
-        i {
-            color: var(--ul-color-1);
-            &.white {
-                color: white;
-            }
-        }
-    }
+//         .start-btn-container {
+//             align-self: flex-start;
+//         }
 
-    &.dl {
-        i {
-            color: var(--dl-color-2);
-            &.white {
-                color: white;
-            }
-        }
-    }
-}
+//         .test-container {
+//             align-self: center;
+//         }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-lg) {
-    main {
-        column-gap: 1em;
-        grid-template-areas:
-            "test info"
-            "test button";
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: auto;
+//         .test-info-progress-container {
+//             align-self: center;
+//             margin-top: 2em;
+//             // align-self: flex-end;
+//         }
+//     }
 
-        max-width: $meter-height;
-
-        .start-btn-container {
-            align-self: flex-start;
-        }
-
-        .test-container {
-            align-self: center;
-        }
-
-        .test-info-progress-container {
-            align-self: center;
-            margin-top: 2em;
-            // align-self: flex-end;
-        }
-    }
-
-    .test-info-progress-container {
-        .test-info-container {
-            flex-direction: column;
-            .info {
-                flex-direction: row;
-                justify-content: space-between;
-            }
-        }
-    }
-}
+//     .test-info-progress-container {
+//         .test-info-container {
+//             flex-direction: column;
+//             .info {
+//                 flex-direction: row;
+//                 justify-content: space-between;
+//             }
+//         }
+//     }
+// }

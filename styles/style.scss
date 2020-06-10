@@ -220,7 +220,7 @@ main {
     display: flex;
     flex-direction: row;
     height: 1rem;
-    padding: 0.5rem;
+    margin: 0.5rem 0;
     position: relative;
     width: 100%;
 
@@ -266,13 +266,13 @@ main {
         grid-template-areas:
             "test info"
             "test button";
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: auto;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
 
         max-width: $meter-height;
 
         .start-btn-container {
-            align-self: flex-start;
+            align-self: center;
         }
 
         .test-container {
@@ -280,14 +280,13 @@ main {
         }
 
         .test-info-progress-container {
-            align-self: center;
-            margin-top: 2rem;
-            // align-self: flex-end;
+            align-self: flex-end;
         }
     }
 
     .test-info-progress-container {
         .test-info-container {
+            padding: 1rem;
             flex-direction: column;
             .info {
                 flex-direction: row;

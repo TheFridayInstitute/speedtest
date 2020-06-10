@@ -56,6 +56,7 @@ import {
     toggle,
     getComputedVariable,
     setAttributes,
+    fluidText,
 } from "./utils.js";
 
 import { Color } from "./colors.js";
@@ -147,6 +148,8 @@ var speedTestStateMapping = {
     5: "finished",
     6: "aborted",
 };
+
+fluidText(document.getElementById("test-amount-container"));
 
 /**
  * test state object mapping:

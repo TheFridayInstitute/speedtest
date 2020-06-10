@@ -1,7 +1,7 @@
-import {clamp} from "./math.js";
+import { clamp } from "./math.js";
 
 if (!String.prototype.splice) {
-    String.prototype.splice = function(start, delCount, newSubStr) {
+    String.prototype.splice = function (start, delCount, newSubStr) {
         return (
             this.slice(0, start) +
             newSubStr +
@@ -121,7 +121,7 @@ export function affixer(preAffixFunc, postAffixFunc) {
         wrap(el, wrapped);
     });
 
-    window.addEventListener("resize", function(e) {
+    window.addEventListener("resize", function (e) {
         scrollAffix();
     });
 
@@ -153,6 +153,8 @@ export function getOffset(el) {
         top: rect.top + window.scrollY,
         width: rect.width,
         height: rect.height,
+        leftX: rect.left,
+        topY: rect.top,
     };
 }
 
@@ -178,10 +180,8 @@ export function emToPixels(em) {
     return emNumber * fontSize;
 }
 
-export function getComputedVariable(v) {
-    return window
-        .getComputedStyle(document.documentElement)
-        .getPropertyValue(v);
+export function getComputedVariable(v, el = document.documentElement) {
+    return window.getComputedStyle(el).getPropertyValue(v);
 }
 
 export function setAttributes(el, attrs) {
@@ -199,4 +199,35 @@ export function setAttributes(el, attrs) {
             el.setAttribute(key, value);
         }
     }
+}
+
+export function fluidText(el, constrainEl = undefined) {
+    let offsetOriginal = getOffset(el);
+    constrainEl = constrainEl === undefined ? el.parentElement : constrainEl;
+
+    let f = parseFloat(getComputedVariable("font-size", el).split("px")[0]);
+
+    let resize = function () {
+        let constrainOffset = getOffset(constrainEl);
+        let offset = getOffset(el);
+
+        let maxSize = Math.ceil(
+            Math.min(constrainOffset.width, constrainOffset.height)
+        );
+
+        let ratio =
+            (offset.top + offset.left) /
+            2 /
+            ((offsetOriginal.top + offsetOriginal.left) / 2);
+
+        console.log(ratio, f, maxSize);
+
+        let size = clamp(f * ratio, 0, maxSize);
+
+        el.style.fontSize = `${size}px`;
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
 }

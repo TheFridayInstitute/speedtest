@@ -192,7 +192,7 @@ export function setAttributes(el, attrs) {
             typeof value === "object"
         ) {
             for (var prop in value) {
-                el.style[prop] = value[prop];
+                el.style.setProperty(prop, value[prop]);
             }
         } else if (key === "html") {
             el.innerHTML = value;
@@ -213,39 +213,36 @@ export function fluidText(
     maximize = false,
     attributes = undefined
 ) {
-      constrainEl = constrainEl === undefined ? el.parentElement : constrainEl;
-      attributes = attributes === undefined ? ["font-size"] : attributes;
-      let offsetOriginal = getOffset(constrainEl);
-      let attributesObj = {};
+    constrainEl = !constrainEl ? el.parentElement : constrainEl;
+    attributes = !attributes ? ["font-size"] : attributes;
+    let offsetOriginal = getOffset(constrainEl);
+    let attributesObj = {};
 
-      attributes.map(function (value, index) {
-          attributesObj[value] = parseFloat(
-              getComputedVariable(value, el).split("px")[0]
-          );
-      });
+    attributes.map(function (value, index) {
+        attributesObj[value] = emToPixels(getComputedVariable(value, el));
+    });
 
-      // let fontSize = parseFloat(
-      //     getComputedVariable("font-size", el).split("px")[0]
-      // );
+    let _resize = function () {
+        let offset = getOffset(constrainEl);
+        let maxSize = Math.ceil(Math.min(offset.width, offset.height));
 
-      let _resize = function () {
-          let offset = getOffset(constrainEl);
-          let maxSize = Math.ceil(Math.min(offset.width, offset.height));
+        let ratio =
+            Math.min(offset.height, offset.width) /
+            Math.min(offsetOriginal.height, offsetOriginal.width);
 
-          let ratio =
-              Math.min(offset.height, offset.width) /
-              Math.min(offsetOriginal.height, offsetOriginal.width);
-          let mappedAttributes = objectMap(
-              attributesObj,
-              (attr) => attr * ratio
-          );
+        console.log(constrainEl.clientWidth, constrainEl.clientHeight);
 
-          setAttributes(el, { styles: mappedAttributes });
-      };
+        let mappedAttributes = objectMap(attributesObj, function (attr) {
+            let size = maximize ? maxSize : clamp(attr * ratio, 0, maxSize);
+            return `${size}px`;
+        });
 
-      let resize = debounce(_resize, 100);
+        setAttributes(el, { styles: mappedAttributes });
+    };
 
-      resize();
-      window.addEventListener("resize", resize);
-      window.addEventListener("orientationchange", resize);
-  }
+    let resize = debounce(_resize, 10);
+
+    resize();
+    window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
+}

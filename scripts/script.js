@@ -633,11 +633,15 @@ async function onload() {
         }
     );
 
-   
+    // document.querySelectorAll(".unit-container").forEach((el) => {
+    //     fluidText(el, null, true, ["font-size"]);
+    // });
 
     fluidText(
         document.getElementById("test-amount"),
-        document.getElementById("test-amount-container").parentElement
+        document.getElementById("test-amount").parentElement.parentElement,
+        true,
+        ["font-size"]
     );
 }
 

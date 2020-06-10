@@ -149,8 +149,6 @@ var speedTestStateMapping = {
     6: "aborted",
 };
 
-fluidText(document.getElementById("test-amount-container"));
-
 /**
  * test state object mapping:
  * -1: not started;
@@ -633,6 +631,10 @@ async function onload() {
                 "border-bottom-right-radius": borderRadiusPrimary,
             },
         }
+    );
+    fluidText(
+        document.getElementById("test-amount"),
+        document.getElementById("test-amount-container").parentElement
     );
 }
 

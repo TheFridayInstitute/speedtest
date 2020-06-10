@@ -1,4 +1,5 @@
 import { clamp } from "./math.js";
+import { debounce } from "./animation.js";
 
 if (!String.prototype.splice) {
     String.prototype.splice = function (start, delCount, newSubStr) {
@@ -201,31 +202,31 @@ export function setAttributes(el, attrs) {
     }
 }
 
-export function fluidText(el, constrainEl = undefined) {
-    let offsetOriginal = getOffset(el);
+export function fluidText(el, constrainEl = undefined, maximize = false) {
     constrainEl = constrainEl === undefined ? el.parentElement : constrainEl;
+    let offsetOriginal = getOffset(constrainEl);
+    let fontSize = parseFloat(
+        getComputedVariable("font-size", el).split("px")[0]
+    );
 
-    let f = parseFloat(getComputedVariable("font-size", el).split("px")[0]);
+    let _resize = function () {
+        let offset = getOffset(constrainEl);
+        let maxSize = Math.ceil(Math.min(offset.width, offset.height));
+        let size = 0;
 
-    let resize = function () {
-        let constrainOffset = getOffset(constrainEl);
-        let offset = getOffset(el);
-
-        let maxSize = Math.ceil(
-            Math.min(constrainOffset.width, constrainOffset.height)
-        );
-
-        let ratio =
-            (offset.top + offset.left) /
-            2 /
-            ((offsetOriginal.top + offsetOriginal.left) / 2);
-
-        console.log(ratio, f, maxSize);
-
-        let size = clamp(f * ratio, 0, maxSize);
+        if (maximize) {
+            size = maxSize;
+        } else {
+            let ratio =
+                Math.min(offset.height, offset.width) /
+                Math.min(offsetOriginal.height, offsetOriginal.width);
+            size = clamp(fontSize * ratio, 0, maxSize);
+        }
 
         el.style.fontSize = `${size}px`;
     };
+
+    let resize = debounce(_resize, 100);
 
     resize();
     window.addEventListener("resize", resize);

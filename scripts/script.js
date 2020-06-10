@@ -632,6 +632,9 @@ async function onload() {
             },
         }
     );
+
+   
+
     fluidText(
         document.getElementById("test-amount"),
         document.getElementById("test-amount-container").parentElement

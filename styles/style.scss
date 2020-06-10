@@ -232,8 +232,8 @@ main {
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
     --padding: 0.5rem;
-    display: flex;
 
+    display: flex;
     position: relative;
     text-align: center;
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
@@ -243,7 +243,6 @@ main {
     }
 
     .amount {
-        align-self: start;
         font-size: var(--font-size-lg);
     }
 

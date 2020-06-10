@@ -134,7 +134,7 @@
   --dl-color-2: #f71e6a;
   --ul-color-1: #ff8000;
   --ul-color-2: #ff0000;
-  --meter-background-color: rgba(0, 0, 0, 0.25);
+  --meter-background-color: rgb(0, 0, 0, 0.25);
   --meter-width: 32rem;
   --meter-height: 64rem;
   --meter-padding: 10rem;
@@ -143,6 +143,10 @@
   --ncsu-red: #c00;
   --ncsu-red-dark: rgb(173, 0, 0);
   --border-radius-primary: 0.5rem;
+}
+
+.ul-color {
+  color: var(--ul-color-1);
 }
 
 html {
@@ -167,7 +171,7 @@ body {
       -ms-flex-pack: center;
           justify-content: center;
   margin: 0;
-  padding: 1.5rem;
+  padding: 0;
   width: 100%;
 }
 
@@ -175,6 +179,7 @@ main {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   color: var(--font-color-primary);
+  padding: 5vh 5vw;
   display: -ms-grid;
   display: grid;
   font-family: var(--font-family-primary);
@@ -222,13 +227,30 @@ main .start-btn-container button {
   -ms-grid-row: 1;
   -ms-grid-column: 1;
   grid-area: test;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  background: var(--background-color-secondary);
 }
 
 .pane-info {
+  padding: 1rem;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 100%;
+  width: 100%;
 }
 
 .pane-info h1,
@@ -237,7 +259,8 @@ main .start-btn-container button {
 }
 
 .pane-info .icon-lg {
-  font-size: 10rem;
+  color: var(--color-secondary);
+  font-size: 5rem;
 }
 
 .pane-hidden {
@@ -257,7 +280,6 @@ main .start-btn-container button {
           flex-direction: column;
   position: relative;
   width: 100%;
-  background: var(--background-color-secondary);
 }
 
 .test-container .info {

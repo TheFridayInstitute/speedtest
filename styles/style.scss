@@ -36,7 +36,7 @@ $ALPHA_0: $PI * 0.8;
     --ul-color-1: #ff8000;
     --ul-color-2: #ff0000;
 
-    --meter-background-color: rgba(0, 0, 0, 0.25);
+    --meter-background-color: rgb(0, 0, 0, 0.25);
 
     --meter-width: #{$meter-width};
     --meter-height: #{$meter-height};
@@ -49,6 +49,10 @@ $ALPHA_0: $PI * 0.8;
     --border-radius-primary: 0.5rem;
 }
 
+.ul-color {
+    color: var(--ul-color-1);
+}
+
 html {
     box-sizing: border-box;
     height: 100%;
@@ -57,22 +61,21 @@ html {
 
 body {
     align-items: center;
-
     background: var(--background-color-primary);
     box-sizing: border-box;
     display: flex;
     height: 100%;
     justify-content: center;
     margin: 0;
-    padding: 1.5rem;
+    padding: 0;
     width: 100%;
 }
 
 main {
     // background: var(--background-color-primary);
-    
     box-sizing: border-box;
     color: var(--font-color-primary);
+    padding: 5vh 5vw;
 
     display: grid;
     font-family: var(--font-family-primary);
@@ -92,7 +95,6 @@ main {
 
     .test-container {
         grid-area: test;
-        
     }
 
     .test-info-progress-container {
@@ -113,20 +115,32 @@ main {
 
 .pane-container {
     border-radius: var(--border-radius-primary);
-    
     grid-area: test;
+    box-sizing: border-box;
+    background: var(--background-color-secondary);
 }
 
 .pane-info {
+    padding: 1rem;
+    box-sizing: border-box;
     display: flex;
-    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+
+    p {
+    }
+
     h1,
     h2 {
         color: var(--ul-color-1);
     }
 
     .icon-lg {
-        font-size: 10rem;
+        color: var(--color-secondary);
+        font-size: 5rem;
     }
 }
 
@@ -141,7 +155,6 @@ main {
     flex-direction: column;
     position: relative;
     width: 100%;
-    background: var(--background-color-secondary);
 
     .info {
         $y: (1 - sin($ALPHA_0))/2 - 0.05;

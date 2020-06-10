@@ -165,6 +165,7 @@ var speedTestStateMapping = {
 
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
+// TODO: Ludicrously convoluted. Make this a proper state machine...
 function updateTestState(speedtestState, testStateObj) {
     let testKind = speedTestStateMapping[speedtestState];
     let prevState = testStateObj["prev_state"];
@@ -696,7 +697,6 @@ async function onend() {
             eventObj.origin
         );
     }
-    $.post("backend/record.php", speedtestData);
 }
 
 window.onload = function () {

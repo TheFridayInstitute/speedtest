@@ -168,8 +168,7 @@ body {
       -ms-flex-pack: center;
           justify-content: center;
   margin: 0;
-  padding: 0;
-  padding: 0.5rem;
+  padding: 2rem;
   width: 100%;
 }
 
@@ -292,7 +291,6 @@ main .start-btn-container button {
 }
 
 .test-container .info .unit-container {
-  --font-size-lg: 3rem;
   grid-area: unit;
 }
 
@@ -383,7 +381,7 @@ main .start-btn-container button {
 }
 
 .unit-container {
-  --font-size-lg: 3rem;
+  --font-size-lg: 3em;
   --font-size-sm: calc(var(--font-size-lg) / 4);
   --height: calc(var(--font-size-lg) + var(--font-size-sm));
   --padding: 0.5rem;
@@ -394,6 +392,9 @@ main .start-btn-container button {
   text-align: center;
   -webkit-transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
   transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: var(--padding) 0;
 }
 
 .unit-container.in-progress {
@@ -422,20 +423,7 @@ main .start-btn-container button {
     -ms-grid-rows: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
     max-width: 64rem;
-  }
-  main .start-btn-container {
-    -ms-flex-item-align: center;
-        -ms-grid-row-align: center;
-        align-self: center;
-  }
-  main .test-container {
-    -ms-flex-item-align: center;
-        -ms-grid-row-align: center;
-        align-self: center;
-  }
-  main .test-info-progress-container {
-    -ms-flex-item-align: end;
-        align-self: flex-end;
+    max-height: 32rem;
   }
   .test-info-progress-container .test-info-container {
     padding: 1rem;

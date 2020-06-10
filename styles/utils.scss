@@ -1,3 +1,54 @@
+$PI: 3.14159265358929;
+
+@function ipow($n, $exp) {
+    $value: 1;
+    @if $exp > 0 {
+        @for $i from 1 through $exp {
+            $value: $value * $n;
+        }
+    } @else if $exp < 0 {
+        @for $i from 1 through -$exp {
+            $value: $value / $n;
+        }
+    }
+    @return $value;
+}
+
+@function factorial($n) {
+    $value: 1;
+    @if $n > 0 {
+        @for $i from 1 through $n {
+            $value: $value * $i;
+        }
+    }
+    @return $value;
+}
+
+@function rad($theta) {
+    $unit: unit($theta);
+    $unitless: $theta / ($theta * 0 + 1);
+    @if $unit == deg {
+        $unitless: $unitless / 180 * $PI;
+    }
+    @return $unitless;
+}
+
+@function sin($theta) {
+    $sin: 0;
+    $theta: rad($theta);
+    @for $i from 0 through 10 {
+        $sin: $sin +
+            ipow(-1, $i) *
+            ipow($theta, (2 * $i + 1)) /
+            factorial(2 * $i + 1);
+    }
+    @return $sin;
+}
+
+@function cos($theta) {
+    @return sin($PI/2 - $theta);
+}
+
 @mixin attr-x(
     $attr,
     $attr-count: 10,

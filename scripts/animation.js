@@ -366,3 +366,24 @@ export function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
     };
     smoothAnimate(to, from, duration, transformFunc, smoothStep3);
 }
+
+export async function slideRightWrap(el, to, from, duration, func) {
+    let width = window.innerWidth;
+
+    slideRight(el, width, from, duration);
+
+    await sleep(duration);
+
+    el.classList.add("pane-hidden");
+
+    let time = 333;
+
+    await sleep(time);
+    func();
+    slideLeft(el, -width, width, 10);
+
+    await sleep(time);
+
+    el.classList.remove("pane-hidden");
+    slideRight(el, to, from - width * 1.1, duration);
+}

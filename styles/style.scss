@@ -1,9 +1,10 @@
 @use "sass:math";
+@import "utils.scss";
 
 $meter-width: 32rem;
 $meter-height: 64rem;
-$meter-padding: 10em;
-$meter-outer-radius: 30em;
+$meter-padding: 10rem;
+$meter-outer-radius: 30rem;
 $max-height-multiplier: 2;
 
 $screen-size-ss: 256px;
@@ -45,33 +46,32 @@ $ALPHA_0: $PI * 0.8;
     --ncsu-font: "UniversCondensed";
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
-    --border-radius-primary: 0.5em;
+    --border-radius-primary: 0.5rem;
 }
 
 html {
+    box-sizing: border-box;
     height: 100%;
     width: 100%;
-    box-sizing: border-box;
-    
 }
 
 body {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
+    align-items: center;
 
     background: var(--background-color-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.5em;
     box-sizing: border-box;
-    
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    padding: 0.5rem;
+    width: 100%;
 }
 
 main {
     background: var(--background-color-primary);
+    box-sizing: border-box;
     color: var(--font-color-primary);
 
     display: grid;
@@ -83,13 +83,12 @@ main {
         "button";
 
     grid-template-rows: 1fr 1fr 1fr;
+    height: 100%;
+    max-height: $meter-height;
 
     max-width: $meter-width;
-    max-height: $meter-height;
     row-gap: $row-gap;
-    height: 100%;
     width: 100%;
-    box-sizing: border-box;
 
     .test-container {
         grid-area: test;
@@ -100,13 +99,13 @@ main {
     }
 
     .start-btn-container {
-        grid-area: button;
         display: flex;
+        grid-area: button;
         justify-content: center;
 
         button {
-            width: 75%;
             height: 3rem;
+            width: 75%;
         }
     }
 }
@@ -117,8 +116,8 @@ main {
 }
 
 .pane-info {
-    text-align: center;
     display: flex;
+    text-align: center;
     h1,
     h2 {
         color: var(--ul-color-1);
@@ -135,45 +134,48 @@ main {
 }
 
 .test-container {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
     position: relative;
+    width: 100%;
 
     .info {
-        box-sizing: border-box;
-
-        background-color: var(--background-color-primary-dark);
-        border-top-left-radius: 1em;
-        border-top-right-radius: 1em;
+        $y: (1 - sin($ALPHA_0))/2 - 0.05;
 
         align-items: center;
-        display: grid;
-        grid-template-areas: "unit kind";
-        justify-items: center;
-        grid-template-columns: 1fr 1fr;
 
-        width: 75%;
-        position: absolute;
+        background-color: var(--background-color-primary-dark);
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
         bottom: 0;
-        margin: 0 auto;
+        box-sizing: border-box;
+        display: grid;
+        grid-template-areas: "unit";
+        grid-template-columns: 1fr;
+        height: calc(100% *#{$y});
+
+        justify-items: center;
         left: 0;
+        margin: 0 auto;
+        position: absolute;
         right: 0;
 
-        $y: (1 - sin($ALPHA_0))/2 - 0.05;
-        max-height: calc(100% *#{$y});
+        width: 75%;
+        // overflow: hidden;
 
         .test-kind {
+            display: none;
             grid-area: kind;
         }
 
         .unit-container {
-            --font-size-lg: 3rem;
+            --font-size-lg: 3em;
             grid-area: unit;
             .unit {
+                bottom: var(--font-size-sm);
                 left: 100%;
                 right: 0;
-                bottom: var(--font-size-sm);
             }
         }
     }
@@ -181,6 +183,11 @@ main {
     .square-box {
         grid-area: test;
         z-index: 1;
+
+        canvas {
+            box-sizing: border-box;
+            padding: 0.5rem;
+        }
     }
 }
 
@@ -190,9 +197,9 @@ main {
 }
 
 .test-info-container {
-    justify-content: space-evenly;
     display: flex;
     flex-direction: row;
+    justify-content: space-evenly;
     padding: 1em 0;
 
     .info {
@@ -203,35 +210,35 @@ main {
         text-align: center;
 
         .test-kind {
-            font-size: 0.875em; // 3.5/4 = 0.875
+            font-size: 0.875rem; // 3.5/4 = 0.875
         }
     }
 }
 
 .progress-bar-container {
+    box-sizing: border-box;
     display: flex;
     flex-direction: row;
-    height: 1em;
-    margin: 0.5em;
-    padding: 0.25em;
+    height: 1rem;
+    padding: 0.5rem;
     position: relative;
     width: 100%;
 
     .progress-bar {
         border-radius: 0;
-        height: 1em;
+        height: 1rem;
         width: 0;
     }
 }
 
 .unit-container {
-    --font-size-lg: 3.5rem;
+    --font-size-lg: 3rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
     --padding: 0.5rem;
+    display: flex;
 
     position: relative;
-    display: flex;
     text-align: center;
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
@@ -245,47 +252,47 @@ main {
     }
 
     .unit {
-        position: absolute;
+        bottom: calc(-1 * var(--padding));
         font-size: var(--font-size-sm);
         left: 0;
+        position: absolute;
         right: 0;
-        bottom: calc(-1 * var(--padding));
     }
 }
 
-// @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
-//     main {
-//         column-gap: 1em;
-//         grid-template-areas:
-//             "test info"
-//             "test button";
-//         grid-template-columns: repeat(2, 1fr);
-//         grid-template-rows: auto;
+@media all and (orientation: landscape) and (max-height: $screen-size-lg) {
+    main {
+        column-gap: 1rem;
+        grid-template-areas:
+            "test info"
+            "test button";
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
 
-//         max-width: $meter-height;
+        max-width: $meter-height;
 
-//         .start-btn-container {
-//             align-self: flex-start;
-//         }
+        .start-btn-container {
+            align-self: flex-start;
+        }
 
-//         .test-container {
-//             align-self: center;
-//         }
+        .test-container {
+            align-self: center;
+        }
 
-//         .test-info-progress-container {
-//             align-self: center;
-//             margin-top: 2em;
-//             // align-self: flex-end;
-//         }
-//     }
+        .test-info-progress-container {
+            align-self: center;
+            margin-top: 2rem;
+            // align-self: flex-end;
+        }
+    }
 
-//     .test-info-progress-container {
-//         .test-info-container {
-//             flex-direction: column;
-//             .info {
-//                 flex-direction: row;
-//                 justify-content: space-between;
-//             }
-//         }
-//     }
-// }
+    .test-info-progress-container {
+        .test-info-container {
+            flex-direction: column;
+            .info {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+    }
+}

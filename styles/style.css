@@ -401,9 +401,6 @@ main .start-btn-container button {
 }
 
 .unit-container .amount {
-  -ms-flex-item-align: start;
-      -ms-grid-row-align: start;
-      align-self: start;
   font-size: var(--font-size-lg);
 }
 

@@ -202,33 +202,50 @@ export function setAttributes(el, attrs) {
     }
 }
 
-export function fluidText(el, constrainEl = undefined, maximize = false) {
-    constrainEl = constrainEl === undefined ? el.parentElement : constrainEl;
-    let offsetOriginal = getOffset(constrainEl);
-    let fontSize = parseFloat(
-        getComputedVariable("font-size", el).split("px")[0]
+const objectMap = (obj, fn) =>
+    Object.fromEntries(
+        Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)])
     );
 
-    let _resize = function () {
-        let offset = getOffset(constrainEl);
-        let maxSize = Math.ceil(Math.min(offset.width, offset.height));
-        let size = 0;
+export function fluidText(
+    el,
+    constrainEl = undefined,
+    maximize = false,
+    attributes = undefined
+) {
+      constrainEl = constrainEl === undefined ? el.parentElement : constrainEl;
+      attributes = attributes === undefined ? ["font-size"] : attributes;
+      let offsetOriginal = getOffset(constrainEl);
+      let attributesObj = {};
 
-        if (maximize) {
-            size = maxSize;
-        } else {
-            let ratio =
-                Math.min(offset.height, offset.width) /
-                Math.min(offsetOriginal.height, offsetOriginal.width);
-            size = clamp(fontSize * ratio, 0, maxSize);
-        }
+      attributes.map(function (value, index) {
+          attributesObj[value] = parseFloat(
+              getComputedVariable(value, el).split("px")[0]
+          );
+      });
 
-        el.style.fontSize = `${size}px`;
-    };
+      // let fontSize = parseFloat(
+      //     getComputedVariable("font-size", el).split("px")[0]
+      // );
 
-    let resize = debounce(_resize, 100);
+      let _resize = function () {
+          let offset = getOffset(constrainEl);
+          let maxSize = Math.ceil(Math.min(offset.width, offset.height));
 
-    resize();
-    window.addEventListener("resize", resize);
-    window.addEventListener("orientationchange", resize);
-}
+          let ratio =
+              Math.min(offset.height, offset.width) /
+              Math.min(offsetOriginal.height, offsetOriginal.width);
+          let mappedAttributes = objectMap(
+              attributesObj,
+              (attr) => attr * ratio
+          );
+
+          setAttributes(el, { styles: mappedAttributes });
+      };
+
+      let resize = debounce(_resize, 100);
+
+      resize();
+      window.addEventListener("resize", resize);
+      window.addEventListener("orientationchange", resize);
+  }

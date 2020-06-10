@@ -47,6 +47,7 @@ import {
     debounce,
     throttle,
     rippleButton,
+    slideRightWrap,
 } from "./animation.js";
 
 import {
@@ -573,27 +574,6 @@ let initFunc = function (t) {
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
-async function slideRightWrap(el, to, from, duration, func) {
-    let width = window.innerWidth;
-
-    slideRight(el, width, from, duration);
-
-    await sleep(duration);
-
-    el.classList.add("pane-hidden");
-
-    let time = 333;
-
-    await sleep(time);
-    func();
-    slideLeft(el, -width, width, 10);
-
-    await sleep(time);
-
-    el.classList.remove("pane-hidden");
-    slideRight(el, to, from - width * 1.1, duration);
-}
-
 async function onload() {
     // // Speed test object init.
     speedtestObj = new Speedtest();
@@ -606,15 +586,15 @@ async function onload() {
     let completeModal = document.getElementById("complete-modal");
     let buttonEl = document.getElementById("start-btn");
 
-    // // slideRightWrap(buttonEl, 0, 0, 1000, function () {
-    // //     document.querySelector("#start-btn .text").innerHTML = "Next →";
-    // // });
+    // slideRightWrap(buttonEl, 0, 0, 1000, function () {
+    //     document.querySelector("#start-btn .text").innerHTML = "Next →";
+    // });
 
-    // let width = window.innerWidth;
-    // testEl.style.transform = `translateX(${width}px)`;
-    // completeModal.style.transform = `translateX(${-width}px)`;
+    let width = window.innerWidth;
+    testEl.style.transform = `translateX(${width}px)`;
+    completeModal.style.transform = `translateX(${-width}px)`;
 
-    // // Creation of progress bar.
+    // Creation of progress bar.
     progressBarEl = document.getElementById("progress-bar");
     createProgessBar(
         progressBarEl,

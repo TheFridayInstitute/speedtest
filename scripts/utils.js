@@ -230,7 +230,7 @@ export function fluidText(
             Math.min(offset.height, offset.width) /
             Math.min(offsetOriginal.height, offsetOriginal.width);
 
-        console.log(constrainEl.clientWidth, constrainEl.clientHeight);
+        console.log(offset, maxSize);
 
         let mappedAttributes = objectMap(attributesObj, function (attr) {
             let size = maximize ? maxSize : clamp(attr * ratio, 0, maxSize);

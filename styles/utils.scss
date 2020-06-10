@@ -84,7 +84,7 @@
 
 .box-shadow {
     border-radius: var(--border-radius-primary);
-    box-shadow: 5px 0px 20px 0px rgba(0, 0, 0, 0.5);
+    box-shadow: 5px 0px 20px 0px rgba(0, 0, 0, 0.2);
 }
 
 .justify-content-space-evenly {
@@ -111,13 +111,13 @@
 .start-btn {
     border: none;
     align-items: center;
-    // background-color: var(--color-secondary);
+    background-color: var(--color-secondary);
 
-    background-image: linear-gradient(
-        to right,
-        var(--ul-color-1),
-        var(--dl-color-1)
-    );
+    // background-image: linear-gradient(
+    //     to right,
+    //     var(--ul-color-1),
+    //     var(--dl-color-1)
+    // );
     border-radius: var(--border-radius-primary);
     color: black;
     cursor: pointer;

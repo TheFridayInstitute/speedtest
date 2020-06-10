@@ -14,7 +14,7 @@ $screen-size-md: 768px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
-$row-gap: 2%;
+$row-gap: 1rem;
 
 $PI: 3.14159265358929;
 $ALPHA_0: $PI * 0.8;
@@ -22,7 +22,7 @@ $ALPHA_0: $PI * 0.8;
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
     --background-color-primary-dark: rgb(37, 37, 37);
-    --background-color-secondary: rgb(51, 51, 51);
+    --background-color-secondary: rgb(66, 66, 66);
     --font-color-primary: #fff;
 
     --color-primary: #fff;
@@ -64,12 +64,13 @@ body {
     height: 100%;
     justify-content: center;
     margin: 0;
-    padding: 2rem;
+    padding: 1.5rem;
     width: 100%;
 }
 
 main {
-    background: var(--background-color-primary);
+    // background: var(--background-color-primary);
+    
     box-sizing: border-box;
     color: var(--font-color-primary);
 
@@ -91,6 +92,7 @@ main {
 
     .test-container {
         grid-area: test;
+        
     }
 
     .test-info-progress-container {
@@ -111,6 +113,7 @@ main {
 
 .pane-container {
     border-radius: var(--border-radius-primary);
+    
     grid-area: test;
 }
 
@@ -138,6 +141,7 @@ main {
     flex-direction: column;
     position: relative;
     width: 100%;
+    background: var(--background-color-secondary);
 
     .info {
         $y: (1 - sin($ALPHA_0))/2 - 0.05;
@@ -195,6 +199,7 @@ main {
     flex-direction: row;
     justify-content: space-evenly;
     padding: 1em 0;
+    background: var(--background-color-secondary);
 
     .info {
         align-items: center;
@@ -239,7 +244,7 @@ main {
     margin: var(--padding) 0;
 
     &.in-progress {
-        color: rgba(255, 255, 255, 0.25);
+        color: rgba(255, 255, 255, 0.11);
     }
 
     .amount {

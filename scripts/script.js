@@ -618,7 +618,7 @@ async function onload() {
     progressBarEl = document.getElementById("progress-bar");
     createProgessBar(
         progressBarEl,
-        [ulColorGradient],
+        ["white", dlColorGradient, ulColorGradient],
         {
             styles: {
                 "border-top-left-radius": borderRadiusPrimary,

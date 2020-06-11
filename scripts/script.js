@@ -103,6 +103,7 @@ var borderRadiusPrimary = getComputedVariable("--border-radius-primary");
 
 var backgroundColor = getComputedVariable("--meter-background-color");
 var progressBarColor = "#fff";
+var progressBarGradient = getComputedVariable("--progress-bar-gradient");
 var dlColor1 = getComputedVariable("--dl-color-1");
 var dlColor2 = getComputedVariable("--dl-color-2");
 var ulColor1 = getComputedVariable("--ul-color-1");
@@ -576,7 +577,7 @@ let initFunc = function (t) {
 };
 
 async function onload() {
-    // // Speed test object init.
+    // Speed test object init.
     speedtestObj = new Speedtest();
     speedtestObj.setParameter("getIp_ispInfo", false);
     speedtestObj.setParameter("getIp_ispInfo_distance", false);
@@ -599,7 +600,7 @@ async function onload() {
     progressBarEl = document.getElementById("progress-bar");
     createProgessBar(
         progressBarEl,
-        ["white", dlColorGradient, ulColorGradient],
+        [progressBarGradient],
         {
             styles: {
                 "border-top-left-radius": borderRadiusPrimary,

@@ -135,6 +135,11 @@
   --ul-color-1: #ff8000;
   --ul-color-2: #ff0000;
   --meter-background-color: rgb(0, 0, 0, 0.25);
+  --progress-bar-gradient: linear-gradient(
+        to right,
+        var(--dl-color-1),
+        var(--ul-color-1)
+    );
   --meter-width: 32rem;
   --meter-height: 64rem;
   --meter-padding: 10rem;

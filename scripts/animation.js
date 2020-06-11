@@ -12,7 +12,6 @@ import { getOffset } from "./utils.js";
 
 import { setAttributes } from "./utils.js";
 
-// Potentially change this back to 1000/60
 export class Clock {
     constructor(autoStart = true, timeStep = 1000 / 60, timeOut = 120) {
         this.autoStart = autoStart;
@@ -49,7 +48,7 @@ export class Clock {
     }
 }
 
-export function sleep(ms) {
+export async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 

@@ -62,15 +62,6 @@ import {
 
 import { Color } from "./colors.js";
 
-window.requestAnimationFrame =
-    window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function (callback, element) {
-        setTimeout(callback, 1000 / 60);
-    };
-
 var eventObj = null;
 var speedtestObj = null;
 var uiData = null;
@@ -91,9 +82,6 @@ const METER_MAX = 100;
 
 // Keep this constant.
 var lineWidth = 32;
-
-const shadowColor = "rgba(0, 0, 0, 0.5)";
-const shadowBlur = 0;
 
 var outerRadius;
 var innerRadius;
@@ -274,6 +262,16 @@ function startStop() {
     return uiData;
 }
 
+function hysteresis(t, prevT, eps = 0.01) {
+    if (t - prevT > eps) {
+        t = prevT + eps;
+    } else if (t - prevT < -eps) {
+        t = prevT - eps;
+    }
+    prevT = t;
+    return [t, prevT];
+}
+
 function drawMeterLoop(
     status,
     meterTextEl,
@@ -298,14 +296,7 @@ function drawMeterLoop(
         METER_MIN,
         METER_MAX
     );
-
-    if (t - prevT > eps) {
-        t = prevT + eps;
-    } else if (t - prevT < -eps) {
-        t = prevT - eps;
-    }
-    prevT = t;
-
+    [t, prevT] = hysteresis(t, prevT, eps);
     let theta = lerp(t, ALPHA_0, ALPHA_1);
 
     outerMeter.draw(canvasObj, 1);
@@ -504,6 +495,8 @@ let initFunc = function (t) {
     ];
 
     meterDial = new Polygon(meterPoints, null, null, "white");
+    // Centering the meter meterDial and laying it flat.
+    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
 
     outerMeter = roundedArc(
         0,
@@ -514,9 +507,6 @@ let initFunc = function (t) {
         backgroundColor,
         lineWidth
     );
-    outerMeter.map((shape, index) => {
-        shape.shadowColor = shadowColor;
-    });
 
     innerMeter = roundedArc(
         0,
@@ -527,9 +517,6 @@ let initFunc = function (t) {
         backgroundColor,
         lineWidth
     );
-    innerMeter.map((shape, index) => {
-        shape.shadowColor = shadowColor;
-    });
 
     meterDot = new Arc(
         0,
@@ -545,9 +532,6 @@ let initFunc = function (t) {
     let barWidth = outerRadius;
     let barHeight = lineWidth / 4;
 
-    // Centering the meter meterDial and laying it flat.
-    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
-
     let progressBar = roundedRectangle(
         0,
         0,
@@ -562,12 +546,10 @@ let initFunc = function (t) {
         barHeight,
         backgroundColor
     );
-
     progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(
         0,
         outerRadius / 1.5 - barHeight / 2
     );
-
     progressBarMesh.draw = function (ctx, t) {
         this.shapes[0].draw(ctx, 1);
         this.shapes[1].draw(ctx, t);
@@ -587,10 +569,6 @@ async function onload() {
     let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
     let buttonEl = document.getElementById("start-btn");
-
-    // slideRightWrap(buttonEl, 0, 0, 1000, function () {
-    //     document.querySelector("#start-btn .text").innerHTML = "Next →";
-    // });
 
     let width = window.innerWidth;
     testEl.style.transform = `translateX(${width}px)`;
@@ -647,7 +625,6 @@ async function onstart() {
         startModal.classList.add("pane-hidden");
         openingAnimation(duration, smoothStep3);
     });
-    document.getElementById("test-kind").innerHTML = dlText;
     uiData = startStop();
 }
 

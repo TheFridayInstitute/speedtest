@@ -193,7 +193,7 @@ function drawMeter(
         METER_MIN,
         METER_MAX
     );
-    [t, prevT] = hysteresis(t, prevT, eps);
+    // [t, prevT] = hysteresis(t, prevT, eps);
     let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
     outerMeter.draw(canvasObj, 1);

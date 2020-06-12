@@ -154,6 +154,13 @@
   color: var(--ul-color-1);
 }
 
+.dl-color {
+  background: -webkit-gradient(linear, left top, right top, from(var(--dl-color-1)), to(var(--dl-color-2)));
+  background: linear-gradient(to right, var(--dl-color-1), var(--dl-color-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 html {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
@@ -257,6 +264,10 @@ main .start-btn-container button {
           align-items: center;
   height: 100%;
   width: 100%;
+}
+
+.pane-info p {
+  font-size: 1rem;
 }
 
 .pane-info h1,
@@ -412,7 +423,7 @@ main .start-btn-container button {
   --font-size-lg: 3em;
   --font-size-sm: calc(var(--font-size-lg) / 4);
   --height: calc(var(--font-size-lg) + var(--font-size-sm));
-  --padding: 0.5rem;
+  --padding: 1em;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;

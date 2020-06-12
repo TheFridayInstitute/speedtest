@@ -3,11 +3,7 @@ import {
     Arc,
     Mesh,
     generateGradientWrapper,
-    Rectangle,
     Canvas,
-    Text,
-    generateRadialGradient,
-    generateGradient,
     roundedArc,
     setRoundedArcColor,
     roundedRectangle,
@@ -16,23 +12,10 @@ import {
 import {
     clamp,
     lerp,
-    round,
     smoothStep3,
-    easeInBounce,
-    bounceInEase,
-    easeOutQuad,
     normalize,
-    easeInOutQuad,
     easeInOutCubic,
-    cubicBezier,
-    DeCasteljau,
-    easeInCubic,
     slerpPoints,
-    dot,
-    distance,
-    rotate,
-    range,
-    lerpIn,
 } from "./math.js";
 
 import {
@@ -41,29 +24,21 @@ import {
     slideRight,
     sleep,
     slideLeft,
-    smoothRotate,
     createProgressBar,
     animateProgressBar,
     animateProgressBarWrapper,
-    debounce,
-    throttle,
     rippleButton,
     slideRightWrap,
 } from "./animation.js";
 
 import {
-    emToPixels,
     getOffset,
     toggleOnce,
-    toggle,
     getComputedVariable,
-    setAttributes,
     fluidText,
-    FSM,
 } from "./utils.js";
 
 import { Color } from "./colors.js";
-import { null } from "mathjs";
 
 // Global speedtest and event state variables.
 var eventObj;
@@ -138,7 +113,7 @@ function receiveMessage(event) {
     console.log(`Received event of ${event}`);
 }
 
-const SPEEDTEST_STATES = Objects.freeze({
+const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
     1: "started",
     2: "download",
@@ -164,7 +139,7 @@ function updateTestState(speedtestState, testStateObj) {
     let prevKey = SPEEDTEST_STATES[prevState];
 
     if (testKind === "aborted") {
-        for (let [key, value] of Object.entries(testStateObj)) {
+        for (let [key] of Object.entries(testStateObj)) {
             testStateObj[key] = -1;
         }
     } else {
@@ -188,28 +163,6 @@ function updateTestState(speedtestState, testStateObj) {
         testStateObj["prev_state"] = speedtestState;
     }
     return testStateObj;
-}
-
-/**
- * test state object mapping:
- * 0: not started;
- * 1: active;
- * 2: finished;
- */
-
-function startSpeedtest() {
-    // State 3 of the speedtest object == currently running the test.
-    if (speedtestObj.getState() === 3) {
-        speedtestObj.abort();
-        data = null;
-        document.getElementById("start-btn").classList.remove("running");
-        document.querySelector("#start-btn .text").innerHTML = "Start";
-        return null;
-    } else {
-        document.getElementById("start-btn").classList.add("running");
-        document.querySelector("#start-btn .text").innerHTML = "Stop";
-        speedtestObj.start();
-    }
 }
 
 var prevT = 0;
@@ -319,11 +272,11 @@ let closingAnimation = function (duration, timingFunc) {
     );
 };
 
-let updateFunc = function (t) {
+let updateFunc = function () {
     return false;
 };
 
-let drawFunc = function (t) {
+let drawFunc = function () {
     if (speedtestObj.getState() != 3 || speedtestData === null) {
         return false;
     }
@@ -393,12 +346,10 @@ let drawFunc = function (t) {
             0,
             999
         );
-
-        onend();
     }
 };
 
-let initFunc = function (t) {
+let initFunc = function () {
     let canvas = document.getElementById("test-meter");
     let ctx = canvas.getContext("2d");
 
@@ -530,6 +481,8 @@ let speedtestOnEnd = function (aborted) {
             parseFloat(progressBarEl.getAttribute("percent-complete")),
             1000
         );
+    } else {
+        onend();
     }
 };
 
@@ -544,9 +497,7 @@ async function onload() {
 
     // Intro sliding animation.
     let testEl = document.getElementById("test-container");
-    let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
-    let buttonEl = document.getElementById("start-btn");
 
     let width = window.innerWidth;
     testEl.style.transform = `translateX(${width}px)`;

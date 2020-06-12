@@ -59,11 +59,16 @@ $ALPHA_0: $PI * 0.8;
     color: var(--ul-color-1);
 }
 
+.dl-color {
+    background: linear-gradient(to right, var(--dl-color-1), var(--dl-color-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 html {
     box-sizing: border-box;
     height: 100%;
     width: 100%;
-    
 }
 
 body {
@@ -84,7 +89,6 @@ main {
     box-sizing: border-box;
     color: var(--font-color-primary);
     padding: 5vh 5vw;
-    // overflow-x: hidden;
 
     display: grid;
     font-family: var(--font-family-primary);
@@ -140,6 +144,7 @@ main {
     width: 100%;
 
     p {
+        font-size: 1rem;
     }
 
     h1,
@@ -256,7 +261,7 @@ main {
     --font-size-lg: 3em;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
-    --padding: 0.5rem;
+    --padding: 1em;
 
     display: flex;
     position: relative;

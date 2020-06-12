@@ -96,6 +96,7 @@ let makeGlowColor = function (value) {
     return [stop, newColor.colorString];
 };
 
+// TODO: This doesn't work. Fix it.
 function hysteresis(t, prevT, eps = 0.01) {
     if (t - prevT > eps) {
         t = prevT + eps;

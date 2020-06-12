@@ -237,7 +237,7 @@ export function fadeOut(el, duration) {
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }
 
-export function rotateElement(el, to, from, duration, rad = false) {
+export function smoothRotate(el, to, from, duration, rad = false) {
     to = to === undefined ? window.innerWidth : to;
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
@@ -260,7 +260,7 @@ export function rotateElement(el, to, from, duration, rad = false) {
     smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }
 
-export function createProgessBar(el, colors, leftAttrs, rightAttrs) {
+export function createProgressBar(el, colors, leftAttrs, rightAttrs) {
     let i = 0;
     for (let color of colors) {
         let shape = document.createElement("div");
@@ -303,7 +303,6 @@ export function animateProgressBar(el, to, from, duration, stops) {
                     } else {
                         v += s;
                     }
-
                     s -= step;
                 } else {
                     break;

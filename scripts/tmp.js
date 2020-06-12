@@ -1,3 +1,5 @@
+import { FSM } from "./utils.js";
+
 // document.querySelectorAll("iframe").forEach((value) => {
 //     value.removeAttribute("height");
 //     value.removeAttribute("width");
@@ -18,20 +20,4 @@
 // });
 // resizeIframes();
 
-
-
-let stateMapping = {
-    ping: 0,
-    download: 1,
-    upload: 2,
-};
-
-// let f = new FSM(Object.keys(stateMapping).length);
-
-// while (!f.isComplete()) {
-//     console.log(f.states);
-//     if (f.stateValue() == substates.init) {
-//         console.log(`Just started state ${f.currentState}`);
-//     }
-//     f.update();
-// }
+//-1=not started, 0=starting, 1=download test, 2=ping+jitter test, 3=upload test, 4=finished, 5=aborted

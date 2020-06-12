@@ -178,6 +178,7 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  overflow-x: hidden;
 }
 
 main {
@@ -467,5 +468,26 @@ main .start-btn-container button {
     -webkit-box-pack: justify;
         -ms-flex-pack: justify;
             justify-content: space-between;
+  }
+}
+
+@media all and (max-width: 768px) {
+  html,
+  body {
+    font-size: 0.95rem;
+  }
+}
+
+@media all and (max-width: 480px) {
+  html,
+  body {
+    font-size: 0.9rem;
+  }
+}
+
+@media all and (max-width: 320px) {
+  html,
+  body {
+    font-size: 0.85rem;
   }
 }

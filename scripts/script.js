@@ -9,6 +9,7 @@ import {
     generateRadialGradient,
     generateGradient,
     roundedArc,
+    setRoundedArcColor,
     roundedRectangle,
 } from "./canvas.js";
 
@@ -155,47 +156,37 @@ var speedTestStateMapping = {
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
 // TODO: Ludicrously convoluted. Make this a proper state machine...
-function updateTestState(speedtestState, testStateObj) {
-    let testKind = speedTestStateMapping[speedtestState];
-    let prevState = testStateObj["prev_state"];
-    let prevKey = speedTestStateMapping[prevState];
+// function updateTestState(speedtestState, testStateObj) {
+//     let testKind = speedTestStateMapping[speedtestState];
+//     let prevState = testStateObj["prev_state"];
+//     let prevKey = speedTestStateMapping[prevState];
 
-    if (testKind === "aborted") {
-        for (let [key, value] of Object.entries(testStateObj)) {
-            testStateObj[key] = -1;
-        }
-    } else {
-        for (let [key, value] of Object.entries(testStateObj)) {
-            let state = value + 1;
+//     if (testKind === "aborted") {
+//         for (let [key, value] of Object.entries(testStateObj)) {
+//             testStateObj[key] = -1;
+//         }
+//     } else {
+//         for (let [key, value] of Object.entries(testStateObj)) {
+//             let state = value + 1;
 
-            if (key === testKind) {
-                if (value < 1) {
-                    testStateObj[key] = state;
-                } else if (value === 2 && speedtestState !== prevState) {
-                    testStateObj[key] = 0;
-                }
-            } else if (
-                key === prevKey &&
-                value > 0 &&
-                speedtestState !== prevState
-            ) {
-                testStateObj[prevKey] = state;
-            }
-        }
-        testStateObj["prev_state"] = speedtestState;
-    }
-    return testStateObj;
-}
-
-function setRoundedArcColor(roundedArc, color) {
-    roundedArc.map((shape, index) => {
-        if (shape instanceof Arc) {
-            shape.color = color;
-        } else {
-            shape.fillColor = color;
-        }
-    });
-}
+//             if (key === testKind) {
+//                 if (value < 1) {
+//                     testStateObj[key] = state;
+//                 } else if (value === 2 && speedtestState !== prevState) {
+//                     testStateObj[key] = 0;
+//                 }
+//             } else if (
+//                 key === prevKey &&
+//                 value > 0 &&
+//                 speedtestState !== prevState
+//             ) {
+//                 testStateObj[prevKey] = state;
+//             }
+//         }
+//         testStateObj["prev_state"] = speedtestState;
+//     }
+//     return testStateObj;
+// }
 
 function startStop() {
     let data = null;
@@ -216,28 +207,6 @@ function startStop() {
         speedtestObj.onend = function (aborted) {
             document.getElementById("start-btn").classList.remove("running");
 
-            document.getElementById("test-kind").classList.remove("ul");
-            document.getElementById("test-kind").classList.remove("dl");
-
-            if (testStateObj["upload"] > -1) {
-                rotateElement(
-                    document.getElementById("test-kind"),
-                    0,
-                    parseFloat(
-                        document
-                            .getElementById("test-kind")
-                            .getAttribute("rotation")
-                    ),
-                    1000,
-                    false
-                );
-                setTimeout(function () {
-                    document.getElementById("test-kind").innerHTML = dotsText;
-                }, 1000);
-            } else {
-                document.getElementById("test-kind").innerHTML = dotsText;
-            }
-
             if (aborted) {
                 openingAnimation(1000, smoothStep3);
                 document
@@ -245,7 +214,6 @@ function startStop() {
                     .forEach((el) => {
                         el.classList.add("in-progress");
                     });
-
                 animateProgressBar(
                     progressBarEl,
                     0,
@@ -368,13 +336,14 @@ let updateFunc = function (t) {
 };
 
 let drawFunc = function (t) {
-    if (speedtestObj.getState() != 3 || uiData === null) {
-        return false;
-    }
+    // if (speedtestObj.getState() != 3 || uiData === null) {
+    //     return false;
+    // }
 
-    testStateObj = updateTestState(uiData.testState + 1, testStateObj);
+    // testStateObj = updateTestState(uiData.testState + 1, testStateObj);
 
-    if (testStateObj["ping"] === 2 && testStateObj["download"] === 0) {
+    // If ping complete
+    if (false) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
         document
             .getElementById("ping-amount")
@@ -387,7 +356,9 @@ let drawFunc = function (t) {
         );
         document.getElementById("test-kind").classList.add("dl");
     }
-    if (testStateObj["download"] === 1 || testStateObj["download"] === 0) {
+
+    // If download in progress.
+    if (false) {
         drawMeterLoop(
             uiData.testState,
             document.getElementById("test-amount"),
@@ -397,17 +368,11 @@ let drawFunc = function (t) {
             dlProgressGlowColor
         );
     }
-    if (testStateObj["upload"] === 0) {
+
+    // If download complete.
+    if (false) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
-        rotateElement(
-            document.getElementById("test-kind"),
-            180,
-            0,
-            1000,
-            false
-        );
-        document.getElementById("test-kind").classList.remove("dl");
-        document.getElementById("test-kind").classList.add("ul");
+
         document
             .getElementById("dl-amount")
             .parentElement.classList.remove("in-progress");
@@ -418,7 +383,9 @@ let drawFunc = function (t) {
             999
         );
     }
-    if (testStateObj["upload"] === 1 || testStateObj["upload"] === 0) {
+
+    // If upload in progress.
+    if (false) {
         drawMeterLoop(
             uiData.testState,
             document.getElementById("test-amount"),
@@ -428,7 +395,9 @@ let drawFunc = function (t) {
             ulProgressGlowColor
         );
     }
-    if (testStateObj["upload"] === 2) {
+
+    // If upload complete.
+    if (false) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
         document
             .getElementById("ul-amount")
@@ -439,7 +408,12 @@ let drawFunc = function (t) {
             0,
             999
         );
+
         onend();
+    }
+
+    // If test complete.
+    if (false) {
     }
 };
 

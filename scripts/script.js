@@ -41,9 +41,9 @@ import {
 import { Color } from "./colors.js";
 
 // Global speedtest and event state variables.
-var eventObj;
-var speedtestObj;
-var speedtestData;
+var eventObj = null;
+var speedtestObj = null;
+var speedtestData = null;
 
 // Global state variables for the canvas
 var canvasObj;
@@ -129,12 +129,14 @@ const SPEEDTEST_STATES = Object.freeze({
  * 0: started;
  * 1: active;
  * 2: finished;
+ * 3: manually set, drawing complete.
  */
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
 function updateTestState(speedtestState, testStateObj) {
     // + 1 because we start at 0, not -1 (unlike librespeed).
-    let testKind = SPEEDTEST_STATES[speedtestState + 1];
+    speedtestState += 1;
+    let testKind = SPEEDTEST_STATES[speedtestState];
     let prevState = testStateObj["prev_state"];
     let prevKey = SPEEDTEST_STATES[prevState];
 
@@ -281,7 +283,9 @@ let drawFunc = function () {
         return false;
     }
 
-    // If ping complete
+    updateTestState(speedtestData.testState, testStateObj);
+
+    // If ping complete.
     if (testStateObj["ping"] === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
         document
@@ -293,10 +297,11 @@ let drawFunc = function () {
             0,
             999
         );
+        testStateObj["ping"] = 3;
     }
 
     // If download in progress.
-    if (testStateObj["download"] === 0 || testStateObj["download"] === 1) {
+    if (testStateObj["download"] > -1) {
         drawMeter(
             speedtestData.testState,
             document.getElementById("test-amount"),
@@ -306,7 +311,6 @@ let drawFunc = function () {
             dlProgressGlowColor
         );
     }
-
     // If download complete.
     if (testStateObj["download"] === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
@@ -320,10 +324,11 @@ let drawFunc = function () {
             0,
             999
         );
+        testStateObj["download"] = 3;
     }
 
     // If upload in progress.
-    if (testStateObj["upload"] === 0 || testStateObj["upload"] === 1) {
+    if (testStateObj["upload"] > -1) {
         drawMeter(
             speedtestData.testState,
             document.getElementById("test-amount"),
@@ -333,7 +338,6 @@ let drawFunc = function () {
             ulProgressGlowColor
         );
     }
-
     // If upload complete.
     if (testStateObj["upload"] === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
@@ -346,6 +350,8 @@ let drawFunc = function () {
             0,
             999
         );
+        testStateObj["upload"] = 3;
+        onend();
     }
 };
 
@@ -462,7 +468,6 @@ let initFunc = function () {
 };
 
 let speedtestOnUpdate = function (data) {
-    updateTestState(data.testState, testStateObj);
     speedtestData = data;
 };
 
@@ -482,7 +487,8 @@ let speedtestOnEnd = function (aborted) {
             1000
         );
     } else {
-        onend();
+        // Draw to the screen once more, wherein we'll call onend.
+        drawFunc();
     }
 };
 
@@ -552,10 +558,8 @@ async function onstart() {
 
     if (speedtestObj.getState() === 3) {
         speedtestObj.abort();
-        data = null;
         document.getElementById("start-btn").classList.remove("running");
         document.querySelector("#start-btn .text").innerHTML = "Start";
-        return null;
     } else {
         document.getElementById("start-btn").classList.add("running");
         document.querySelector("#start-btn .text").innerHTML = "Stop";
@@ -624,7 +628,7 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
     );
 
     // If the speedtest is complete.
-    if (testStateObj["upload"] === 2) {
+    if (testStateObj["upload"] === 3) {
         if (eventObj !== null) {
             console.log("Posting next message.");
             eventObj.source.postMessage("next", eventObj.origin);

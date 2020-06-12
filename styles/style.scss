@@ -63,6 +63,7 @@ html {
     box-sizing: border-box;
     height: 100%;
     width: 100%;
+    
 }
 
 body {
@@ -75,6 +76,7 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
+    overflow-x: hidden;
 }
 
 main {
@@ -82,6 +84,7 @@ main {
     box-sizing: border-box;
     color: var(--font-color-primary);
     padding: 5vh 5vw;
+    // overflow-x: hidden;
 
     display: grid;
     font-family: var(--font-family-primary);
@@ -302,5 +305,26 @@ main {
                 justify-content: space-between;
             }
         }
+    }
+}
+
+@media all and (max-width: $screen-size-md) {
+    html,
+    body {
+        font-size: 0.95rem;
+    }
+}
+
+@media all and (max-width: $screen-size-sm) {
+    html,
+    body {
+        font-size: 0.9rem;
+    }
+}
+
+@media all and (max-width: $screen-size-xs) {
+    html,
+    body {
+        font-size: 0.85rem;
     }
 }

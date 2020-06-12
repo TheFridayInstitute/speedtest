@@ -65,7 +65,7 @@ import { Color } from "./colors.js";
 
 var eventObj = null;
 var speedtestObj = null;
-var uiData = null;
+var speedtestData = null;
 
 var canvasObj;
 var meterDial;
@@ -120,17 +120,7 @@ var dlProgressGlowColor;
 var ulProgressColor;
 var ulProgressGlowColor;
 
-var dlText = `<i class="fa fa-arrow-circle-o-down"></i>`;
-var dotsText = `<div class="dot-container dot-typing"></div>`;
-
-let makeGlowColor = function (value, index) {
-    let [stop, color] = value;
-    let newColor = new Color(color);
-    newColor.opacity = 0.3;
-    return [stop, newColor.colorString];
-};
-
-var speedTestStateMapping = {
+let speedTestStateMapping = {
     0: "not_started",
     1: "started",
     2: "download",
@@ -140,95 +130,11 @@ var speedTestStateMapping = {
     6: "aborted",
 };
 
-/**
- * test state object mapping:
- * -1: not started;
- * 0: started;
- * 1: active;
- * 2: finished;
- *
- * Maybe should be:
- *
- * 2: just finished;
- * 3: finished;
- */
-
-var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
-
-// TODO: Ludicrously convoluted. Make this a proper state machine...
-// function updateTestState(speedtestState, testStateObj) {
-//     let testKind = speedTestStateMapping[speedtestState];
-//     let prevState = testStateObj["prev_state"];
-//     let prevKey = speedTestStateMapping[prevState];
-
-//     if (testKind === "aborted") {
-//         for (let [key, value] of Object.entries(testStateObj)) {
-//             testStateObj[key] = -1;
-//         }
-//     } else {
-//         for (let [key, value] of Object.entries(testStateObj)) {
-//             let state = value + 1;
-
-//             if (key === testKind) {
-//                 if (value < 1) {
-//                     testStateObj[key] = state;
-//                 } else if (value === 2 && speedtestState !== prevState) {
-//                     testStateObj[key] = 0;
-//                 }
-//             } else if (
-//                 key === prevKey &&
-//                 value > 0 &&
-//                 speedtestState !== prevState
-//             ) {
-//                 testStateObj[prevKey] = state;
-//             }
-//         }
-//         testStateObj["prev_state"] = speedtestState;
-//     }
-//     return testStateObj;
-// }
-
-function startStop() {
-    let data = null;
-
-    if (speedtestObj.getState() === 3) {
-        speedtestObj.abort();
-        data = null;
-        document.getElementById("start-btn").classList.remove("running");
-        document.querySelector("#start-btn .text").innerHTML = "Start";
-    } else {
-        document.getElementById("start-btn").classList.add("running");
-        document.querySelector("#start-btn .text").innerHTML = "Stop";
-
-        speedtestObj.onupdate = function (data) {
-            uiData = data;
-        };
-
-        speedtestObj.onend = function (aborted) {
-            document.getElementById("start-btn").classList.remove("running");
-
-            if (aborted) {
-                openingAnimation(1000, smoothStep3);
-                document
-                    .querySelectorAll(".test-info-container .unit-container")
-                    .forEach((el) => {
-                        el.classList.add("in-progress");
-                    });
-                animateProgressBar(
-                    progressBarEl,
-                    0,
-                    parseFloat(progressBarEl.getAttribute("percent-complete")),
-                    1000
-                );
-            } else {
-                drawFunc();
-            }
-        };
-
-        speedtestObj.start();
-    }
-    return uiData;
-}
+let stateMapping = {
+    ping: 0,
+    download: 1,
+    upload: 2,
+};
 
 function hysteresis(t, prevT, eps = 0.01) {
     if (t - prevT > eps) {
@@ -238,6 +144,46 @@ function hysteresis(t, prevT, eps = 0.01) {
     }
     prevT = t;
     return [t, prevT];
+}
+
+let makeGlowColor = function (value, index) {
+    let [stop, color] = value;
+    let newColor = new Color(color);
+    newColor.opacity = 0.3;
+    return [stop, newColor.colorString];
+};
+
+function receiveMessage(event) {
+    if (event.data === "start") {
+        eventObj = event;
+    }
+    console.log(`Received event of ${event}`);
+}
+
+window.addEventListener("message", receiveMessage, false);
+
+/**
+ * test state object mapping:
+ * 0: not started;
+ * 1: active;
+ * 2: finished;
+ */
+
+function startSpeedtest() {
+    let data = null;
+
+    // State 3 of the speedtest object == currently running the test.
+    if (speedtestObj.getState() === 3) {
+        speedtestObj.abort();
+        data = null;
+        document.getElementById("start-btn").classList.remove("running");
+        document.querySelector("#start-btn .text").innerHTML = "Start";
+    } else {
+        document.getElementById("start-btn").classList.add("running");
+        document.querySelector("#start-btn .text").innerHTML = "Stop";
+        speedtestObj.start();
+    }
+    return data;
 }
 
 function drawMeterLoop(
@@ -336,11 +282,11 @@ let updateFunc = function (t) {
 };
 
 let drawFunc = function (t) {
-    // if (speedtestObj.getState() != 3 || uiData === null) {
+    // if (speedtestObj.getState() != 3 || speedtestData === null) {
     //     return false;
     // }
 
-    // testStateObj = updateTestState(uiData.testState + 1, testStateObj);
+    // testStateObj = updateTestState(speedtestData.testState + 1, testStateObj);
 
     // If ping complete
     if (false) {
@@ -350,7 +296,7 @@ let drawFunc = function (t) {
             .parentElement.classList.remove("in-progress");
 
         document.getElementById("ping-amount").innerText = clamp(
-            Math.round(parseFloat(uiData.pingStatus)),
+            Math.round(parseFloat(speedtestData.pingStatus)),
             0,
             999
         );
@@ -360,10 +306,10 @@ let drawFunc = function (t) {
     // If download in progress.
     if (false) {
         drawMeterLoop(
-            uiData.testState,
+            speedtestData.testState,
             document.getElementById("test-amount"),
-            uiData.dlStatus,
-            uiData.dlProgress,
+            speedtestData.dlStatus,
+            speedtestData.dlProgress,
             dlProgressColor,
             dlProgressGlowColor
         );
@@ -378,7 +324,7 @@ let drawFunc = function (t) {
             .parentElement.classList.remove("in-progress");
 
         document.getElementById("dl-amount").innerHTML = clamp(
-            parseFloat(uiData.dlStatus).toPrecision(3),
+            parseFloat(speedtestData.dlStatus).toPrecision(3),
             0,
             999
         );
@@ -387,10 +333,10 @@ let drawFunc = function (t) {
     // If upload in progress.
     if (false) {
         drawMeterLoop(
-            uiData.testState,
+            speedtestData.testState,
             document.getElementById("test-amount"),
-            uiData.ulStatus,
-            uiData.ulProgress,
+            speedtestData.ulStatus,
+            speedtestData.ulProgress,
             ulProgressColor,
             ulProgressGlowColor
         );
@@ -404,7 +350,7 @@ let drawFunc = function (t) {
             .parentElement.classList.remove("in-progress");
 
         document.getElementById("ul-amount").innerHTML = clamp(
-            parseFloat(uiData.ulStatus).toPrecision(3),
+            parseFloat(speedtestData.ulStatus).toPrecision(3),
             0,
             999
         );
@@ -538,6 +484,31 @@ async function onload() {
     speedtestObj.setParameter("getIp_ispInfo", false);
     speedtestObj.setParameter("getIp_ispInfo_distance", false);
 
+    speedtestObj.onupdate = function (data) {
+        speedtestData = data;
+    };
+
+    speedtestObj.onend = function (aborted) {
+        document.getElementById("start-btn").classList.remove("running");
+
+        if (aborted) {
+            openingAnimation(1000, smoothStep3);
+            document
+                .querySelectorAll(".test-info-container .unit-container")
+                .forEach((el) => {
+                    el.classList.add("in-progress");
+                });
+            animateProgressBar(
+                progressBarEl,
+                0,
+                parseFloat(progressBarEl.getAttribute("percent-complete")),
+                1000
+            );
+        } else {
+            drawFunc();
+        }
+    };
+
     // Intro sliding animation.
     let testEl = document.getElementById("test-container");
     let startModal = document.getElementById("start-modal");
@@ -567,10 +538,6 @@ async function onload() {
         }
     );
 
-    // document.querySelectorAll(".unit-container").forEach((el) => {
-    //     fluidText(el, null, true, ["font-size"]);
-    // });
-
     fluidText(
         document.getElementById("test-amount"),
         document.getElementById("test-amount").parentElement.parentElement,
@@ -582,7 +549,7 @@ async function onload() {
 async function onstart() {
     let duration = 1500;
 
-    toggleOnce(document.getElementById("start-btn"), async function () {
+    toggleOnce(document.getElementById("test-container"), async function () {
         let testEl = document.getElementById("test-container");
         let startModal = document.getElementById("start-modal");
         let completeModal = document.getElementById("complete-modal");
@@ -597,9 +564,11 @@ async function onstart() {
         await sleep(duration / 2);
 
         startModal.classList.add("pane-hidden");
+
         openingAnimation(duration, smoothStep3);
     });
-    uiData = startStop();
+
+    speedtestData = startSpeedtest();
 }
 
 async function onend() {
@@ -627,27 +596,21 @@ async function onend() {
 
     await sleep(1000);
 
-    let urlObj = new URL(window.location.href);
-    let id = urlObj.searchParams.get("id");
-    let ip = String(uiData.clientIp);
+    let ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
-    ip = ip.trim().split(" ")[0].trim();
-
-    let speedtestData = {
-        id: id || -1,
-        dlStatus: uiData.dlStatus,
-        ulStatus: uiData.ulStatus,
-        pingStatus: uiData.pingStatus,
-        jitterStatus: uiData.jitterStatus,
+    let outData = {
+        dlStatus: speedtestData.dlStatus,
+        ulStatus: speedtestData.ulStatus,
+        pingStatus: speedtestData.pingStatus,
+        jitterStatus: speedtestData.jitterStatus,
         ip: ip,
     };
 
     if (eventObj !== null) {
-        console.log(`Payload of speedtest data sent: ${speedtestData}`);
-        eventObj.source.postMessage(
-            JSON.stringify(speedtestData),
-            eventObj.origin
-        );
+        console.log(`Payload of speedtest data sent: ${outData}`);
+        eventObj.source.postMessage(JSON.stringify(outData), eventObj.origin);
+    } else {
+        console.log(`Failed to post speedtest data to external event.`);
     }
 }
 
@@ -669,23 +632,13 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
         duration
     );
 
-    throttle(function () {
-        if (testStateObj["upload"] === 2) {
-            if (eventObj !== null) {
-                console.log("Posting next message.");
-                eventObj.source.postMessage("next", eventObj.origin);
-            }
-        } else {
-            onstart();
+    // If the speedtest is complete.
+    if (false) {
+        if (eventObj !== null) {
+            console.log("Posting next message.");
+            eventObj.source.postMessage("next", eventObj.origin);
         }
-    }, 1000)();
-});
-
-function receiveMessage(event) {
-    if (event.data === "start") {
-        eventObj = event;
+    } else {
+        onstart();
     }
-    console.log(`Received event of ${event}`);
-}
-
-window.addEventListener("message", receiveMessage, false);
+});

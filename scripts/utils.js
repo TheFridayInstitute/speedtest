@@ -1,6 +1,49 @@
 import { clamp } from "./math.js";
 import { debounce } from "./animation.js";
 
+const substates = {
+    init: 0,
+    active: 1,
+    complete: 2,
+};
+
+const defaultUpdater = function (states, currentState) {
+    let state = states[currentState];
+
+    switch (state) {
+        case substates.init:
+        case substates.active: {
+            state++;
+        }
+    }
+    states[currentState]++;
+    if (state == substates.complete) {
+        currentState++;
+    }
+
+    return currentState;
+};
+class FSM {
+    constructor(stateCount, updater = null) {
+        this.currentState = 0;
+        this.states = new Array(stateCount + 1).fill(0);
+        this.updater = !updater ? defaultUpdater : updater;
+    }
+
+    stateValue() {
+        return this.states[this.currentState];
+    }
+
+    update() {
+        this.currentState = this.updater(this.states, this.currentState);
+        return this;
+    }
+
+    isComplete() {
+        return this.currentState > this.states.length - 1;
+    }
+}
+
 if (!String.prototype.splice) {
     String.prototype.splice = function (start, delCount, newSubStr) {
         return (

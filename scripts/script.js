@@ -31,12 +31,7 @@ import {
     slideRightWrap,
 } from "./animation.js";
 
-import {
-    getOffset,
-    toggleOnce,
-    getComputedVariable,
-    fluidText,
-} from "./utils.js";
+import { getOffset, once, getComputedVariable, fluidText } from "./utils.js";
 
 import { Color } from "./colors.js";
 
@@ -502,14 +497,6 @@ async function onload() {
     speedtestObj.onupdate = speedtestOnUpdate;
     speedtestObj.onend = speedtestOnEnd;
 
-    // Intro sliding animation.
-    let testEl = document.getElementById("test-container");
-    let completeModal = document.getElementById("complete-modal");
-
-    let width = window.innerWidth;
-    testEl.style.transform = `translateX(${width}px)`;
-    completeModal.style.transform = `translateX(${-width}px)`;
-
     // Creation of progress bar.
     progressBarEl = document.getElementById("progress-bar");
     createProgressBar(
@@ -537,25 +524,31 @@ async function onload() {
     );
 }
 
-async function onstart() {
+let openingSlide = once(async function () {
     let duration = 1500;
+    let testEl = document.getElementById("test-container");
+    let startModal = document.getElementById("start-modal");
+    let completeModal = document.getElementById("complete-modal");
 
-    toggleOnce(document.getElementById("test-container"), async function () {
-        let testEl = document.getElementById("test-container");
-        let startModal = document.getElementById("start-modal");
-        let width = window.innerWidth;
+    let width = window.innerWidth;
 
-        testEl.classList.remove("pane-hidden");
+    testEl.classList.remove("pane-hidden");
+    testEl.style.transform = `translateX(${width}px)`;
 
-        slideLeft(startModal, -width, 0);
-        slideLeft(testEl, 0, width);
+    completeModal.style.transform = `translateX(${-width}px)`;
 
-        await sleep(duration / 2);
+    slideLeft(startModal, -width, 0);
+    slideLeft(testEl, 0, width);
 
-        startModal.classList.add("pane-hidden");
+    await sleep(duration / 2);
 
-        openingAnimation(duration, smoothStep3);
-    });
+    startModal.classList.add("pane-hidden");
+
+    openingAnimation(duration, smoothStep3);
+});
+
+async function onstart() {
+    openingSlide();
 
     if (speedtestObj.getState() === 3) {
         speedtestObj.abort();

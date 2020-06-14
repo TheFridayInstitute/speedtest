@@ -63,17 +63,16 @@ export function toggle(el, firstCallback, secondCallback) {
     return;
 }
 
-export function toggleOnce(el, firstCallback, force = false) {
-    let toggled = el.getAttribute("toggled") === "true";
-    if (!toggled || force) {
-        firstCallback(el);
-        if (force) {
-            el.setAttribute("toggled", !toggled);
-        } else {
-            el.setAttribute("toggled", true);
+export function once(func) {
+    let result;
+    return function () {
+        if (func) {
+            console.log(arguments);
+            result = func.apply(this, arguments)
+            func = null;
         }
-    }
-    return;
+        return result;
+    };
 }
 
 export function slideToggle(el) {

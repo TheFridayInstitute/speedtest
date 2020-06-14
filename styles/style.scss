@@ -55,16 +55,6 @@ $ALPHA_0: $PI * 0.8;
     --border-radius-primary: 0.5rem;
 }
 
-.ul-color {
-    color: var(--ul-color-1);
-}
-
-.dl-color {
-    background: linear-gradient(to right, var(--dl-color-1), var(--dl-color-2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 html {
     box-sizing: border-box;
     height: 100%;
@@ -236,9 +226,38 @@ main {
         text-align: center;
 
         .test-kind {
-            font-size: 0.875rem; // 3.5/4 = 0.875
+            font-size: 1.5em; // 3.5/4 = 0.875
         }
     }
+}
+
+.ul {
+    i {
+        color: var(--ul-color-1);
+    }
+    
+}
+
+.dl {
+    i {
+        transform: rotate(180deg);
+        color: var(--dl-color-2);
+    }
+    
+}
+
+.ul-color {
+    background: linear-gradient(to right, var(--ul-color-1), var(--ul-color-2));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.dl-color {
+    background: linear-gradient(to right, var(--dl-color-1), var(--dl-color-2));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
 }
 
 .progress-bar-container {

@@ -529,8 +529,8 @@ async function onload() {
     );
 }
 
-let openingSlide = once(function () {
-    let duration = 1500;
+let openingSlide = once(async function () {
+    let duration = 1000;
     let testEl = document.getElementById("test-container");
     let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
@@ -542,16 +542,15 @@ let openingSlide = once(function () {
 
     completeModal.style.transform = `translateX(${-width}px)`;
 
-    slideLeft(startModal, -width, 0);
-    slideLeft(testEl, 0, width);
+    await slideLeft(startModal, -width, 0, 250);
+    slideLeft(testEl, 0, width, 500);
+
     startModal.classList.add("hidden");
 
     openingAnimation(duration, smoothStep3);
 });
 
 async function onstart() {
-    openingSlide();
-
     if (speedtestObj.getState() === 3) {
         speedtestObj.abort();
         document.getElementById("start-btn").classList.remove("running");
@@ -561,6 +560,8 @@ async function onstart() {
         document.querySelector("#start-btn .text").innerHTML = "Stop";
         speedtestObj.start();
     }
+
+    openingSlide();
 }
 
 async function onend() {
@@ -577,15 +578,13 @@ async function onend() {
     slideRight(testEl, width, 0);
     slideRight(completeModal, 0, -width);
 
-    slideRightWrap(buttonEl, 0, 0, 500, function () {
+    await slideRightWrap(buttonEl, 0, 0, 1000, function () {
         document.querySelector("#start-btn .text").innerHTML = "Next →";
     });
 
-    await sleep(duration);
-
     testEl.classList.add("hidden");
 
-    await sleep(duration / 2);
+    await sleep(duration);
 
     let ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 

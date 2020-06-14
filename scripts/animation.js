@@ -6,6 +6,8 @@ import {
     bounceInEase,
     easeInOutCubic,
     smoothStep3,
+    lerpIn,
+    easeOutCubic,
 } from "./math.js";
 
 import { getOffset } from "./utils.js";
@@ -87,7 +89,13 @@ export function throttle(func, wait) {
     };
 }
 
-export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
+export async function smoothAnimate(
+    to,
+    from,
+    duration,
+    transformFunc,
+    timingFunc
+) {
     let distance = to - from;
 
     let clock = new Clock();
@@ -96,8 +104,8 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
 
     function draw() {
         let c = clamp(clock.elapsedTicks, 0, duration);
-        let v = timingFunc(c, from, distance, duration);
-        let t = timingFunc(c, 0, 1, duration);
+        let v = Math.floor(timingFunc(c, from, distance, duration));
+        let t = Math.floor(timingFunc(c, 0, 1, duration));
 
         let b = transformFunc(v, t) || false;
         return b;
@@ -130,6 +138,7 @@ export function smoothAnimate(to, from, duration, transformFunc, timingFunc) {
     }
     clock.start();
     requestAnimationFrame(animationLoop);
+    return await sleep(duration);
 }
 
 export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
@@ -174,49 +183,49 @@ export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
     requestAnimationFrame(animationLoop);
 }
 
-export function slideRight(el, to, from, duration) {
+async function animateElements(
+    el,
+    to,
+    from,
+    duration,
+    transformFunc,
+    timingFunc = smoothStep3
+) {
     to = to === undefined ? window.innerWidth : to;
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
 
-    let elArray;
-    if (!(el instanceof Array)) {
-        elArray = [el];
-    } else {
-        elArray = el;
-    }
+    let elArray = !(el instanceof Array) ? [el] : el;
 
-    let transformFunc = function (v) {
+    let wrap = function (v) {
         for (let el of elArray) {
-            el.style.transform = `translateX(${v}px)`;
+            transformFunc(el, v);
         }
     };
 
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
-}
-
-export function slideLeft(el, to, from, duration) {
-    to = to === undefined ? window.innerWidth : to;
-    from = from === undefined ? 0 : from;
-    duration = duration === undefined ? 1000 : duration;
-
-    let elArray;
-    if (!(el instanceof Array)) {
-        elArray = [el];
-    } else {
-        elArray = el;
-    }
-
-    let transformFunc = function (v) {
-        for (let el of elArray) {
-            el.style.transform = `translateX(${v}px)`;
-        }
+    let animate = async function () {
+        await smoothAnimate(to, from, duration, wrap, timingFunc);
     };
 
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+    await blockCSSTimingTransition(elArray, animate, duration);
 }
 
-export function fadeOut(el, duration) {
+export async function slideRight(el, to, from, duration) {
+    let transformFunc = function (el, v) {
+        el.style.transform = `translateX(${v}px)`;
+    };
+    await animateElements(el, to, from, duration, transformFunc);
+}
+
+export async function slideLeft(el, to, from, duration) {
+    // [to, from] = [from, to];
+    let transformFunc = function (el, v) {
+        el.style.transform = `translateX(${v}px)`;
+    };
+    await animateElements(el, to, from, duration, transformFunc);
+}
+
+export async function fadeOut(el, duration) {
     duration = duration === undefined ? 1000 : duration;
     let to = 1;
     let from = 0;
@@ -234,10 +243,10 @@ export function fadeOut(el, duration) {
         }
     };
 
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+    await smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }
 
-export function smoothRotate(el, to, from, duration, rad = false) {
+export async function smoothRotate(el, to, from, duration, rad = false) {
     to = to === undefined ? window.innerWidth : to;
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
@@ -257,7 +266,7 @@ export function smoothRotate(el, to, from, duration, rad = false) {
             el.setAttribute("rotation", v);
         }
     };
-    smoothAnimate(to, from, duration, transformFunc, bounceInEase);
+    await smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }
 
 export function createProgressBar(el, colors, leftAttrs, rightAttrs) {
@@ -283,7 +292,7 @@ export function createProgressBar(el, colors, leftAttrs, rightAttrs) {
     }
 }
 
-export function animateProgressBar(el, to, from, duration, stops) {
+export async function animateProgressBar(el, to, from, duration, stops) {
     to = to === undefined ? 1 : to;
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
@@ -329,10 +338,10 @@ export function animateProgressBar(el, to, from, duration, stops) {
         }
     };
 
-    smoothAnimate(to, from, duration, transformFunc, easeInOutCubic);
+    await smoothAnimate(to, from, duration, transformFunc, easeInOutCubic);
 }
 
-export function animateProgressBarWrapper(el, duration, stops) {
+export async function animateProgressBarWrapper(el, duration, stops) {
     duration = duration === undefined ? 1000 : duration;
     stops = stops === undefined ? el.children.length : stops;
 
@@ -341,10 +350,10 @@ export function animateProgressBarWrapper(el, duration, stops) {
     let from = parseFloat(el.getAttribute("percent-complete")) || 0;
     let to = clamp(from + step, 0, 1);
 
-    animateProgressBar(el, to, from, duration, stops);
+    await animateProgressBar(el, to, from, duration, stops);
 }
 
-export function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
+export async function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
     let buttonOffset = getOffset(buttonEl);
     let x = ev.clientX;
     let y = ev.clientY;
@@ -362,26 +371,46 @@ export function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
         rippleEl.style.height = r;
         rippleEl.style.opacity = 1 - t;
     };
-    smoothAnimate(to, from, duration, transformFunc, smoothStep3);
+    await smoothAnimate(to, from, duration, transformFunc, smoothStep3);
+}
+
+async function blockCSSTimingTransition(el, func, duration) {
+    let elArray = !(el instanceof Array) ? [el] : el;
+
+    let transitions = elArray.map(function (el) {
+        let trans = el.style.transition;
+        el.style.transition = "none";
+        return trans;
+    });
+
+    await func();
+
+    setTimeout(function () {
+        elArray.forEach(function (el, index) {
+            el.style.transition = transitions[index];
+        });
+    }, duration);
 }
 
 export async function slideRightWrap(el, to, from, duration, func) {
     let width = window.innerWidth;
+    let time = duration / 3;
 
-    slideRight(el, width, from, duration);
-
-    await sleep(duration);
-
+    await slideRight(el, width, 0, time);
     el.classList.add("hidden");
-
-    let time = 333;
-
-    await sleep(time);
     func();
-    slideLeft(el, -width, width, 10);
-
-    await sleep(time);
-
+    await slideLeft(el, -width, width, time);
     el.classList.remove("hidden");
-    slideRight(el, to, from - width * 1.1, duration);
+    await slideRight(el, to, from - width, time);
+
+    // requestAnimationFrame(() => {
+    //     func();
+    //     el.style.transform = `translateX(${-width}px)`;
+    //     // slideLeft(el, -width, width, 0);
+    //     el.classList.remove("hidden");
+    // });
+
+    // await sleep(time);
+
+    // slideRight(el, to, from - width * 1.1, time);
 }

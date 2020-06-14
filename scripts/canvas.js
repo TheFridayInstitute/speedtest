@@ -486,7 +486,7 @@ export function roundedArc(
     color,
     lineWidth
 ) {
-    let slump = -0.0003;
+    let slump = -0.000;
     let outerEdge = radius + lineWidth / 2;
 
     let barHeight = 0.05;

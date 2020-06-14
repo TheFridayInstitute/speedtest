@@ -175,3 +175,29 @@
     right: 0;
     margin: auto;
 }
+
+.jelly {
+    animation: jelly 1s cubic-bezier(0.09, 0.91, 0.5, 1.1);
+}
+
+@keyframes jelly {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(2);
+    }
+
+    55% {
+        transform: scale(2.05);
+    }
+
+    60% {
+        transform: scale(2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

@@ -532,18 +532,21 @@ async function onload() {
 let openingSlide = once(async function () {
     let duration = 1000;
     let testEl = document.getElementById("test-container");
+    let infoEl = document.getElementById("info-progress-container");
+
     let startModal = document.getElementById("start-modal");
     let completeModal = document.getElementById("complete-modal");
 
     let width = window.innerWidth;
 
+    slideRight([testEl, infoEl], width, 0, 1);
     testEl.classList.remove("hidden");
-    testEl.style.transform = `translateX(${width}px)`;
+    infoEl.classList.remove("hidden");
 
     completeModal.style.transform = `translateX(${-width}px)`;
 
-    await slideLeft(startModal, -width, 0, 250);
-    slideLeft(testEl, 0, width, 500);
+    await slideLeft(startModal, -width, 0, 500);
+    await slideLeft([testEl, infoEl], 0, width, 500);
 
     startModal.classList.add("hidden");
 

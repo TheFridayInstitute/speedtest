@@ -274,6 +274,8 @@ let updateFunc = function () {
     return false;
 };
 
+let dots = `...`;
+
 let drawFunc = function () {
     if (speedtestObj.getState() != 3 || speedtestData === null) {
         return false;
@@ -281,46 +283,54 @@ let drawFunc = function () {
 
     updateTestState(speedtestData.testState, testStateObj);
 
-    // If ping complete.
-    if (testStateObj["ping"] === 2) {
-        animateProgressBarWrapper(progressBarEl, 1000, 3);
-        document
-            .getElementById("ping-amount")
-            .parentElement.classList.remove("in-progress");
+    switch (testStateObj["ping"]) {
+        case 0:
+        case 1: {
+            document.getElementById("ping-amount").innerHTML = dots;
+            break;
+        }
+        case 2:
+            animateProgressBarWrapper(progressBarEl, 1000, 3);
+            document
+                .getElementById("ping-amount")
+                .parentElement.classList.remove("in-progress");
 
-        document.getElementById("ping-amount").innerText = clamp(
-            Math.round(parseFloat(speedtestData.pingStatus)),
-            0,
-            999
-        );
-        testStateObj["ping"] = 3;
+            document.getElementById("ping-amount").innerText = clamp(
+                Math.round(parseFloat(speedtestData.pingStatus)),
+                0,
+                999
+            );
+            testStateObj["ping"] = 3;
+            break;
     }
 
-    // If download in progress.
-    if (testStateObj["download"] > -1) {
-        drawMeter(
-            speedtestData.testState,
-            document.getElementById("test-amount"),
-            speedtestData.dlStatus,
-            speedtestData.dlProgress,
-            dlProgressColor,
-            dlProgressGlowColor
-        );
-    }
-    // If download complete.
-    if (testStateObj["download"] === 2) {
-        animateProgressBarWrapper(progressBarEl, 1000, 3);
+    switch (testStateObj["download"]) {
+        case 0:
+        case 1: {
+            drawMeter(
+                speedtestData.testState,
+                document.getElementById("test-amount"),
+                speedtestData.dlStatus,
+                speedtestData.dlProgress,
+                dlProgressColor,
+                dlProgressGlowColor
+            );
+            document.getElementById("dl-amount").innerHTML = dots;
+            break;
+        }
+        case 2:
+            animateProgressBarWrapper(progressBarEl, 1000, 3);
+            document
+                .getElementById("dl-amount")
+                .parentElement.classList.remove("in-progress");
 
-        document
-            .getElementById("dl-amount")
-            .parentElement.classList.remove("in-progress");
-
-        document.getElementById("dl-amount").innerHTML = clamp(
-            parseFloat(speedtestData.dlStatus).toPrecision(3),
-            0,
-            999
-        );
-        testStateObj["download"] = 3;
+            document.getElementById("dl-amount").innerHTML = clamp(
+                parseFloat(speedtestData.dlStatus).toPrecision(3),
+                0,
+                999
+            );
+            testStateObj["download"] = 3;
+            break;
     }
 
     // If upload in progress.
@@ -469,23 +479,8 @@ let speedtestOnUpdate = function (data) {
 
 let speedtestOnEnd = function (aborted) {
     document.getElementById("start-btn").classList.remove("running");
-    if (aborted) {
-        openingAnimation(1000, smoothStep3);
-        document
-            .querySelectorAll(".test-info-container .unit-container")
-            .forEach((el) => {
-                el.classList.add("in-progress");
-            });
-        animateProgressBar(
-            progressBarEl,
-            0,
-            parseFloat(progressBarEl.getAttribute("percent-complete")),
-            1000
-        );
-    } else {
-        // Draw to the screen once more, wherein we'll call onend.
-        drawFunc();
-    }
+    // Draw to the screen once more, wherein we'll call onend.
+    drawFunc();
 };
 
 async function onload() {
@@ -558,6 +553,23 @@ async function onstart() {
         speedtestObj.abort();
         document.getElementById("start-btn").classList.remove("running");
         document.querySelector("#start-btn .text").innerHTML = "Start";
+
+        openingAnimation(1000, smoothStep3);
+
+        document.getElementById("test-amount").innerHTML = "0";
+
+        document
+            .querySelectorAll(".test-info-container .unit-container")
+            .forEach((el) => {
+                el.classList.add("in-progress");
+                el.firstElementChild.innerHTML = "0";
+            });
+        animateProgressBar(
+            progressBarEl,
+            0,
+            parseFloat(progressBarEl.getAttribute("percent-complete")),
+            1000
+        );
     } else {
         document.getElementById("start-btn").classList.add("running");
         document.querySelector("#start-btn .text").innerHTML = "Stop";

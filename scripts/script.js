@@ -129,14 +129,14 @@ const SPEEDTEST_STATES = Object.freeze({
  */
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
-function updateTestState(speedtestState, testStateObj) {
+function updateTestState(speedtestState, testStateObj, abort = false) {
     // + 1 because we start at 0, not -1 (unlike librespeed).
     speedtestState += 1;
     let testKind = SPEEDTEST_STATES[speedtestState];
     let prevState = testStateObj["prev_state"];
     let prevKey = SPEEDTEST_STATES[prevState];
 
-    if (testKind === "aborted") {
+    if (abort || testKind === "aborted") {
         for (let [key] of Object.entries(testStateObj)) {
             testStateObj[key] = -1;
         }
@@ -554,7 +554,10 @@ async function onstart() {
         document.getElementById("start-btn").classList.remove("running");
         document.querySelector("#start-btn .text").innerHTML = "Start";
 
+        updateTestState(speedtestData.testState, testStateObj, true);
         openingAnimation(1000, smoothStep3);
+
+        await sleep(500);
 
         document.getElementById("test-amount").innerHTML = "0";
 
@@ -562,7 +565,7 @@ async function onstart() {
             .querySelectorAll(".test-info-container .unit-container")
             .forEach((el) => {
                 el.classList.add("in-progress");
-                el.firstElementChild.innerHTML = "0";
+                el.querySelector(".amount").innerHTML = "0";
             });
         animateProgressBar(
             progressBarEl,

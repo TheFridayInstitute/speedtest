@@ -596,27 +596,29 @@ async function onend() {
     slideRight(testEl, width, 0);
     slideRight(completeModal, 0, -width);
 
-    await slideRightWrap(buttonEl, 0, 0, 1000, function () {
-        document.querySelector("#start-btn .text").innerHTML = "Next →";
-    });
+    if (eventObj != null) {
+        await slideRightWrap(buttonEl, 0, 0, 1000, function () {
+            document.querySelector("#start-btn .text").innerHTML = "Next →";
+        });
+        testEl.classList.add("hidden");
 
-    testEl.classList.add("hidden");
+        await sleep(duration);
 
-    await sleep(duration);
+        let ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
-    let ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
+        let outData = {
+            dlStatus: speedtestData.dlStatus,
+            ulStatus: speedtestData.ulStatus,
+            pingStatus: speedtestData.pingStatus,
+            jitterStatus: speedtestData.jitterStatus,
+            ip: ip,
+        };
 
-    let outData = {
-        dlStatus: speedtestData.dlStatus,
-        ulStatus: speedtestData.ulStatus,
-        pingStatus: speedtestData.pingStatus,
-        jitterStatus: speedtestData.jitterStatus,
-        ip: ip,
-    };
-
-    if (eventObj !== null) {
         console.log(`Payload of speedtest data sent: ${outData}`);
         eventObj.source.postMessage(JSON.stringify(outData), eventObj.origin);
+
+        if (eventObj !== null) {
+        }
     } else {
         console.log(`Failed to post speedtest data to external event.`);
     }

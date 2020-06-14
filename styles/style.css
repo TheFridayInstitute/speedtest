@@ -93,13 +93,13 @@
   --box-shadow-br: 10px;
   --box-shadow-sr: 0px;
   --box-shadow-color: rgba(0, 0, 0, 0.5);
-  -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
-  transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
   -webkit-box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
           box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
 }
 
 .btn-prime:hover {
+  -webkit-transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+  transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
   --box-shadow-vl: 7px;
   -webkit-transform: translateY(-5px);
           transform: translateY(-5px);
@@ -175,12 +175,12 @@
 :root {
   --background-color-primary: rgba(51, 51, 51, 1);
   --background-color-primary-dark: rgb(37, 37, 37);
-  --background-color-secondary: rgb(66, 66, 66);
+  --background-color-secondary: rgb(66, 66, 66, 1);
   --font-color-primary: #fff;
   --color-primary: #fff;
   --color-secondary: #34c83c;
   --color-secondary-dark: #2ead34;
-  --font-family-primary: verdana, geneva, sans-serif;
+  --font-family-primary: "Helvetica", sans-serif;
   --dl-color-1: #8630e6;
   --dl-color-2: #f71e6a;
   --ul-color-1: #ff8000;
@@ -232,7 +232,7 @@ main {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   color: var(--font-color-primary);
-  padding: 5vh 5vw;
+  padding: 0.5rem;
   display: -ms-grid;
   display: grid;
   font-family: var(--font-family-primary);
@@ -286,7 +286,8 @@ main .start-btn-container button {
 }
 
 .pane-info {
-  padding: 1rem;
+  --padding: 1rem;
+  padding: var(--padding);
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   display: -webkit-box;
@@ -299,9 +300,9 @@ main .start-btn-container button {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -webkit-box-align: left;
+      -ms-flex-align: left;
+          align-items: left;
   height: 100%;
   width: 100%;
 }
@@ -312,12 +313,25 @@ main .start-btn-container button {
 
 .pane-info h1,
 .pane-info h2 {
-  color: var(--ul-color-1);
+  text-align: left;
+}
+
+.pane-info h1 {
+  font-size: 3rem;
+}
+
+.pane-info h2 {
+  font-size: 2rem;
 }
 
 .pane-info hr {
-  width: 100%;
+  --main-color: white;
+  width: calc(100% + var(--padding));
+  margin-right: calc(-1 * var(--padding));
+  height: 0.1rem;
   border-radius: 1rem;
+  background-color: var(--main-color);
+  border: none;
 }
 
 .pane-info .icon-lg {
@@ -442,30 +456,17 @@ main .start-btn-container button {
   font-size: 1.5em;
 }
 
-.ul i {
-  color: var(--ul-color-1);
-}
-
 .dl i {
   -webkit-transform: rotate(180deg);
           transform: rotate(180deg);
-  color: var(--dl-color-2);
 }
 
 .ul-color {
-  background: -webkit-gradient(linear, left top, right top, from(var(--ul-color-1)), to(var(--ul-color-2)));
-  background: linear-gradient(to right, var(--ul-color-1), var(--ul-color-2));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--ul-color-1);
 }
 
 .dl-color {
-  background: -webkit-gradient(linear, left top, right top, from(var(--dl-color-1)), to(var(--dl-color-2)));
-  background: linear-gradient(to right, var(--dl-color-1), var(--dl-color-2));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--dl-color-2);
 }
 
 .progress-bar-container {
@@ -550,26 +551,5 @@ main .start-btn-container button {
     -webkit-box-pack: justify;
         -ms-flex-pack: justify;
             justify-content: space-between;
-  }
-}
-
-@media all and (max-width: 768px) {
-  html,
-  body {
-    font-size: 0.95rem;
-  }
-}
-
-@media all and (max-width: 480px) {
-  html,
-  body {
-    font-size: 0.9rem;
-  }
-}
-
-@media all and (max-width: 320px) {
-  html,
-  body {
-    font-size: 0.85rem;
   }
 }

@@ -67,8 +67,7 @@ export function once(func) {
     let result;
     return function () {
         if (func) {
-            console.log(arguments);
-            result = func.apply(this, arguments)
+            result = func.apply(this, arguments);
             func = null;
         }
         return result;

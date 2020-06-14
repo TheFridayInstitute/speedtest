@@ -497,6 +497,11 @@ async function onload() {
     speedtestObj.onupdate = speedtestOnUpdate;
     speedtestObj.onend = speedtestOnEnd;
 
+    // let buttonEl = document.getElementById("start-btn");
+    // slideRightWrap(buttonEl, 0, 0, 1500, function () {
+    //     document.querySelector("#start-btn .text").innerHTML = "Next →";
+    // });
+
     // Creation of progress bar.
     progressBarEl = document.getElementById("progress-bar");
     createProgressBar(
@@ -524,7 +529,7 @@ async function onload() {
     );
 }
 
-let openingSlide = once(async function () {
+let openingSlide = once(function () {
     let duration = 1500;
     let testEl = document.getElementById("test-container");
     let startModal = document.getElementById("start-modal");
@@ -539,9 +544,6 @@ let openingSlide = once(async function () {
 
     slideLeft(startModal, -width, 0);
     slideLeft(testEl, 0, width);
-
-    await sleep(duration / 2);
-
     startModal.classList.add("hidden");
 
     openingAnimation(duration, smoothStep3);

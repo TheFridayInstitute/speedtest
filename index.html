@@ -28,7 +28,7 @@
     <body>
         <main id="main-content">
             <div
-                class="pane-container pane-hidden test-container box-shadow"
+                class="pane-container hidden test-container box-shadow"
                 id="test-container"
             >
                 <div class="square-box">
@@ -53,10 +53,7 @@
                 </div>
             </div>
 
-            <div
-                class="pane-container pane-hidden box-shadow"
-                id="complete-modal"
-            >
+            <div class="pane-container hidden box-shadow" id="complete-modal">
                 <div class="pane-info">
                     <h1>
                         Speed test complete.
@@ -65,6 +62,8 @@
                     <p>
                         Click the Next → button continue.
                     </p>
+
+                    <i class="fas fa-check-circle icon-lg jelly"></i>
                 </div>
             </div>
 
@@ -75,13 +74,17 @@
                         tested.
                     </h2>
 
-                    <br />
+                    <hr />
 
                     <p>
                         Up to <span class="dl-color">25 MB</span> of data on
-                        cellular or satellite connections may be consumed. If
-                        you would like to skip the speed test, press the Next →
-                        button in the lower right. Otherwise, press the Start
+                        <strong>cellular</strong> or <strong>satellite</strong> connections may be consumed.
+
+                        <br />
+                        <br />
+
+                        If you would like to skip the speed test, press the Next
+                        → button in the lower right. Otherwise, press the Start
                         button.
                     </p>
                 </div>
@@ -109,7 +112,7 @@
                     <div class="info test-icon">
                         <div class="test-kind dl">
                             Download
-                             <i class="fas fa-arrow-circle-up"></i>
+                            <i class="fas fa-arrow-circle-up"></i>
                         </div>
                         <div class="unit-container in-progress">
                             <div
@@ -124,7 +127,6 @@
                     </div>
 
                     <div class="info test-icon">
-                        
                         <div class="test-kind ul">
                             Upload
                             <i class="fas fa-arrow-circle-up"></i>

@@ -372,7 +372,7 @@ export async function slideRightWrap(el, to, from, duration, func) {
 
     await sleep(duration);
 
-    el.classList.add("pane-hidden");
+    el.classList.add("hidden");
 
     let time = 333;
 
@@ -382,6 +382,6 @@ export async function slideRightWrap(el, to, from, duration, func) {
 
     await sleep(time);
 
-    el.classList.remove("pane-hidden");
+    el.classList.remove("hidden");
     slideRight(el, to, from - width * 1.1, duration);
 }

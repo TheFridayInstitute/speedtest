@@ -532,7 +532,7 @@ let openingSlide = once(async function () {
 
     let width = window.innerWidth;
 
-    testEl.classList.remove("pane-hidden");
+    testEl.classList.remove("hidden");
     testEl.style.transform = `translateX(${width}px)`;
 
     completeModal.style.transform = `translateX(${-width}px)`;
@@ -542,7 +542,7 @@ let openingSlide = once(async function () {
 
     await sleep(duration / 2);
 
-    startModal.classList.add("pane-hidden");
+    startModal.classList.add("hidden");
 
     openingAnimation(duration, smoothStep3);
 });
@@ -570,7 +570,7 @@ async function onend() {
 
     closingAnimation(duration, easeInOutCubic);
 
-    completeModal.classList.remove("pane-hidden");
+    completeModal.classList.remove("hidden");
 
     slideRight(testEl, width, 0);
     slideRight(completeModal, 0, -width);
@@ -581,7 +581,7 @@ async function onend() {
 
     await sleep(duration);
 
-    testEl.classList.add("pane-hidden");
+    testEl.classList.add("hidden");
 
     await sleep(duration / 2);
 

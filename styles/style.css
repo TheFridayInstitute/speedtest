@@ -121,6 +121,57 @@
   margin: auto;
 }
 
+.jelly {
+  -webkit-animation: jelly 1s cubic-bezier(0.09, 0.91, 0.5, 1.1);
+          animation: jelly 1s cubic-bezier(0.09, 0.91, 0.5, 1.1);
+}
+
+@-webkit-keyframes jelly {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(2);
+            transform: scale(2);
+  }
+  55% {
+    -webkit-transform: scale(2.05);
+            transform: scale(2.05);
+  }
+  60% {
+    -webkit-transform: scale(2);
+            transform: scale(2);
+  }
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+
+@keyframes jelly {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(2);
+            transform: scale(2);
+  }
+  55% {
+    -webkit-transform: scale(2.05);
+            transform: scale(2.05);
+  }
+  60% {
+    -webkit-transform: scale(2);
+            transform: scale(2);
+  }
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+
 :root {
   --background-color-primary: rgba(51, 51, 51, 1);
   --background-color-primary-dark: rgb(37, 37, 37);
@@ -256,7 +307,7 @@ main .start-btn-container button {
 }
 
 .pane-info p {
-  font-size: 1rem;
+  font-size: 1.25rem;
 }
 
 .pane-info h1,
@@ -264,12 +315,17 @@ main .start-btn-container button {
   color: var(--ul-color-1);
 }
 
+.pane-info hr {
+  width: 100%;
+  border-radius: 1rem;
+}
+
 .pane-info .icon-lg {
   color: var(--color-secondary);
   font-size: 5rem;
 }
 
-.pane-hidden {
+.hidden {
   pointer-events: none;
   visibility: hidden;
 }

@@ -1,4 +1,4 @@
-import {Color} from "./colors.js";
+import { Color } from "./colors.js";
 
 import {
     rotate,
@@ -486,7 +486,7 @@ export function roundedArc(
     color,
     lineWidth
 ) {
-    let slump = -0.0003;
+    let slump = -0.000;
     let outerEdge = radius + lineWidth / 2;
 
     let barHeight = 0.05;
@@ -516,6 +516,7 @@ export function roundedArc(
         lineWidth
     );
     let endCap = new Polygon(
+        // Hack to return a copy of the original array.
         JSON.parse(JSON.stringify(points)),
         null,
         null,
@@ -528,14 +529,11 @@ export function roundedArc(
     let x = outerEdge * Math.cos(theta);
     let y = outerEdge * Math.sin(theta);
 
-    startCap
-        .scale(-1)
-        .rotate(theta, true)
-        .translate(x, y);
+    startCap.scale(-1).rotate(theta, true).translate(x, y);
 
     let roundedArcMesh = new Mesh(endCap, arc, startCap);
 
-    roundedArcMesh.draw = function(ctx, t) {
+    roundedArcMesh.draw = function (ctx, t) {
         let theta = lerp(t, beginAngle, endAngle - 2 * delta);
         let theta2 = theta;
 
@@ -573,6 +571,16 @@ export function roundedArc(
     return roundedArcMesh;
 }
 
+export function setRoundedArcColor(roundedArc, color) {
+    roundedArc.map((shape, index) => {
+        if (shape instanceof Arc) {
+            shape.color = color;
+        } else {
+            shape.fillColor = color;
+        }
+    });
+}
+
 export function roundedRectangle(leftX, leftY, width, height, fillColor) {
     let slump = -0.3;
 
@@ -608,7 +616,7 @@ export function roundedRectangle(leftX, leftY, width, height, fillColor) {
 
     let [cX, cY] = bar.centroid;
 
-    roundedBarMesh.draw = function(ctx, t) {
+    roundedBarMesh.draw = function (ctx, t) {
         let w = t * width;
 
         let [tcX, tcY] = bar.centroid;
@@ -648,23 +656,6 @@ export function generateGradientWrapper(canvas, colorStops) {
     return gradient;
 }
 
-export function generateRadialGradient(
-    ctx,
-    colorStops,
-    x0,
-    y0,
-    r0,
-    x1,
-    y1,
-    r1
-) {
-    let gradient = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
-    for (let [stop, color] of colorStops) {
-        gradient.addColorStop(stop, color);
-    }
-    return gradient;
-}
-
 export function progressBarIntervals(leftX, leftY, width, height, colors) {
     let shapes = [];
     let step = 0;
@@ -684,7 +675,7 @@ export function progressBarIntervals(leftX, leftY, width, height, colors) {
 
     let intervalMesh = new Mesh(...shapes);
 
-    intervalMesh.draw = function(ctx, t) {
+    intervalMesh.draw = function (ctx, t) {
         let n = this.shapes.length;
         let step = 1 / n;
         let s = t;

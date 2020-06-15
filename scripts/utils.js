@@ -1,7 +1,8 @@
-import {clamp} from "./math.js";
+import { clamp } from "./math.js";
+import { debounce } from "./animation.js";
 
 if (!String.prototype.splice) {
-    String.prototype.splice = function(start, delCount, newSubStr) {
+    String.prototype.splice = function (start, delCount, newSubStr) {
         return (
             this.slice(0, start) +
             newSubStr +
@@ -62,17 +63,15 @@ export function toggle(el, firstCallback, secondCallback) {
     return;
 }
 
-export function toggleOnce(el, firstCallback, force = false) {
-    let toggled = el.getAttribute("toggled") === "true";
-    if (!toggled || force) {
-        firstCallback(el);
-        if (force) {
-            el.setAttribute("toggled", !toggled);
-        } else {
-            el.setAttribute("toggled", true);
+export function once(func) {
+    let result;
+    return function () {
+        if (func) {
+            result = func.apply(this, arguments);
+            func = null;
         }
-    }
-    return;
+        return result;
+    };
 }
 
 export function slideToggle(el) {
@@ -121,7 +120,7 @@ export function affixer(preAffixFunc, postAffixFunc) {
         wrap(el, wrapped);
     });
 
-    window.addEventListener("resize", function(e) {
+    window.addEventListener("resize", function (e) {
         scrollAffix();
     });
 
@@ -153,6 +152,8 @@ export function getOffset(el) {
         top: rect.top + window.scrollY,
         width: rect.width,
         height: rect.height,
+        leftX: rect.left,
+        topY: rect.top,
     };
 }
 
@@ -178,10 +179,8 @@ export function emToPixels(em) {
     return emNumber * fontSize;
 }
 
-export function getComputedVariable(v) {
-    return window
-        .getComputedStyle(document.documentElement)
-        .getPropertyValue(v);
+export function getComputedVariable(v, el = document.documentElement) {
+    return window.getComputedStyle(el).getPropertyValue(v);
 }
 
 export function setAttributes(el, attrs) {
@@ -191,7 +190,7 @@ export function setAttributes(el, attrs) {
             typeof value === "object"
         ) {
             for (var prop in value) {
-                el.style[prop] = value[prop];
+                el.style.setProperty(prop, value[prop]);
             }
         } else if (key === "html") {
             el.innerHTML = value;
@@ -199,4 +198,47 @@ export function setAttributes(el, attrs) {
             el.setAttribute(key, value);
         }
     }
+}
+
+const objectMap = (obj, fn) =>
+    Object.fromEntries(
+        Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)])
+    );
+
+export function fluidText(
+    el,
+    constrainEl = undefined,
+    maximize = false,
+    attributes = undefined
+) {
+    constrainEl = !constrainEl ? el.parentElement : constrainEl;
+    attributes = !attributes ? ["font-size"] : attributes;
+    let offsetOriginal = getOffset(constrainEl);
+    let attributesObj = {};
+
+    attributes.map(function (value, index) {
+        attributesObj[value] = emToPixels(getComputedVariable(value, el));
+    });
+
+    let _resize = function () {
+        let offset = getOffset(constrainEl);
+        let maxSize = Math.ceil(Math.min(offset.width, offset.height));
+
+        let ratio =
+            Math.min(offset.height, offset.width) /
+            Math.min(offsetOriginal.height, offsetOriginal.width);
+
+        let mappedAttributes = objectMap(attributesObj, function (attr) {
+            let size = maximize ? maxSize : clamp(attr * ratio, 0, maxSize);
+            return `${size}px`;
+        });
+
+        setAttributes(el, { styles: mappedAttributes });
+    };
+
+    let resize = debounce(_resize, 10);
+
+    resize();
+    window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
 }

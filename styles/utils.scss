@@ -125,6 +125,7 @@
     font-weight: normal;
     justify-content: center;
     position: relative;
+    border: none;
 
     &.running {
         background-color: var(--dl-color-2);
@@ -137,6 +138,7 @@
 .btn-prime {
     position: relative;
     overflow: hidden;
+    border: none;
     --border-size: 0.2rem;
 
     --box-shadow-hl: 2px;

@@ -52,7 +52,7 @@ $ALPHA_0: $PI * 0.8;
     --ncsu-font: "UniversCondensed";
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
-    --border-radius-primary: 0.5rem;
+    --border-radius-primary: 0.75rem;
 }
 
 html {
@@ -204,6 +204,7 @@ main {
 
         .unit-container {
             grid-area: unit;
+            margin: 0;
             .unit {
                 bottom: var(--font-size-sm);
                 left: 100%;
@@ -231,42 +232,19 @@ main {
 .test-info-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
-    padding: 1em 0;
+    padding: 1rem 0;
     background: var(--background-color-secondary);
 
     .info {
-        align-items: center;
+        flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         text-align: center;
 
         .test-kind {
-            font-size: 1.5em; // 3.5/4 = 0.875
+            font-size: 1.5rem;
         }
     }
-}
-
-.ul {
-    i {
-        // color: var(--ul-color-1);
-    }
-}
-
-.dl {
-    i {
-        transform: rotate(180deg);
-        // color: var(--dl-color-2);
-    }
-}
-
-.ul-color {
-    color: var(--ul-color-1);
-}
-
-.dl-color {
-    color: var(--dl-color-2);
 }
 
 .progress-bar-container {
@@ -286,17 +264,14 @@ main {
 }
 
 .unit-container {
-    --font-size-lg: 3em;
+    --font-size-lg: 3.5em;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
-    --padding: 1em;
 
-    display: flex;
     position: relative;
-    text-align: center;
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
     box-sizing: border-box;
-    margin: var(--padding) 0;
+    margin-bottom: var(--font-size-sm);
 
     &.in-progress {
         color: rgba(255, 255, 255, 0.11);
@@ -307,7 +282,7 @@ main {
     }
 
     .unit {
-        bottom: calc(-1 * var(--padding));
+        bottom: calc(-1 * var(--font-size-sm));
         font-size: var(--font-size-sm);
         left: 0;
         position: absolute;
@@ -341,23 +316,23 @@ main {
     }
 }
 
-// @media all and (max-width: $screen-size-md) {
-//     html,
-//     body {
-//         font-size: 0.95rem;
-//     }
-// }
+@media all and (max-width: $screen-size-md) {
+    html,
+    body {
+        font-size: 0.95rem;
+    }
+}
 
-// @media all and (max-width: $screen-size-sm) {
-//     html,
-//     body {
-//         font-size: 0.9rem;
-//     }
-// }
+@media all and (max-width: $screen-size-sm) {
+    html,
+    body {
+        font-size: 0.9rem;
+    }
+}
 
-// @media all and (max-width: $screen-size-xs) {
-//     html,
-//     body {
-//         font-size: 0.85rem;
-//     }
-// }
+@media all and (max-width: $screen-size-xs) {
+    html,
+    body {
+        font-size: 0.85rem;
+    }
+}

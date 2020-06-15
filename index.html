@@ -17,7 +17,7 @@
     <body>
         <main id="main-content">
             <div
-                class="pane-container hidden test-container box-shadow"
+                class="pane-container test-container box-shadow"
                 id="test-container"
             >
                 <div class="square-box">
@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <div class="pane-container box-shadow" id="start-modal">
+            <div class="pane-container hidden box-shadow" id="start-modal">
                 <div class="pane-info">
                     <h1>
                         Let's test your internet speed.
@@ -81,7 +81,7 @@
             </div>
 
             <div
-                class="test-info-progress-container hidden"
+                class="test-info-progress-container"
                 id="info-progress-container"
             >
                 <div class="test-info-container box-shadow">
@@ -148,7 +148,10 @@
         </main>
 
         <script type="text/javascript" src="scripts/ie.js"></script>
-        <script type="text/javascript" src="scripts/librespeed/speedtest.js"></script>
+        <script
+            type="text/javascript"
+            src="scripts/librespeed/speedtest.js"
+        ></script>
         <script defer type="module" src="scripts/main.js"></script>
     </body>
 </html>

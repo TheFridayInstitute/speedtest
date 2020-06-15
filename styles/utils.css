@@ -76,6 +76,7 @@
       -ms-flex-pack: center;
           justify-content: center;
   position: relative;
+  border: none;
 }
 
 .start-btn.running {
@@ -85,6 +86,7 @@
 .btn-prime {
   position: relative;
   overflow: hidden;
+  border: none;
   --border-size: 0.2rem;
   --box-shadow-hl: 2px;
   --box-shadow-vl: 0px;

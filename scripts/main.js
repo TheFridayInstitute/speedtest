@@ -282,8 +282,6 @@ let updateUI = function (state, amount) {
 
     let testState = testStateObj[state];
 
-    console.log(state, testState);
-
     if (testState === 0 || testState === 1) {
         unitContainer.querySelector(".amount").innerHTML = dots;
     } else if (testState === 2) {
@@ -300,9 +298,9 @@ let drawFunc = function () {
         return false;
     }
 
-    updateTestState(speedtestData.testState, testStateObj);
-
-    
+    // let speedtestState = SPEEDTEST_STATES[speedtestData.testState + 1];
+    let speedtestState = SPEEDTEST_STATES[testStateObj["prev_state"]];
+    console.log(speedtestState, testStateObj[speedtestState]);
 
     if (speedtestState === "ping") {
         updateUI(speedtestState, speedtestData.pingStatus);
@@ -313,9 +311,7 @@ let drawFunc = function () {
     } else {
     }
 
-   
-
-    
+    updateTestState(speedtestData.testState, testStateObj);
 };
 
 let initFunc = function () {

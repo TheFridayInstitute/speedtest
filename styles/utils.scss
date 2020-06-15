@@ -139,6 +139,9 @@
     position: relative;
     overflow: hidden;
     border: none;
+    background-image: none;
+    outline: 0;
+
     --border-size: 0.2rem;
 
     --box-shadow-hl: 2px;

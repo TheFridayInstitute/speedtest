@@ -110,7 +110,7 @@ export function slerpPoints(xy1, xy2, neg = 1) {
     let delta = 0.1;
     let points = [];
 
-    for (let t = 0; t < 1; t += delta) {
+    for (let t = 0; t <= 1; t += delta) {
         let v = lerp(t, alpha0, alpha1);
         points.push([
             neg * r * Math.cos(v) + midpoint[0],

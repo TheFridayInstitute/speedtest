@@ -1,9 +1,10 @@
 @use "sass:math";
+@import "utils.scss";
 
 $meter-width: 32rem;
 $meter-height: 64rem;
-$meter-padding: 10em;
-$meter-outer-radius: 30em;
+$meter-padding: 10rem;
+$meter-outer-radius: 30rem;
 $max-height-multiplier: 2;
 
 $screen-size-ss: 256px;
@@ -13,20 +14,21 @@ $screen-size-md: 768px;
 $screen-size-lg: 992px;
 $screen-size-xl: 1200px;
 
-$row-gap: 1em;
+$row-gap: 1rem;
 
-// Need to fix alignment issues with info container when landscape.
+$PI: 3.14159265358929;
+$ALPHA_0: $PI * 0.8;
 
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
     --background-color-primary-dark: rgb(37, 37, 37);
-    --background-color-secondary: rgb(51, 51, 51);
+    --background-color-secondary: rgb(66, 66, 66, 1);
     --font-color-primary: #fff;
 
     --color-primary: #fff;
     --color-secondary: #34c83c;
     --color-secondary-dark: #2ead34;
-    --font-family-primary: verdana, geneva, sans-serif;
+    --font-family-primary: "Helvetica", sans-serif;
 
     --dl-color-1: #8630e6;
     --dl-color-2: #f71e6a;
@@ -34,7 +36,13 @@ $row-gap: 1em;
     --ul-color-1: #ff8000;
     --ul-color-2: #ff0000;
 
-    --meter-background-color: rgba(0, 0, 0, 0.25);
+    --meter-background-color: rgb(0, 0, 0, 0.25);
+
+    --progress-bar-gradient: linear-gradient(
+        to right,
+        var(--dl-color-1),
+        var(--ul-color-1)
+    );
 
     --meter-width: #{$meter-width};
     --meter-height: #{$meter-height};
@@ -44,25 +52,32 @@ $row-gap: 1em;
     --ncsu-font: "UniversCondensed";
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
-    --border-radius-primary: 0.5em;
+    --border-radius-primary: 0.75rem;
 }
 
-html,
+html {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
 body {
     background: var(--background-color-primary);
-    margin: 0;
-    overflow: hidden;
-    overflow-y: scroll;
-    padding: 0;
-    height: 100%;
+    display: flex;
+    justify-content: center;
     width: 100%;
-    user-select: none;
+    height: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
-.main-content {
-    background: var(--background-color-primary);
+main {
+    box-sizing: border-box;
     color: var(--font-color-primary);
-    position: relative;
+    padding: $row-gap/2;
 
     display: grid;
     font-family: var(--font-family-primary);
@@ -72,287 +87,238 @@ body {
         "info"
         "button";
 
-    grid-template-columns: auto;
-    grid-template-rows: auto;
+    grid-template-rows: 1fr 1fr 1fr;
+    height: 100%;
+    max-height: calc(min(100vh, #{$meter-height}));
+    max-width: calc(min(100vw, #{$meter-width}));
     row-gap: $row-gap;
-    max-width: $meter-width;
-    max-height: 100vh;
-    padding: 1em;
     width: 100%;
-
-    .start-btn-container {
-        grid-area: button;
-    }
 
     .test-container {
         grid-area: test;
     }
 
-    .test-info-container {
+    .test-info-progress-container {
         grid-area: info;
+    }
+
+    .start-btn-container {
+        justify-self: center;
+        grid-area: button;
+        align-self: flex-start;
+        height: 3rem;
+        width: 75%;
     }
 }
 
 .pane-container {
-    height: 100%;
-    width: 100%;
-    padding: 1em;
-
-    grid-area: test;
     border-radius: var(--border-radius-primary);
+    grid-area: test;
+    box-sizing: border-box;
+    background: var(--background-color-secondary);
+    align-content: center;
 }
 
 .pane-info {
-    h1,
-    h2 {
-        color: var(--ul-color-1);
-    }
-    font-size: 1.5em;
-    text-align: center;
-
-    .icon-lg {
-        font-size: 10em;
-    }
-}
-
-.pane-hidden {
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.test-container {
+    --padding: 1em;
+    height: 100%;
+    width: 100%;
+    padding: var(--padding);
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    
+
+    h1,
+    h2 {
+        text-align: left;
+    }
+
+    hr {
+        --main-color: white;
+        width: calc(100% + var(--padding));
+        margin-right: calc(-1 * var(--padding));
+        height: 0.1em;
+        border-radius: 1rem;
+        background-color: var(--main-color);
+        border: none;
+    }
+}
+
+.hidden {
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.test-container {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
 
     .info {
-        display: grid;
-        grid-template-areas:
-            "amount"
-            "kind";
-        grid-template-columns: auto;
-        grid-template-rows: auto auto;
+        $y: (1 - sin($ALPHA_0))/2 - 0.05;
 
-        row-gap: 0.5em;
-        justify-items: center;
+        background-color: var(--background-color-primary-dark);
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        bottom: 0;
+        box-sizing: border-box;
+        display: flex;
+        height: calc(100% *#{$y});
+
+        justify-content: center;
+        left: 0;
+        margin: 0 auto;
+        position: absolute;
         align-items: center;
-        margin-top: calc(-25% + 1em);
-
-        --font-size: 4em;
-        --size: calc(var(--font-size) / 4);
+        right: 0;
+        width: 75%;
 
         .test-kind {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: var(--size);
-            height: var(--size);
-            text-align: center;
-            font-size: var(--font-size);
+            display: none;
             grid-area: kind;
         }
 
-        .amount-container {
-            grid-area: amount;
+        .unit-container {
+            grid-area: unit;
+            margin: 0;
+            
+            .unit {
+                bottom: var(--font-size-sm);
+                left: 100%;
+                right: 0;
+            }
         }
     }
 
     .square-box {
+        grid-area: test;
         z-index: 1;
+
         canvas {
-            padding: $row-gap;
+            box-sizing: border-box;
+            padding: 0.5rem;
         }
     }
 }
 
-.square-box {
-    height: 0%;
-    padding-bottom: 100%;
-    position: relative;
-    width: 100%;
-
-    * {
-        height: 100%;
-        width: 100%;
-        position: absolute;
-    }
+.test-info-progress-container {
+    display: flex;
+    flex-direction: column;
 }
 
 .test-info-container {
-    padding: 1em;
+    display: flex;
+    flex-direction: row;
+    padding: 1rem 0;
+    background: var(--background-color-secondary);
+
     .info {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
         text-align: center;
 
         .test-kind {
-            font-size: 1.5em;
-        }
-        .amount-container {
-        }
-    }
-}
-
-.unit-container {
-    --font-size-lg: 3.5em;
-    --font-size-sm: calc(var(--font-size-lg) / 4);
-    --height: calc(var(--font-size-lg) + var(--font-size-sm));
-
-    display: grid;
-    grid-template-areas:
-        "amount"
-        "unit";
-    grid-template-columns: 1fr;
-    grid-template-rows: 90% 10%;
-
-    row-gap: 0.2em;
-
-    text-align: center;
-    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-
-    &.in-progress {
-        color: rgba(255, 255, 255, 0.25);
-    }
-
-    .amount {
-        font-size: var(--font-size-lg);
-        grid-area: amount;
-        align-self: start;
-    }
-
-    .unit {
-        align-self: end;
-        font-size: var(--font-size-sm);
-        grid-area: unit;
-        margin-top: calc(-1 * var(--font-size-sm));
-    }
-}
-
-.test-kind {
-    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
-
-    &.rotate {
-        i {
-            transform: rotate(180deg);
-        }
-    }
-
-    &.ul {
-        i {
-            color: var(--ul-color-1);
-            &.white {
-                color: white;
-            }
-        }
-    }
-
-    &.dl {
-        i {
-            color: var(--dl-color-2);
-            &.white {
-                color: white;
-            }
+            font-size: 1.5rem;
         }
     }
 }
 
 .progress-bar-container {
+    box-sizing: border-box;
     display: flex;
     flex-direction: row;
-    width: 100%;
-    height: 1em;
-    padding: $row-gap;
+    height: 1rem;
+    margin: 0.5rem 0;
     position: relative;
+    width: 100%;
 
     .progress-bar {
         border-radius: 0;
-        height: 1em;
+        height: 1rem;
         width: 0;
     }
 }
 
-@media all and (max-width: $screen-size-md) {
-    html,
-    body {
-        font-size: 0.85rem;
-    }
-}
+.unit-container {
+    --font-size-lg: 3em;
+    --font-size-sm: calc(var(--font-size-lg) / 4);
+    --height: calc(var(--font-size-lg) + var(--font-size-sm));
 
-@media all and (max-width: $screen-size-sm) {
-    html,
-    body {
-        font-size: 0.8rem;
-    }
-}
+    position: relative;
+    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+    box-sizing: border-box;
+    margin-bottom: var(--font-size-sm);
 
-@media all and (max-width: $screen-size-xs) {
-    html,
-    body {
-        font-size: 0.75rem;
+    &.in-progress {
+        color: rgba(255, 255, 255, 0.11);
+    }
+
+    .amount {
+        font-size: var(--font-size-lg);
+    }
+
+    .unit {
+        bottom: calc(-1 * var(--font-size-sm));
+        font-size: var(--font-size-sm);
+        left: 0;
+        position: absolute;
+        right: 0;
     }
 }
 
 @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
-    .main-content {
-        column-gap: 1em;
+    main {
+        column-gap: $row-gap;
         grid-template-areas:
             "test info"
             "test button";
-
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
 
-        max-width: $meter-height;
+        max-width: calc(min(100vw, #{$meter-height}));
+        max-height: calc(min(100vh, #{$meter-width}));
+    }
 
-        .start-btn-container {
-            align-self: center;
-        }
-
-        .test-container {
-            align-self: center;
-        }
-
+    .test-info-progress-container {
         .test-info-container {
-            align-self: center;
-        }
-    }
+            flex-direction: column;
 
-    .test-container {
-        .info {
-            grid-template-areas: "amount kind";
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto;
-        }
-    }
+            .info {
+                align-items: center;
+                flex-direction: row;
 
-    .test-info-container {
-        flex-direction: column;
-        .info {
-            flex-direction: row;
-            justify-content: space-between;
+                .test-kind {
+                    flex: 1;
+                }
+                .unit-container {
+                    flex: 1;
+                }
+            }
         }
     }
 }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-md) {
-    html,
-    body {
-        font-size: 0.85em;
-    }
-}
+// @media all and (max-width: $screen-size-md) {
+//     html,
+//     body {
+//         font-size: 0.95rem;
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-sm) {
-    html,
-    body {
-        font-size: 0.8em;
-    }
-}
+// @media all and (max-width: $screen-size-sm) {
+//     html,
+//     body {
+//         font-size: 0.9rem;
+//     }
+// }
 
-@media all and (orientation: landscape) and (max-height: $screen-size-xs) {
-    html,
-    body {
-        font-size: 0.75em;
+@media all and (max-width: $screen-size-xs) {
+    html {
+        font-size: 0.95rem;
     }
 }

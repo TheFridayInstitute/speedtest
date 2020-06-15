@@ -7,25 +7,6 @@
         />
         <meta charset="UTF-8" />
 
-        <link
-            rel="icon"
-            type="image/x-ico"
-            href="https://www.fi.ncsu.edu/wp-content/themes/hillsborough/assets/img/favicon.ico"
-        />
-
-        <link
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-            crossorigin="anonymous"
-        />
-
-        <script
-            src="https://kit.fontawesome.com/f3238cd59c.js"
-            crossorigin="anonymous"
-        ></script>
-
-        <link rel="shortcut icon" href="favicon.ico" />
         <link rel="stylesheet" href="styles/style.css" />
         <link rel="stylesheet" href="styles/extras.css" />
         <link rel="stylesheet" href="styles/utils.css" />
@@ -34,178 +15,143 @@
     </head>
 
     <body>
-        <div
-            class="d-flex justify-content-center align-items-center h-100 w-100"
-        >
-            <main class="main-content" id="main-content">
-                <div
-                    class="container-fluid d-flex justify-content-center align-items-center start-btn-container"
-                >
-                    <div
-                        class="start-btn btn-prime"
-                        id="start-btn"
-                        aria-label="start-button"
-                    >
-                        <div class="ripple"></div>
-                    </div>
+        <main id="main-content">
+            <div
+                class="pane-container hidden test-container box-shadow"
+                id="test-container"
+            >
+                <div class="square-box">
+                    <canvas id="test-meter"></canvas>
                 </div>
 
-                <div class="container-fluid d-flex flex-column">
-                    <div class="row">
+                <div class="info test-icon">
+                    <div class="unit-container" id="test-amount-container">
                         <div
-                            class="d-flex justify-content-space-evenly w-100 test-info-container box-shadow"
+                            id="test-amount"
+                            class="amount"
+                            aria-label="active-test-speed"
                         >
-                            <div class="info">
-                                <div class="test-kind">
-                                    Latency<i
-                                        class="fa fa-arrow-circle-o-down"
-                                        aria-hidden="true"
-                                        style="opacity: 0;"
-                                    ></i>
-                                </div>
-
-                                <div class="unit-container in-progress">
-                                    <div
-                                        id="ping-amount"
-                                        class="amount"
-                                        aria-label="latency"
-                                    >
-                                        0
-                                    </div>
-                                    <div class="unit">ms</div>
-                                </div>
-                            </div>
-
-                            <div class="info test-icon">
-                                <div class="test-kind dl">
-                                    Download
-                                    <i
-                                        class="fa fa-arrow-circle-o-down white"
-                                        aria-hidden="true"
-                                    ></i>
-                                </div>
-                                <div class="unit-container in-progress">
-                                    <div
-                                        id="dl-amount"
-                                        class="amount"
-                                        aria-label="download-speed"
-                                    >
-                                        0
-                                    </div>
-                                    <div class="unit">Mbps</div>
-                                </div>
-                            </div>
-
-                            <div class="info test-icon">
-                                <div class="test-kind ul rotate">
-                                    Upload
-                                    <i
-                                        class="fa fa-arrow-circle-o-down white"
-                                        aria-hidden="true"
-                                    ></i>
-                                </div>
-                                <div class="unit-container in-progress">
-                                    <div
-                                        id="ul-amount"
-                                        class="amount"
-                                        aria-label="upload-speed"
-                                    >
-                                        0
-                                    </div>
-                                    <div class="unit">Mbps</div>
-                                </div>
-                            </div>
+                            0
                         </div>
+                        <div id="test-amount-unit" class="unit">Mbps</div>
                     </div>
 
-                    <div class="row">
-                        <div
-                            class="progress-bar-container"
-                            id="progress-bar"
-                        ></div>
+                    <div id="test-kind" class="test-kind">
+                        <div class="dot-container dot-typing"></div>
                     </div>
                 </div>
+            </div>
 
-                <div
-                    class="pane-container test-container box-shadow pane-hidden"
-                    id="test-container"
-                >
-                    <div class="square-box">
-                        <canvas id="test-meter"></canvas>
-                    </div>
+            <div class="pane-container hidden box-shadow" id="complete-modal">
+                <div class="pane-info">
+                    <h1>
+                        Speed test complete.
+                    </h1>
 
-                    <div class="info test-icon">
-                        <div class="unit-container">
+                    <hr />
+
+                    <p>
+                        Click the Next → button to continue, or wait to
+                        automatically progress.
+                    </p>
+                </div>
+            </div>
+
+            <div class="pane-container box-shadow" id="start-modal">
+                <div class="pane-info">
+                    <h1>
+                        Let's test your internet speed.
+                    </h1>
+
+                    <hr />
+
+                    <p>
+                        Up to <strong>25 MB</strong> of data on
+                        <strong>cellular</strong> or
+                        <strong>satellite</strong> connections may be consumed.
+
+                        <br />
+                        <br />
+
+                        If you'd like to skip the speed test, press the Next →
+                        button in the lower right. Otherwise, press the Start
+                        button to begin.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="test-info-progress-container hidden"
+                id="info-progress-container"
+            >
+                <div class="test-info-container box-shadow">
+                    <div class="info">
+                        <div class="test-kind ping">
+                            Latency
+                        </div>
+
+                        <div class="unit-container in-progress">
                             <div
-                                id="test-amount"
+                                id="ping-amount"
                                 class="amount"
-                                aria-label="active-test-speed"
+                                aria-label="latency"
                             >
                                 0
                             </div>
-                            <div id="test-amount-unit" class="unit">Mbps</div>
+                            <div class="unit">ms</div>
                         </div>
-                        <div id="test-kind" class="test-kind">
-                            <div class="dot-container dot-typing"></div>
+                    </div>
+
+                    <div class="info test-icon">
+                        <div class="test-kind dl">
+                            Download
+                        </div>
+                        <div class="unit-container in-progress">
+                            <div
+                                id="dl-amount"
+                                class="amount"
+                                aria-label="download-speed"
+                            >
+                                0
+                            </div>
+                            <div class="unit">Mbps</div>
+                        </div>
+                    </div>
+
+                    <div class="info test-icon">
+                        <div class="test-kind ul">
+                            Upload
+                        </div>
+                        <div class="unit-container in-progress">
+                            <div
+                                id="ul-amount"
+                                class="amount"
+                                aria-label="upload-speed"
+                            >
+                                0
+                            </div>
+                            <div class="unit">Mbps</div>
                         </div>
                     </div>
                 </div>
+                <div class="progress-bar-container" id="progress-bar"></div>
+            </div>
 
-                <div
-                    class="pane-container d-flex align-items-center box-shadow pane-hidden"
-                    id="complete-modal"
-                >
-                    <div class="pane-info">
-                        <h2>
-                            Speed test complete!
-                        </h2>
+            <button
+                class="start-btn-container start-btn btn-prime"
+                id="start-btn"
+                aria-label="start-button"
+            >
+                <div class="text">Start</div>
+                <div class="ripple"></div>
+            </button>
+        </main>
 
-                        <div class="text">
-                            Click the
-                            <span class="start-color">Next →</span> button to
-                            finish the survey.
-                        </div>
-
-                        <i class="fa fa-check icon-lg" aria-hidden="true"></i>
-                    </div>
-                </div>
-
-                <div
-                    class="pane-container d-flex align-items-center box-shadow"
-                    id="start-modal"
-                >
-                    <div class="pane-info">
-                        We will now test the speed of your current internet
-                        connection. This test may use up to
-                        <span class="ul-color">100 MB</span> of data.
-
-                        <br />
-                        <br />
-
-                        If you have a low data cap or would like to skip the
-                        speed test, press the
-                        <span class="start-color">Next →</span>
-                        button in the lower right. Otherwise, press the
-                        <span class="start-color">Start</span>
-                        button.
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <script
-            src="https://code.jquery.com/jquery-3.4.1.min.js"
-            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-            crossorigin="anonymous"
-        ></script>
-
-        <script
-            src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"
-            integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
-            crossorigin="anonymous"
-        ></script>
         <script type="text/javascript" src="scripts/ie.js"></script>
-        <script type="text/javascript" src="speedtest.js"></script>
-        <script type="module" src="scripts/script.js"></script>
+        <script
+            type="text/javascript"
+            src="speedtest.js"
+        ></script>
+        <script defer type="module" src="scripts/main.js"></script>
     </body>
 </html>

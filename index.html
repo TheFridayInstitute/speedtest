@@ -7,17 +7,6 @@
         />
         <meta charset="UTF-8" />
 
-        <script
-            src="https://kit.fontawesome.com/f3238cd59c.js"
-            crossorigin="anonymous"
-        ></script>
-
-        <link
-            rel="icon"
-            type="image/x-ico"
-            href="https://www.fi.ncsu.edu/wp-content/themes/hillsborough/assets/img/favicon.ico"
-        />
-
         <link rel="stylesheet" href="styles/style.css" />
         <link rel="stylesheet" href="styles/extras.css" />
         <link rel="stylesheet" href="styles/utils.css" />
@@ -62,11 +51,6 @@
                     <hr />
 
                     <p>
-                        Thank you!
-
-                        <br />
-                        <br />
-
                         Click the Next → button to continue, or wait to
                         automatically progress.
                     </p>
@@ -82,15 +66,15 @@
                     <hr />
 
                     <p>
-                        Up to <span class="dl-color">25 MB</span> of data on
+                        Up to <strong>25 MB</strong> of data on
                         <strong>cellular</strong> or
                         <strong>satellite</strong> connections may be consumed.
 
                         <br />
                         <br />
 
-                        If you'd like to skip the speed test, press the Next
-                        → button in the lower right. Otherwise, press the Start
+                        If you'd like to skip the speed test, press the Next →
+                        button in the lower right. Otherwise, press the Start
                         button to begin.
                     </p>
                 </div>
@@ -121,7 +105,6 @@
                     <div class="info test-icon">
                         <div class="test-kind dl">
                             Download
-                            <i class="fas fa-arrow-circle-up"></i>
                         </div>
                         <div class="unit-container in-progress">
                             <div
@@ -138,7 +121,6 @@
                     <div class="info test-icon">
                         <div class="test-kind ul">
                             Upload
-                            <i class="fas fa-arrow-circle-up"></i>
                         </div>
                         <div class="unit-container in-progress">
                             <div
@@ -155,20 +137,18 @@
                 <div class="progress-bar-container" id="progress-bar"></div>
             </div>
 
-            <div class="start-btn-container">
-                <button
-                    class="start-btn btn-prime"
-                    id="start-btn"
-                    aria-label="start-button"
-                >
-                    <div class="text">Start</div>
-                    <div class="ripple"></div>
-                </button>
-            </div>
+            <button
+                class="start-btn-container start-btn btn-prime"
+                id="start-btn"
+                aria-label="start-button"
+            >
+                <div class="text">Start</div>
+                <div class="ripple"></div>
+            </button>
         </main>
 
         <script type="text/javascript" src="scripts/ie.js"></script>
-        <script type="text/javascript" src="speedtest.js"></script>
-        <script defer type="module" src="scripts/script.js"></script>
+        <script type="text/javascript" src="scripts/librespeed/speedtest.js"></script>
+        <script defer type="module" src="scripts/main.js"></script>
     </body>
 </html>

@@ -78,6 +78,11 @@ var ulColorStops = [
     ["1.0", "#FF0000"],
 ];
 
+var downloadColors = {
+    inner_color: null,
+    outer_color: null,
+};
+
 var dlProgressColor;
 var dlProgressGlowColor;
 
@@ -91,15 +96,16 @@ let makeGlowColor = function (value) {
     return [stop, newColor.colorString];
 };
 
-// TODO: This doesn't work. Fix it.
-function hysteresis(t, prevT, eps = 0.01) {
+var hysteresisRecord = {};
+function hysteresis(t, key, eps = 0.01) {
+    let prevT = hysteresisRecord[key] || t;
     if (t - prevT > eps) {
         t = prevT + eps;
     } else if (t - prevT < -eps) {
         t = prevT - eps;
     }
-    prevT = t;
-    return [t, prevT];
+    hysteresisRecord[key] = t;
+    return t;
 }
 
 function receiveMessage(event) {
@@ -119,6 +125,15 @@ const SPEEDTEST_STATES = Object.freeze({
     6: "aborted",
 });
 
+const SPEEDTEST_DATA_MAPPING = Object.freeze({
+    ping_amount: "pingStatus",
+    download_amount: "dlStatus",
+    upload_amount: "ulStatus",
+    ping_progress: "pingStatus",
+    download_progress: "dlProgress",
+    upload_progress: "ulProgress",
+});
+
 /**
  * test state object mapping:
  * -1: not started;
@@ -129,9 +144,9 @@ const SPEEDTEST_STATES = Object.freeze({
  */
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
-function updateTestState(speedtestState, testStateObj, abort = false) {
+function updateTestState(testStateObj, abort = false) {
     // + 1 because we start at 0, not -1 (unlike librespeed).
-    speedtestState += 1;
+    let speedtestState = speedtestData.testState + 1;
     let testKind = SPEEDTEST_STATES[speedtestState];
     let prevState = testStateObj["prev_state"];
     let prevKey = SPEEDTEST_STATES[prevState];
@@ -163,50 +178,6 @@ function updateTestState(speedtestState, testStateObj, abort = false) {
     return testStateObj;
 }
 
-var prevT = 0;
-var eps = 0.05;
-function drawMeter(
-    status,
-    meterTextEl,
-    meterAmount,
-    progressAmount,
-    progressColor,
-    progressGlowColor
-) {
-    canvasObj.clear();
-
-    meterAmount = parseFloat(meterAmount) || 0;
-    progressAmount = parseFloat(progressAmount) || 0;
-
-    if (status === 1 && meterAmount === 0) {
-        meterTextEl.innerHTML = "0";
-    } else {
-        meterTextEl.innerHTML = clamp(meterAmount.toPrecision(3), 0, 999);
-    }
-
-    let t = normalize(
-        clamp(meterAmount, METER_MIN, METER_MAX),
-        METER_MIN,
-        METER_MAX
-    );
-    // [t, prevT] = hysteresis(t, prevT, eps);
-    let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
-
-    outerMeter.draw(canvasObj, 1);
-    setRoundedArcColor(outerMeter, progressColor);
-    outerMeter.draw(canvasObj, t);
-    setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
-
-    setRoundedArcColor(innerMeter, progressGlowColor);
-    innerMeter.draw(canvasObj, t);
-
-    meterDot.draw(canvasObj);
-
-    meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
-
-    progressBarMesh.draw(canvasObj, clamp(progressAmount, 0, 1));
-}
-
 let openingAnimation = function (duration, timingFunc) {
     let transformFunc = function (v, t) {
         canvasObj.clear();
@@ -229,6 +200,8 @@ let openingAnimation = function (duration, timingFunc) {
 
             .rotate(-theta, true)
             .scale(1 / t);
+        progressBarMesh.draw(canvasObj, t);
+        hysteresis(t, "progressBar");
     };
     smoothAnimate(
         METER_ANGLE_END,
@@ -260,6 +233,8 @@ let closingAnimation = function (duration, timingFunc) {
 
             .rotate(-theta, true)
             .scale(1 / t);
+
+        progressBarMesh.draw(canvasObj, 0);
     };
     smoothAnimate(
         METER_ANGLE_END,
@@ -276,42 +251,103 @@ let updateFunc = function () {
 
 let dots = `...`;
 
-let updateUI = function (state, amount) {
-    let stateKindEl = document.getElementById(state);
+let updateInfoUI = function (stateName, stateObj) {
+    let stateKindEl = document.getElementById(stateName);
     let unitContainer = stateKindEl.querySelector(".unit-container");
+    let state = stateObj[stateName];
+    let stateAmount =
+        speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
 
-    let testState = testStateObj[state];
-
-    if (testState === 0 || testState === 1) {
+    if (state === 0 || state === 1) {
         unitContainer.querySelector(".amount").innerHTML = dots;
-    } else if (testState === 2) {
-        let fAmount = clamp(Math.round(parseFloat(amount)), 0, 999);
+    } else if (state === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
         unitContainer.classList.remove("in-progress");
-        unitContainer.querySelector(".amount").innerHTML = fAmount;
-        testStateObj[state] = 3;
+        unitContainer.querySelector(".amount").innerHTML = clamp(
+            Math.round(parseFloat(stateAmount)),
+            0,
+            999
+        );
+        stateObj[stateName] = 3;
     }
 };
+
+function drawMeter(stateName, outerMeterColor, innerMeterColor) {
+    let stateAmount =
+        parseFloat(
+            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
+        ) || 0;
+
+    document.getElementById("test-amount").innerHTML = clamp(
+        stateAmount.toPrecision(3),
+        0,
+        999
+    );
+
+    let t = normalize(
+        clamp(stateAmount, METER_MIN, METER_MAX),
+        METER_MIN,
+        METER_MAX
+    );
+    t = hysteresis(t, "meter");
+    let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
+
+    outerMeter.draw(canvasObj, 1);
+    setRoundedArcColor(outerMeter, outerMeterColor);
+    outerMeter.draw(canvasObj, t);
+    setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
+
+    setRoundedArcColor(innerMeter, innerMeterColor);
+    innerMeter.draw(canvasObj, t);
+
+    meterDot.draw(canvasObj);
+    meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
+}
+
+function drawProgressBar(stateName) {
+    let stateProgress =
+        parseFloat(
+            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]
+        ) || 0;
+    let t = clamp(stateProgress, 0, 1);
+    t = hysteresis(t, "progressBar", 0.02);
+    progressBarMesh.draw(canvasObj, t);
+}
 
 let drawFunc = function () {
     if (speedtestObj.getState() != 3 || speedtestData === null) {
         return false;
     }
+    canvasObj.clear();
 
-    // let speedtestState = SPEEDTEST_STATES[speedtestData.testState + 1];
-    let speedtestState = SPEEDTEST_STATES[testStateObj["prev_state"]];
-    console.log(speedtestState, testStateObj[speedtestState]);
+    let state = speedtestData.testState + 1;
+    let prevState = testStateObj["prev_state"];
+    updateTestState(testStateObj);
 
-    if (speedtestState === "ping") {
-        updateUI(speedtestState, speedtestData.pingStatus);
-    } else if (speedtestState === "download") {
-        updateUI(speedtestState, speedtestData.dlStatus);
-    } else if (speedtestState === "upload") {
-        updateUI(speedtestState, speedtestData.ulStatus);
-    } else {
+    let stateName = SPEEDTEST_STATES[prevState];
+
+    if (
+        stateName === "ping" ||
+        stateName === "download" ||
+        stateName === "upload"
+    ) {
+        updateInfoUI(stateName, testStateObj);
+
+        if (stateName === "ping") {
+            return;
+        } else if (stateName === "download") {
+            drawMeter(stateName, dlProgressColor, dlProgressGlowColor);
+        } else if (stateName === "upload") {
+            drawMeter(stateName, ulProgressColor, ulProgressGlowColor);
+        }
+        drawProgressBar(stateName);
+    } else if (stateName === "finished") {
+        onend();
     }
 
-    updateTestState(speedtestData.testState, testStateObj);
+    if (state !== prevState) {
+        drawFunc();
+    }
 };
 
 let initFunc = function () {
@@ -500,7 +536,7 @@ async function onstart() {
         document.getElementById("start-btn").classList.remove("running");
         document.querySelector("#start-btn .text").innerHTML = "Start";
 
-        updateTestState(speedtestData.testState, testStateObj, true);
+        updateTestState(testStateObj, true);
         openingAnimation(1000, smoothStep3);
 
         await sleep(500);

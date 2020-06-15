@@ -235,7 +235,7 @@ main .start-btn-container {
 }
 
 .pane-info {
-  --padding: 1rem;
+  --padding: 1em;
   height: 100%;
   width: 100%;
   padding: var(--padding);

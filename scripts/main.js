@@ -333,31 +333,34 @@ let drawFunc = function () {
             break;
     }
 
-    // If upload in progress.
-    if (testStateObj["upload"] > -1) {
-        drawMeter(
-            speedtestData.testState,
-            document.getElementById("test-amount"),
-            speedtestData.ulStatus,
-            speedtestData.ulProgress,
-            ulProgressColor,
-            ulProgressGlowColor
-        );
-    }
-    // If upload complete.
-    if (testStateObj["upload"] === 2) {
-        animateProgressBarWrapper(progressBarEl, 1000, 3);
-        document
-            .getElementById("ul-amount")
-            .parentElement.classList.remove("in-progress");
+    switch (testStateObj["upload"]) {
+        case 0:
+        case 1: {
+            drawMeter(
+                speedtestData.testState,
+                document.getElementById("test-amount"),
+                speedtestData.ulStatus,
+                speedtestData.ulProgress,
+                ulProgressColor,
+                ulProgressGlowColor
+            );
+            document.getElementById("ul-amount").innerHTML = dots;
+            break;
+        }
+        case 2:
+            animateProgressBarWrapper(progressBarEl, 1000, 3);
+            document
+                .getElementById("ul-amount")
+                .parentElement.classList.remove("in-progress");
 
-        document.getElementById("ul-amount").innerHTML = clamp(
-            parseFloat(speedtestData.ulStatus).toPrecision(3),
-            0,
-            999
-        );
-        testStateObj["upload"] = 3;
-        onend();
+            document.getElementById("ul-amount").innerHTML = clamp(
+                parseFloat(speedtestData.ulStatus).toPrecision(3),
+                0,
+                999
+            );
+            testStateObj["upload"] = 3;
+            onend();
+            break;
     }
 };
 

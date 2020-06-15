@@ -56,26 +56,24 @@ $ALPHA_0: $PI * 0.8;
 }
 
 html {
-    box-sizing: border-box;
-    height: 100%;
     width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 body {
-    align-items: center;
     background: var(--background-color-primary);
-    box-sizing: border-box;
     display: flex;
-    height: 100%;
     justify-content: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    align-items: center;
     margin: 0;
     padding: 0;
-    width: 100%;
-    overflow-x: hidden;
 }
 
 main {
-    // background: var(--background-color-primary);
     box-sizing: border-box;
     color: var(--font-color-primary);
     padding: $row-gap/2;
@@ -90,11 +88,12 @@ main {
 
     grid-template-rows: 1fr 1fr 1fr;
     height: 100%;
-    max-height: $meter-height;
+    max-height: calc(min(100vh, #{$meter-height}));
 
-    max-width: $meter-width;
+    max-width: calc(min(100vw, #{$meter-width}));
     row-gap: $row-gap;
     width: 100%;
+    justify-items: stretch;
 
     .test-container {
         grid-area: test;
@@ -105,14 +104,11 @@ main {
     }
 
     .start-btn-container {
-        display: flex;
+        justify-self: center;
         grid-area: button;
-        justify-content: center;
-
-        button {
-            height: 3rem;
-            width: 75%;
-        }
+        align-self: flex-start;
+        height: 3rem;
+        width: 75%;
     }
 }
 
@@ -266,12 +262,11 @@ main {
 }
 
 .ul-color {
-   color: var(--ul-color-1);
+    color: var(--ul-color-1);
 }
 
 .dl-color {
-   color: var(--dl-color-2);
-
+    color: var(--dl-color-2);
 }
 
 .progress-bar-container {

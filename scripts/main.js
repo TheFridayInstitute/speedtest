@@ -276,6 +276,25 @@ let updateFunc = function () {
 
 let dots = `...`;
 
+let updateUI = function (state, amount) {
+    let stateKindEl = document.getElementById(state);
+    let unitContainer = stateKindEl.querySelector(".unit-container");
+
+    let testState = testStateObj[state];
+
+    console.log(state, testState);
+
+    if (testState === 0 || testState === 1) {
+        unitContainer.querySelector(".amount").innerHTML = dots;
+    } else if (testState === 2) {
+        let fAmount = clamp(Math.round(parseFloat(amount)), 0, 999);
+        animateProgressBarWrapper(progressBarEl, 1000, 3);
+        unitContainer.classList.remove("in-progress");
+        unitContainer.querySelector(".amount").innerHTML = fAmount;
+        testStateObj[state] = 3;
+    }
+};
+
 let drawFunc = function () {
     if (speedtestObj.getState() != 3 || speedtestData === null) {
         return false;
@@ -283,85 +302,20 @@ let drawFunc = function () {
 
     updateTestState(speedtestData.testState, testStateObj);
 
-    switch (testStateObj["ping"]) {
-        case 0:
-        case 1: {
-            document.getElementById("ping-amount").innerHTML = dots;
-            break;
-        }
-        case 2:
-            animateProgressBarWrapper(progressBarEl, 1000, 3);
-            document
-                .getElementById("ping-amount")
-                .parentElement.classList.remove("in-progress");
+    
 
-            document.getElementById("ping-amount").innerText = clamp(
-                Math.round(parseFloat(speedtestData.pingStatus)),
-                0,
-                999
-            );
-            testStateObj["ping"] = 3;
-            break;
+    if (speedtestState === "ping") {
+        updateUI(speedtestState, speedtestData.pingStatus);
+    } else if (speedtestState === "download") {
+        updateUI(speedtestState, speedtestData.dlStatus);
+    } else if (speedtestState === "upload") {
+        updateUI(speedtestState, speedtestData.ulStatus);
+    } else {
     }
 
-    switch (testStateObj["download"]) {
-        case 0:
-        case 1: {
-            drawMeter(
-                speedtestData.testState,
-                document.getElementById("test-amount"),
-                speedtestData.dlStatus,
-                speedtestData.dlProgress,
-                dlProgressColor,
-                dlProgressGlowColor
-            );
-            document.getElementById("dl-amount").innerHTML = dots;
-            break;
-        }
-        case 2:
-            animateProgressBarWrapper(progressBarEl, 1000, 3);
-            document
-                .getElementById("dl-amount")
-                .parentElement.classList.remove("in-progress");
+   
 
-            document.getElementById("dl-amount").innerHTML = clamp(
-                parseFloat(speedtestData.dlStatus).toPrecision(3),
-                0,
-                999
-            );
-            testStateObj["download"] = 3;
-            break;
-    }
-
-    switch (testStateObj["upload"]) {
-        case 0:
-        case 1: {
-            drawMeter(
-                speedtestData.testState,
-                document.getElementById("test-amount"),
-                speedtestData.ulStatus,
-                speedtestData.ulProgress,
-                ulProgressColor,
-                ulProgressGlowColor
-            );
-            document.getElementById("ul-amount").innerHTML = dots;
-            break;
-        }
-        case 2:
-            animateProgressBarWrapper(progressBarEl, 1000, 3);
-            document
-                .getElementById("ul-amount")
-                .parentElement.classList.remove("in-progress");
-
-            document.getElementById("ul-amount").innerHTML = clamp(
-                parseFloat(speedtestData.ulStatus).toPrecision(3),
-                0,
-                999
-            );
-            testStateObj["upload"] = 3;
-            onend();
-            break;
-    }
+    
 };
 
 let initFunc = function () {
@@ -522,7 +476,7 @@ async function onload() {
 
 let openingSlide = once(async function () {
     let duration = 1000;
-    let testEl = document.getElementById("test-container");
+    let testEl = document.getElementById("test-modal");
     let infoEl = document.getElementById("info-progress-container");
 
     let startModal = document.getElementById("start-modal");
@@ -581,7 +535,7 @@ async function onstart() {
 async function onend() {
     let duration = 2000;
     let buttonEl = document.getElementById("start-btn");
-    let testEl = document.getElementById("test-container");
+    let testEl = document.getElementById("test-modal");
     let completeModal = document.getElementById("complete-modal");
     let width = window.innerWidth;
 

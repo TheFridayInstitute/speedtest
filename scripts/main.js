@@ -16,6 +16,10 @@ import {
     normalize,
     easeInOutCubic,
     slerpPoints,
+    bounceInEase,
+    easeInBounce,
+    easeInQuad,
+    easeOutCubic,
 } from "./math.js";
 
 import {
@@ -31,7 +35,13 @@ import {
     slideRightWrap,
 } from "./animation.js";
 
-import { getOffset, once, getComputedVariable, fluidText } from "./utils.js";
+import {
+    getOffset,
+    once,
+    getComputedVariable,
+    fluidText,
+    emToPixels,
+} from "./utils.js";
 
 import { Color } from "./colors.js";
 
@@ -55,7 +65,7 @@ const METER_MIN = 0;
 const METER_MAX = 100;
 
 // Keep this constant.
-var lineWidth = 32;
+var lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
 
 var outerRadius;
 var innerRadius;
@@ -78,11 +88,6 @@ var ulColorStops = [
     ["1.0", "#FF0000"],
 ];
 
-var downloadColors = {
-    inner_color: null,
-    outer_color: null,
-};
-
 var dlProgressColor;
 var dlProgressGlowColor;
 
@@ -97,12 +102,12 @@ let makeGlowColor = function (value) {
 };
 
 var hysteresisRecord = {};
-function hysteresis(t, key, eps = 0.01) {
-    let prevT = hysteresisRecord[key] || t;
-    if (t - prevT > eps) {
-        t = prevT + eps;
-    } else if (t - prevT < -eps) {
-        t = prevT - eps;
+function hysteresis(t, key, eps = 0.01, step = 1 / 15) {
+    let prevT = hysteresisRecord[key] || 0;
+    let delta = Math.abs(t - prevT);
+    if (delta > eps) {
+        // t = easeOutCubic(step, prevT, t - prevT, 1);
+        t = lerp(step, prevT, t);
     }
     hysteresisRecord[key] = t;
     return t;
@@ -200,6 +205,7 @@ let openingAnimation = function (duration, timingFunc) {
 
             .rotate(-theta, true)
             .scale(1 / t);
+
         progressBarMesh.draw(canvasObj, t);
         hysteresis(t, "progressBar");
     };
@@ -249,7 +255,7 @@ let updateFunc = function () {
     return false;
 };
 
-let dots = `...`;
+let dots = `<div class="dot-container dot-typing"></div>`;
 
 let updateInfoUI = function (stateName, stateObj) {
     let stateKindEl = document.getElementById(stateName);
@@ -310,7 +316,7 @@ function drawProgressBar(stateName) {
             speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]
         ) || 0;
     let t = clamp(stateProgress, 0, 1);
-    t = hysteresis(t, "progressBar", 0.02);
+    t = hysteresis(t, "progressBar");
     progressBarMesh.draw(canvasObj, t);
 }
 
@@ -611,6 +617,8 @@ window.onload = function () {
 
 document.getElementById("start-btn").addEventListener("click", function (ev) {
     let duration = 1000;
+    // let state = (speedtestData.testState + 1);
+    // let stateName = SPEEDTEST_STATES[state];
 
     rippleButton(
         ev,
@@ -621,15 +629,16 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
         duration
     );
 
-    // If the speedtest is complete.
-    if (testStateObj["upload"] === 3) {
-        if (eventObj !== null) {
-            console.log("Posting next message.");
-            eventObj.source.postMessage("next", eventObj.origin);
-        }
-    } else {
-        onstart();
-    }
+    onstart();
+
+    // if (stateName === "finished") {
+    //     if (eventObj !== null) {
+    //         console.log("Posting next message.");
+    //         eventObj.source.postMessage("next", eventObj.origin);
+    //     }
+    // } else {
+    //     onstart();
+    // }
 });
 
 window.addEventListener("message", receiveMessage, false);

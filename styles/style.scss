@@ -128,11 +128,18 @@ main {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    
 
     h1,
     h2 {
         text-align: left;
+    }
+
+    h1 {
+        font-size: 3rem;
+    }
+
+    h2 {
+        font-size: 2rem;
     }
 
     hr {
@@ -157,7 +164,6 @@ main {
     flex-direction: column;
     position: relative;
 
-
     .info {
         $y: (1 - sin($ALPHA_0))/2 - 0.05;
 
@@ -177,15 +183,10 @@ main {
         right: 0;
         width: 75%;
 
-        .test-kind {
-            display: none;
-            grid-area: kind;
-        }
-
         .unit-container {
             grid-area: unit;
             margin: 0;
-            
+
             .unit {
                 bottom: var(--font-size-sm);
                 left: 100%;

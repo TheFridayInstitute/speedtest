@@ -33,6 +33,7 @@ import {
     animateProgressBarWrapper,
     rippleButton,
     slideRightWrap,
+    animateElements,
 } from "./animation.js";
 
 import {
@@ -41,6 +42,7 @@ import {
     getComputedVariable,
     fluidText,
     emToPixels,
+    setAttributes,
 } from "./utils.js";
 
 import { Color } from "./colors.js";
@@ -64,12 +66,13 @@ const METER_ANGLE_END = 2 * Math.PI * 1.1;
 const METER_MIN = 0;
 const METER_MAX = 100;
 
-// Keep this constant.
 var lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
 
 var outerRadius;
 var innerRadius;
 var meterDotSize = 60;
+
+const DOTS = `<div class="dot-container dot-typing"></div>`;
 
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
 const METER_BACKGROUND_COLOR = getComputedVariable("--meter-background-color");
@@ -100,25 +103,6 @@ let makeGlowColor = function (value) {
     newColor.opacity = 0.3;
     return [stop, newColor.colorString];
 };
-
-var hysteresisRecord = {};
-function hysteresis(t, key, eps = 0.01, step = 1 / 15) {
-    let prevT = hysteresisRecord[key] || 0;
-    let delta = Math.abs(t - prevT);
-    if (delta > eps) {
-        // t = easeOutCubic(step, prevT, t - prevT, 1);
-        t = lerp(step, prevT, t);
-    }
-    hysteresisRecord[key] = t;
-    return t;
-}
-
-function receiveMessage(event) {
-    if (event.data === "start") {
-        eventObj = event;
-    }
-    console.log(`Received event of ${event}`);
-}
 
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
@@ -183,7 +167,26 @@ function updateTestState(testStateObj, abort = false) {
     return testStateObj;
 }
 
-let openingAnimation = function (duration, timingFunc) {
+var hysteresisRecord = {};
+function hysteresis(t, key, eps = 0.01, step = 1 / 15) {
+    let prevT = hysteresisRecord[key] || 0;
+    let delta = Math.abs(t - prevT);
+    if (delta > eps) {
+        // t = easeOutCubic(step, prevT, t - prevT, 1);
+        t = lerp(step, prevT, t);
+    }
+    hysteresisRecord[key] = t;
+    return t;
+}
+
+function receiveMessage(event) {
+    if (event.data === "start") {
+        eventObj = event;
+    }
+    console.log(`Received event of ${event}`);
+}
+
+let openingAnimation = async function (duration, timingFunc) {
     let transformFunc = function (v, t) {
         canvasObj.clear();
 
@@ -206,10 +209,9 @@ let openingAnimation = function (duration, timingFunc) {
             .rotate(-theta, true)
             .scale(1 / t);
 
-        progressBarMesh.draw(canvasObj, t);
-        hysteresis(t, "progressBar");
+        progressBarMesh.draw(canvasObj, 0);
     };
-    smoothAnimate(
+    await smoothAnimate(
         METER_ANGLE_END,
         METER_ANGLE_START,
         duration,
@@ -218,7 +220,7 @@ let openingAnimation = function (duration, timingFunc) {
     );
 };
 
-let closingAnimation = function (duration, timingFunc) {
+let closingAnimation = async function (duration, timingFunc) {
     let transformFunc = function (v, t) {
         canvasObj.clear();
         t = clamp(1 - t, 0.0001, 1);
@@ -240,9 +242,9 @@ let closingAnimation = function (duration, timingFunc) {
             .rotate(-theta, true)
             .scale(1 / t);
 
-        progressBarMesh.draw(canvasObj, 0);
+        progressBarMesh.draw(canvasObj, t);
     };
-    smoothAnimate(
+    await smoothAnimate(
         METER_ANGLE_END,
         METER_ANGLE_START,
         duration,
@@ -255,8 +257,6 @@ let updateFunc = function () {
     return false;
 };
 
-let dots = `<div class="dot-container dot-typing"></div>`;
-
 let updateInfoUI = function (stateName, stateObj) {
     let stateKindEl = document.getElementById(stateName);
     let unitContainer = stateKindEl.querySelector(".unit-container");
@@ -265,7 +265,7 @@ let updateInfoUI = function (stateName, stateObj) {
         speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
 
     if (state === 0 || state === 1) {
-        unitContainer.querySelector(".amount").innerHTML = dots;
+        unitContainer.querySelector(".amount").innerHTML = DOTS;
     } else if (state === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
         unitContainer.classList.remove("in-progress");
@@ -279,45 +279,60 @@ let updateInfoUI = function (stateName, stateObj) {
 };
 
 function drawMeter(stateName, outerMeterColor, innerMeterColor) {
-    let stateAmount =
-        parseFloat(
-            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
-        ) || 0;
+    if (!stateName) {
+        outerMeter.draw(canvasObj, 1);
+        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
 
-    document.getElementById("test-amount").innerHTML = clamp(
-        stateAmount.toPrecision(3),
-        0,
-        999
-    );
+        meterDot.draw(canvasObj);
+        meterDial
+            .rotate(METER_ANGLE_START, true)
+            .draw(canvasObj)
+            .rotate(-METER_ANGLE_START, true);
+    } else {
+        let stateAmount =
+            parseFloat(
+                speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
+            ) || 0;
 
-    let t = normalize(
-        clamp(stateAmount, METER_MIN, METER_MAX),
-        METER_MIN,
-        METER_MAX
-    );
-    t = hysteresis(t, "meter");
-    let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
+        document.getElementById("test-amount").innerHTML = clamp(
+            stateAmount.toPrecision(3),
+            0,
+            999
+        );
 
-    outerMeter.draw(canvasObj, 1);
-    setRoundedArcColor(outerMeter, outerMeterColor);
-    outerMeter.draw(canvasObj, t);
-    setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
+        let t = normalize(
+            clamp(stateAmount, METER_MIN, METER_MAX),
+            METER_MIN,
+            METER_MAX
+        );
+        t = hysteresis(t, "meter");
+        let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
-    setRoundedArcColor(innerMeter, innerMeterColor);
-    innerMeter.draw(canvasObj, t);
+        outerMeter.draw(canvasObj, 1);
+        setRoundedArcColor(outerMeter, outerMeterColor);
+        outerMeter.draw(canvasObj, t);
+        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
 
-    meterDot.draw(canvasObj);
-    meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
+        setRoundedArcColor(innerMeter, innerMeterColor);
+        innerMeter.draw(canvasObj, t);
+
+        meterDot.draw(canvasObj);
+        meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
+    }
 }
 
 function drawProgressBar(stateName) {
-    let stateProgress =
-        parseFloat(
-            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]
-        ) || 0;
-    let t = clamp(stateProgress, 0, 1);
-    t = hysteresis(t, "progressBar");
-    progressBarMesh.draw(canvasObj, t);
+    if (!stateName) {
+        progressBarMesh.draw(canvasObj, 0);
+    } else {
+        let stateProgress =
+            parseFloat(
+                speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]
+            ) || 0;
+        let t = clamp(stateProgress, 0, 1);
+        t = hysteresis(t, "progressBar");
+        progressBarMesh.draw(canvasObj, t);
+    }
 }
 
 let drawFunc = function () {
@@ -340,13 +355,15 @@ let drawFunc = function () {
         updateInfoUI(stateName, testStateObj);
 
         if (stateName === "ping") {
-            return;
+            drawMeter();
+            drawProgressBar();
         } else if (stateName === "download") {
             drawMeter(stateName, dlProgressColor, dlProgressGlowColor);
+            drawProgressBar(stateName);
         } else if (stateName === "upload") {
             drawMeter(stateName, ulProgressColor, ulProgressGlowColor);
+            drawProgressBar(stateName);
         }
-        drawProgressBar(stateName);
     } else if (stateName === "finished") {
         onend();
     }
@@ -504,32 +521,55 @@ async function onload() {
         }
     );
 
-    fluidText(
-        document.getElementById("test-amount"),
-        document.getElementById("test-amount").parentElement.parentElement,
-        true,
-        ["font-size"]
-    );
+    // document.querySelectorAll(".pane-info > h1, p").forEach((el) => {
+    //     let minSize = 0;
+    //     let maxSize = emToPixels("3rem");
+    //     console.log(minSize, maxSize);
+
+    //     fluidText(
+    //         el,
+    //         document.body,
+    //         true,
+    //         ["font-size"],
+    //         minSize,
+    //         maxSize
+    //     );
+    // });
+
+    // fluidText(
+    //    el,
+    //     document.getElementById("test-amount").parentElement.parentElement,
+    //     true,
+    //     ["font-size"]
+    // );
+}
+
+async function smoothShrink(el, to, from, duration) {
+    let transformFunc = function (el, v) {
+        v = Math.floor(v);
+        el.style.height = `${v}%`;
+    };
+    await animateElements(el, to, from, duration, transformFunc);
 }
 
 let openingSlide = once(async function () {
     let duration = 1000;
-    let testEl = document.getElementById("test-modal");
+    let testEl = document.getElementById("test-pane");
     let infoEl = document.getElementById("info-progress-container");
 
-    let startModal = document.getElementById("start-modal");
-    let completeModal = document.getElementById("complete-modal");
+    let startModal = document.getElementById("start-pane");
+    let completeModal = document.getElementById("complete-pane");
 
     let width = window.innerWidth;
 
-    slideRight([testEl, infoEl], width, 0, 1);
+    slideRight([testEl, infoEl, completeModal], width, 0, 1);
     testEl.classList.remove("hidden");
     infoEl.classList.remove("hidden");
 
-    completeModal.style.transform = `translateX(${-width}px)`;
-
-    await slideLeft(startModal, -width, 0, 500);
+    slideLeft(startModal, -width, 0, 500);
     await slideLeft([testEl, infoEl], 0, width, 500);
+
+    // await smoothShrink([startModal], 0, 100, 1000);
 
     startModal.classList.add("hidden");
 
@@ -564,20 +604,19 @@ async function onstart() {
     } else {
         document.getElementById("start-btn").classList.add("running");
         document.querySelector("#start-btn .text").innerHTML = "Stop";
-        speedtestObj.start();
+        openingSlide();
+        // speedtestObj.start();
     }
-
-    openingSlide();
 }
 
 async function onend() {
     let duration = 2000;
     let buttonEl = document.getElementById("start-btn");
-    let testEl = document.getElementById("test-modal");
-    let completeModal = document.getElementById("complete-modal");
+    let testEl = document.getElementById("test-pane");
+    let completeModal = document.getElementById("complete-pane");
     let width = window.innerWidth;
 
-    closingAnimation(duration, easeInOutCubic);
+    await closingAnimation(duration, easeInOutCubic);
 
     completeModal.classList.remove("hidden");
 
@@ -609,7 +648,7 @@ async function onend() {
     }
 }
 
-window.onload = function () {
+window.onload = async function () {
     onload();
     initFunc();
     animationLoopOuter(updateFunc, drawFunc);

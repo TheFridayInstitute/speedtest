@@ -258,6 +258,14 @@ main .start-btn-container {
   text-align: left;
 }
 
+.pane-info h1 {
+  font-size: 3rem;
+}
+
+.pane-info h2 {
+  font-size: 2rem;
+}
+
 .pane-info hr {
   --main-color: white;
   width: calc(100% + var(--padding));
@@ -308,11 +316,6 @@ main .start-btn-container {
           align-items: center;
   right: 0;
   width: 75%;
-}
-
-.test-container .info .test-kind {
-  display: none;
-  grid-area: kind;
 }
 
 .test-container .info .unit-container {

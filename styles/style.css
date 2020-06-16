@@ -153,11 +153,9 @@
   --border-radius-primary: 0.75rem;
 }
 
-html {
-  width: 100%;
-  height: 100%;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+.hidden {
+  pointer-events: none;
+  visibility: hidden;
 }
 
 body {
@@ -168,8 +166,6 @@ body {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  width: 100%;
-  height: 100%;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   -webkit-box-align: center;
@@ -178,22 +174,24 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-family-primary);
+  color: var(--font-color-primary);
 }
 
 main {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
-  color: var(--font-color-primary);
   padding: 0.5rem;
   display: -ms-grid;
   display: grid;
-  font-family: var(--font-family-primary);
       grid-template-areas: "test" "info" "button";
-  -ms-grid-rows: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr 1fr;
+  -ms-grid-rows: 2fr 0.5fr 0.5fr;
+      grid-template-rows: 2fr 0.5fr 0.5fr;
   height: 100%;
-  max-height: calc(min(100vh, 64rem));
-  max-width: calc(min(100vw, 32rem));
+  max-height: 64rem;
+  max-width: 32rem;
   row-gap: 1rem;
   width: 100%;
 }
@@ -227,11 +225,20 @@ main .start-btn-container {
   -ms-grid-row: 1;
   -ms-grid-column: 1;
   grid-area: test;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  background: var(--background-color-secondary);
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
-  background: var(--background-color-secondary);
-  -ms-flex-line-pack: center;
-      align-content: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  position: relative;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 .pane-info {
@@ -274,24 +281,6 @@ main .start-btn-container {
   border-radius: 1rem;
   background-color: var(--main-color);
   border: none;
-}
-
-.hidden {
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.test-container {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  position: relative;
 }
 
 .test-container .info {
@@ -468,11 +457,5 @@ main .start-btn-container {
     -webkit-box-flex: 1;
         -ms-flex: 1;
             flex: 1;
-  }
-}
-
-@media all and (max-width: 320px) {
-  html {
-    font-size: 0.95rem;
   }
 }

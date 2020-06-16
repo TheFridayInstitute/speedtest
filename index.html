@@ -15,45 +15,8 @@
     </head>
 
     <body>
-        <main id="main-content">
-            <div
-                class="pane-container hidden test-container box-shadow"
-                id="test-modal"
-            >
-                <div class="square-box">
-                    <canvas id="test-meter"></canvas>
-                </div>
-
-                <div class="info test-icon">
-                    <div class="unit-container" id="test-amount-container">
-                        <div
-                            id="test-amount"
-                            class="amount"
-                            aria-label="active-test-speed"
-                        >
-                            0
-                        </div>
-                        <div id="test-amount-unit" class="unit">Mbps</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pane-container hidden box-shadow" id="complete-modal">
-                <div class="pane-info">
-                    <h1>
-                        Speed test complete.
-                    </h1>
-
-                    <hr />
-
-                    <p>
-                        Click the Next → button to continue, or wait to
-                        automatically progress.
-                    </p>
-                </div>
-            </div>
-
-            <div class="pane-container box-shadow" id="start-modal">
+        <main>
+            <div class="pane-container box-shadow" id="start-pane">
                 <div class="pane-info">
                     <h1>
                         Let's test your internet speed.
@@ -73,6 +36,43 @@
                         button in the lower right. Otherwise, press the Start
                         button to begin.
                     </p>
+                </div>
+            </div>
+
+            <div class="pane-container hidden box-shadow" id="complete-pane">
+                <div class="pane-info">
+                    <h1>
+                        Speed test complete.
+                    </h1>
+
+                    <hr />
+
+                    <p>
+                        Click the Next → button to continue, or wait to
+                        automatically progress.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="pane-container test-container hidden box-shadow"
+                id="test-pane"
+            >
+                <div class="square-box">
+                    <canvas class="square-box" id="test-meter"></canvas>
+                </div>
+
+                <div class="info test-icon">
+                    <div class="unit-container" id="test-amount-container">
+                        <div
+                            id="test-amount"
+                            class="amount"
+                            aria-label="active-test-speed"
+                        >
+                            0
+                        </div>
+                        <div id="test-amount-unit" class="unit">Mbps</div>
+                    </div>
                 </div>
             </div>
 

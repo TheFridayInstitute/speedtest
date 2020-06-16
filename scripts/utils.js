@@ -184,20 +184,26 @@ export function getComputedVariable(v, el = document.documentElement) {
 }
 
 export function setAttributes(el, attrs) {
-    for (var [key, value] of Object.entries(attrs)) {
-        if (
-            (key === "styles" || key === "style") &&
-            typeof value === "object"
-        ) {
-            for (var prop in value) {
-                el.style.setProperty(prop, value[prop]);
+    let elArray = !(el instanceof Array) ? [el] : el;
+
+    let inner = function (el) {
+        for (var [key, value] of Object.entries(attrs)) {
+            if (
+                (key === "styles" || key === "style") &&
+                typeof value === "object"
+            ) {
+                for (var prop in value) {
+                    el.style.setProperty(prop, value[prop]);
+                }
+            } else if (key === "html") {
+                el.innerHTML = value;
+            } else {
+                el.setAttribute(key, value);
             }
-        } else if (key === "html") {
-            el.innerHTML = value;
-        } else {
-            el.setAttribute(key, value);
         }
-    }
+    };
+
+    elArray.forEach(inner);
 }
 
 const objectMap = (obj, fn) =>
@@ -209,7 +215,9 @@ export function fluidText(
     el,
     constrainEl = undefined,
     maximize = false,
-    attributes = undefined
+    attributes = undefined,
+    min = 0,
+    max = Number.MAX_SAFE_INTEGER
 ) {
     constrainEl = !constrainEl ? el.parentElement : constrainEl;
     attributes = !attributes ? ["font-size"] : attributes;
@@ -230,6 +238,7 @@ export function fluidText(
 
         let mappedAttributes = objectMap(attributesObj, function (attr) {
             let size = maximize ? maxSize : clamp(attr * ratio, 0, maxSize);
+            size = clamp(size, min, max);
             return `${size}px`;
         });
 

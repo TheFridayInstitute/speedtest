@@ -55,11 +55,6 @@ $ALPHA_0: $PI * 0.8;
     --border-radius-primary: 0.75rem;
 }
 
-.hidden {
-    pointer-events: none;
-    visibility: hidden;
-}
-
 html {
     height: 100%;
     width: 100%;
@@ -151,6 +146,35 @@ main {
         border-radius: 1rem;
         margin-right: calc(-1 * var(--padding));
     }
+}
+
+.modal {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.705);
+    transition: all ease-out 250ms;
+    z-index: 999;
+
+    .modal-content {
+        opacity: 100%;
+        height: 75%;
+        width: 75%;
+    }
+
+    transform: translateY(-100%);
+
+    &.visible {
+        transform: translateY(0);
+    }
+}
+
+.hidden {
+    pointer-events: none;
+    visibility: hidden;
 }
 
 .test-container {

@@ -160,6 +160,7 @@ function updateTestState(testStateObj, abort = false) {
                 speedtestState !== prevState
             ) {
                 testStateObj[prevKey] = state;
+                break;
             }
         }
         testStateObj["prev_state"] = speedtestState;
@@ -257,27 +258,6 @@ let updateFunc = function () {
     return false;
 };
 
-let updateInfoUI = function (stateName, stateObj) {
-    let stateKindEl = document.getElementById(stateName);
-    let unitContainer = stateKindEl.querySelector(".unit-container");
-    let state = stateObj[stateName];
-    let stateAmount =
-        speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
-
-    if (state === 0) {
-        unitContainer.querySelector(".amount").innerHTML = DOTS;
-    } else if (state === 2) {
-        animateProgressBarWrapper(progressBarEl, 1000, 3);
-        unitContainer.classList.remove("in-progress");
-        unitContainer.querySelector(".amount").innerHTML = clamp(
-            Math.round(parseFloat(stateAmount)),
-            0,
-            999
-        );
-        stateObj[stateName] = 3;
-    }
-};
-
 function drawMeter(stateName, outerMeterColor, innerMeterColor) {
     if (!stateName) {
         outerMeter.draw(canvasObj, 1);
@@ -335,13 +315,36 @@ function drawProgressBar(stateName) {
     }
 }
 
+let updateInfoUI = function (stateName, stateObj) {
+    let stateKindEl = document.getElementById(stateName);
+    let unitContainer = stateKindEl.querySelector(".unit-container");
+    let state = stateObj[stateName];
+
+    if (state === 0) {
+        unitContainer.querySelector(".amount").innerHTML = DOTS;
+    } else if (state === 1) {
+    } else if (state === 2) {
+        let stateAmount =
+            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
+
+        animateProgressBarWrapper(progressBarEl, 1000, 3);
+        unitContainer.classList.remove("in-progress");
+        unitContainer.querySelector(".amount").innerHTML = clamp(
+            Math.round(parseFloat(stateAmount)),
+            0,
+            999
+        );
+        stateObj[stateName] = 3;
+        drawFunc();
+    }
+};
+
 let drawFunc = function () {
     if (speedtestData === null || speedtestObj.getState() != 3) {
         return false;
     }
     canvasObj.clear();
 
-    let state = speedtestData.testState + 1;
     let prevState = testStateObj["prev_state"];
     let stateName = SPEEDTEST_STATES[prevState];
     updateTestState(testStateObj);
@@ -365,10 +368,6 @@ let drawFunc = function () {
         }
     } else if (stateName === "finished") {
         onend();
-    }
-
-    if (state !== prevState) {
-        drawFunc();
     }
 };
 
@@ -490,7 +489,6 @@ let speedtestOnUpdate = function (data) {
 
 let speedtestOnEnd = function (aborted) {
     document.getElementById("start-btn").classList.remove("running");
-    // Draw to the screen once more, wherein we'll call onend.
     drawFunc();
 };
 
@@ -543,7 +541,7 @@ let openingSlide = once(async function () {
 
     await slideLeft(startModal, -width, 0, 500);
     startModal.classList.add("hidden");
-    await slideLeft([testEl, infoEl], 0, width, 500);
+    slideLeft([testEl, infoEl], 0, width, 500);
 
     openingAnimation(duration, smoothStep3);
 });
@@ -576,8 +574,8 @@ async function onstart() {
     } else {
         document.getElementById("start-btn").classList.add("running");
         document.querySelector("#start-btn .text").innerHTML = "Stop";
-        openingSlide();
         speedtestObj.start();
+        openingSlide();
     }
 }
 

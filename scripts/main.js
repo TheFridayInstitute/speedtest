@@ -543,7 +543,7 @@ let openingSlide = once(async function () {
     startModal.classList.add("hidden");
     slideLeft([testEl, infoEl], 0, width, 500);
 
-    openingAnimation(duration, smoothStep3);
+    await openingAnimation(duration, smoothStep3);
 });
 
 async function onstart() {
@@ -626,8 +626,6 @@ window.onload = async function () {
 
 document.getElementById("start-btn").addEventListener("click", function (ev) {
     let duration = 1000;
-    // let state = (speedtestData.testState + 1);
-    // let stateName = SPEEDTEST_STATES[state];
 
     rippleButton(
         ev,
@@ -638,16 +636,24 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
         duration
     );
 
-    onstart();
-
-    // if (stateName === "finished") {
-    //     if (eventObj !== null) {
-    //         console.log("Posting next message.");
-    //         eventObj.source.postMessage("next", eventObj.origin);
-    //     }
-    // } else {
-    //     onstart();
-    // }
+    if (testStateObj["upload"] === 3) {
+        if (eventObj !== null) {
+            console.log("Posting next message.");
+            eventObj.source.postMessage("next", eventObj.origin);
+        } else {
+            document.querySelector(".modal").classList.toggle("visible");
+            console.log("Cannot post to null event object. Aborting...");
+        }
+    } else {
+        onstart();
+    }
 });
+
+window.onclick = function (event) {
+    let modal = document.querySelector(".modal");
+    if (event.target == modal) {
+        modal.classList.toggle("visible");
+    }
+};
 
 window.addEventListener("message", receiveMessage, false);

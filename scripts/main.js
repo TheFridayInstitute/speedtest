@@ -547,7 +547,7 @@ async function onload() {
 async function smoothShrink(el, to, from, duration) {
     let transformFunc = function (el, v) {
         v = Math.floor(v);
-        el.style.height = `${v}%`;
+        el.style.maxHeight = `${v}%`;
     };
     await animateElements(el, to, from, duration, transformFunc);
 }
@@ -562,16 +562,14 @@ let openingSlide = once(async function () {
 
     let width = window.innerWidth;
 
+    let btn = document.getElementById("start-btn");
+
     slideRight([testEl, infoEl, completeModal], width, 0, 1);
-    testEl.classList.remove("hidden");
-    infoEl.classList.remove("hidden");
+    [testEl, infoEl].forEach((el) => el.classList.remove("hidden"));
 
-    slideLeft(startModal, -width, 0, 500);
-    await slideLeft([testEl, infoEl], 0, width, 500);
-
-    // await smoothShrink([startModal], 0, 100, 1000);
-
+    await slideLeft(startModal, -width, 0, 500);
     startModal.classList.add("hidden");
+    await slideLeft([testEl, infoEl], 0, width, 500);
 
     openingAnimation(duration, smoothStep3);
 });

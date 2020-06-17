@@ -16,7 +16,7 @@
 
     <body>
         <main>
-            <div class="pane-container box-shadow" id="start-pane">
+            <div class="pane-container" id="start-pane">
                 <div class="pane-info">
                     <h1>
                         Let's test your internet speed.
@@ -39,7 +39,7 @@
                 </div>
             </div>
 
-            <div class="pane-container hidden box-shadow" id="complete-pane">
+            <div class="pane-container hidden" id="complete-pane">
                 <div class="pane-info">
                     <h1>
                         Speed test complete.
@@ -54,10 +54,7 @@
                 </div>
             </div>
 
-            <div
-                class="pane-container test-container hidden box-shadow"
-                id="test-pane"
-            >
+            <div class="pane-container test-container hidden" id="test-pane">
                 <div class="square-box">
                     <canvas class="square-box" id="test-meter"></canvas>
                 </div>
@@ -77,10 +74,10 @@
             </div>
 
             <div
-                class="test-info-progress-container hidden"
+                class="test-info-progress-container"
                 id="info-progress-container"
             >
-                <div class="test-info-container box-shadow">
+                <div class="test-info-container">
                     <div class="info" id="ping">
                         <div class="test-kind">
                             Latency
@@ -88,7 +85,7 @@
 
                         <div class="unit-container in-progress">
                             <div class="amount" aria-label="latency">
-                                0
+                                00.0
                             </div>
                             <div class="unit">ms</div>
                         </div>
@@ -100,7 +97,7 @@
                         </div>
                         <div class="unit-container in-progress">
                             <div class="amount" aria-label="download-speed">
-                                0
+                                00.0
                             </div>
                             <div class="unit">Mbps</div>
                         </div>
@@ -112,7 +109,7 @@
                         </div>
                         <div class="unit-container in-progress">
                             <div class="amount" aria-label="upload-speed">
-                                0
+                                00.0
                             </div>
                             <div class="unit">Mbps</div>
                         </div>

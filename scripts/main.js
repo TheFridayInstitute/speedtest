@@ -264,7 +264,7 @@ let updateInfoUI = function (stateName, stateObj) {
     let stateAmount =
         speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
 
-    if (state === 0 || state === 1) {
+    if (state === 0) {
         unitContainer.querySelector(".amount").innerHTML = DOTS;
     } else if (state === 2) {
         animateProgressBarWrapper(progressBarEl, 1000, 3);
@@ -295,10 +295,10 @@ function drawMeter(stateName, outerMeterColor, innerMeterColor) {
             ) || 0;
 
         document.getElementById("test-amount").innerHTML = clamp(
-            stateAmount.toPrecision(3),
+            stateAmount,
             0,
             999
-        );
+        ).toPrecision(3);
 
         let t = normalize(
             clamp(stateAmount, METER_MIN, METER_MAX),
@@ -336,16 +336,15 @@ function drawProgressBar(stateName) {
 }
 
 let drawFunc = function () {
-    if (speedtestObj.getState() != 3 || speedtestData === null) {
+    if (speedtestData === null || speedtestObj.getState() != 3) {
         return false;
     }
     canvasObj.clear();
 
     let state = speedtestData.testState + 1;
     let prevState = testStateObj["prev_state"];
-    updateTestState(testStateObj);
-
     let stateName = SPEEDTEST_STATES[prevState];
+    updateTestState(testStateObj);
 
     if (
         stateName === "ping" ||
@@ -521,35 +520,12 @@ async function onload() {
         }
     );
 
-    // document.querySelectorAll(".pane-info > h1, p").forEach((el) => {
-    //     let minSize = 0;
-    //     let maxSize = emToPixels("3rem");
-    //     console.log(minSize, maxSize);
-
-    //     fluidText(
-    //         el,
-    //         document.body,
-    //         true,
-    //         ["font-size"],
-    //         minSize,
-    //         maxSize
-    //     );
-    // });
-
     // fluidText(
-    //    el,
+    //     el,
     //     document.getElementById("test-amount").parentElement.parentElement,
     //     true,
     //     ["font-size"]
     // );
-}
-
-async function smoothShrink(el, to, from, duration) {
-    let transformFunc = function (el, v) {
-        v = Math.floor(v);
-        el.style.maxHeight = `${v}%`;
-    };
-    await animateElements(el, to, from, duration, transformFunc);
 }
 
 let openingSlide = once(async function () {
@@ -561,8 +537,6 @@ let openingSlide = once(async function () {
     let completeModal = document.getElementById("complete-pane");
 
     let width = window.innerWidth;
-
-    let btn = document.getElementById("start-btn");
 
     slideRight([testEl, infoEl, completeModal], width, 0, 1);
     [testEl, infoEl].forEach((el) => el.classList.remove("hidden"));
@@ -603,7 +577,7 @@ async function onstart() {
         document.getElementById("start-btn").classList.add("running");
         document.querySelector("#start-btn .text").innerHTML = "Stop";
         openingSlide();
-        // speedtestObj.start();
+        speedtestObj.start();
     }
 }
 

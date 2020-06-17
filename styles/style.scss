@@ -96,9 +96,10 @@ main {
     max-width: $meter-width;
 
     row-gap: $row-gap;
+    padding: $row-gap/2;
 
     .test-container {
-        align-self: center;
+        align-self: end;
         grid-area: test;
     }
 
@@ -154,9 +155,9 @@ main {
 
 .test-container {
     position: relative;
-    width: 100%;
 
     .info {
+        --border-radius: 1rem;
         $y: (1 - sin($ALPHA_0))/2 - 0.05;
         display: flex;
         position: absolute;
@@ -169,27 +170,22 @@ main {
         align-items: center;
 
         background-color: var(--background-color-primary-dark);
-        border-top-left-radius: 1rem;
-        border-top-right-radius: 1rem;
-        box-sizing: border-box;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
 
         justify-content: center;
 
         .unit-container {
-            --font-size-lg: 3rem;
+            --font-size-lg: 3.5rem;
             margin: 0;
-            grid-area: unit;
+            flex-direction: row;
+            align-items: baseline;
 
-            .unit {
-                bottom: var(--font-size-sm);
-                right: 0;
-                left: 100%;
-            }
+            margin-left: var(--font-size-sm);
         }
     }
 
     .square-box {
-        grid-area: test;
         z-index: 1;
 
         canvas {
@@ -199,15 +195,9 @@ main {
     }
 }
 
-.test-info-progress-container {
-    // display: flex;
-    // flex-direction: column;
-}
-
 .test-info-container {
     display: flex;
     flex-direction: row;
-    // box-sizing: border-box;
 
     .info {
         display: flex;
@@ -217,9 +207,9 @@ main {
         flex-direction: column;
 
         .test-kind {
-            font-weight: bold;
             padding: 0.25rem 0;
             font-size: 1rem;
+            font-weight: bold;
         }
 
         .unit-container {
@@ -249,19 +239,16 @@ main {
 }
 
 .unit-container {
-    --font-size-lg: 2.5em;
+    --font-size-lg: 2.5rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
-    --height: calc(var(--font-size-lg) + 2 * var(--font-size-sm));
     display: flex;
 
     position: relative;
-
-    // height: var(--height);
-    box-sizing: border-box;
+    margin: 0;
     flex-direction: column;
     margin-bottom: var(--font-size-sm);
-
     text-align: center;
+
     transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
     &.in-progress {
@@ -273,10 +260,6 @@ main {
     }
 
     .unit {
-        // position: absolute;
-        // bottom: 0;
-        // right: 0;
-        // left: 0;
         font-size: var(--font-size-sm);
     }
 }
@@ -291,6 +274,10 @@ main {
         grid-template-rows: 1fr 1fr;
         max-height: $meter-width;
         max-width: $meter-height;
+
+        .test-container {
+            align-self: center;
+        }
     }
 
     .test-info-progress-container {
@@ -300,9 +287,12 @@ main {
             justify-content: center;
 
             .info {
+                margin: 0.25em;
                 width: 75%;
                 align-items: center;
                 flex-direction: row;
+                background: var(--background-color-secondary);
+                border-radius: var(--border-radius-primary);
 
                 .test-kind {
                     flex: 1;

@@ -43,6 +43,7 @@ import {
     fluidText,
     emToPixels,
     setAttributes,
+    addEventListeners,
 } from "./utils.js";
 
 import { Color } from "./colors.js";
@@ -260,8 +261,8 @@ let updateFunc = function () {
 
 function drawMeter(stateName, outerMeterColor, innerMeterColor) {
     if (!stateName) {
-        outerMeter.draw(canvasObj, 1);
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
+        outerMeter.draw(canvasObj, 1);
 
         meterDot.draw(canvasObj);
         meterDial
@@ -288,10 +289,11 @@ function drawMeter(stateName, outerMeterColor, innerMeterColor) {
         t = hysteresis(t, "meter");
         let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
+        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
+
         setRoundedArcColor(outerMeter, outerMeterColor);
         outerMeter.draw(canvasObj, t);
-        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
 
         setRoundedArcColor(innerMeter, innerMeterColor);
         innerMeter.draw(canvasObj, t);
@@ -339,11 +341,10 @@ let updateInfoUI = function (stateName, stateObj) {
     }
 };
 
-let drawFunc = function () {
+let drawFunc = function (t) {
     if (speedtestData === null || speedtestObj.getState() != 3) {
         return false;
     }
-    canvasObj.clear();
 
     let prevState = testStateObj["prev_state"];
     let stateName = SPEEDTEST_STATES[prevState];
@@ -355,6 +356,7 @@ let drawFunc = function () {
         stateName === "upload"
     ) {
         updateInfoUI(stateName, testStateObj);
+        canvasObj.clear();
 
         if (stateName === "ping") {
             drawMeter();
@@ -590,13 +592,13 @@ async function onend() {
 
     completeModal.classList.remove("hidden");
 
-    slideRight(testEl, width, 0);
+    await slideRight(testEl, width, 0);
     slideRight(completeModal, 0, -width);
+    testEl.classList.add("hidden");
 
     await slideRightWrap(buttonEl, 0, 0, 1000, function () {
         document.querySelector("#start-btn .text").innerHTML = "Next →";
     });
-    testEl.classList.add("hidden");
 
     await sleep(duration);
 
@@ -649,11 +651,11 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
     }
 });
 
-window.onclick = function (event) {
-    let modal = document.querySelector(".modal");
-    if (event.target == modal) {
-        modal.classList.toggle("visible");
+addEventListeners(window, "click touchend", function (ev) {
+    let modal = document.querySelector(".modal-content");
+    if (ev.target == modal || ev.target == modal.parentElement) {
+        modal.parentElement.classList.toggle("visible");
     }
-};
+});
 
 window.addEventListener("message", receiveMessage, false);

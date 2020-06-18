@@ -135,11 +135,11 @@ export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
     let clock = new Clock(true, timeStep, timeOut);
 
     function update() {
-        return updateFunc(clock.elapsedTicks);
+        return updateFunc(clock.elapsedTicks) || false;
     }
 
     function draw() {
-        return drawFunc(clock.elapsedTicks);
+        return drawFunc(clock.elapsedTicks) || false;
     }
 
     function animationLoop() {

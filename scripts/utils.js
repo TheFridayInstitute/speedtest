@@ -251,3 +251,12 @@ export function fluidText(
     window.addEventListener("resize", resize);
     window.addEventListener("orientationchange", resize);
 }
+
+export function addEventListeners(element, event, handler, ...args) {
+    if (args === undefined) {
+        args = [true, true];
+    }
+    event
+        .split(/\s+/)
+        .forEach((e) => element.addEventListener(e, handler), ...args);
+}

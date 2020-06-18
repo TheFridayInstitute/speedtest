@@ -71,7 +71,6 @@ body {
     color: var(--font-color-primary);
     font-family: var(--font-family-primary);
     justify-content: center;
-    overflow-x: hidden;
 }
 
 main {
@@ -79,6 +78,7 @@ main {
     height: 100%;
     width: 100%;
     box-sizing: border-box;
+    overflow-x: hidden;
 
     grid-template-areas:
         "test"
@@ -151,6 +151,8 @@ main {
 .modal {
     height: 100%;
     width: 100%;
+    pointer-events: none;
+    visibility: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -168,6 +170,7 @@ main {
     transform: translateY(-100%);
 
     &.visible {
+        visibility: visible;
         transform: translateY(0);
     }
 }

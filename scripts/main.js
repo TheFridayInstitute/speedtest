@@ -20,6 +20,7 @@ import {
     easeInBounce,
     easeInQuad,
     easeOutCubic,
+    range,
 } from "./math.js";
 
 import {
@@ -46,7 +47,7 @@ import {
     addEventListeners,
 } from "./utils.js";
 
-import { Color } from "./colors.js";
+import { Color, interpColor } from "./colors.js";
 
 // Global speedtest and event state variables.
 var eventObj = null;
@@ -80,17 +81,19 @@ const METER_BACKGROUND_COLOR = getComputedVariable("--meter-background-color");
 const PROGRESS_BAR_COLOR = "#fff";
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 
-var dlColorStops = [
-    ["0", "#8630e6"],
-    ["0.5", "#d359ff"],
-    ["1.0", "#f71e6a"],
-];
+let generateColorStops = function (colorName, step = 0.5) {
+    let stops = Math.floor(1 / step) + 1;
+    return new Array(stops).fill().map(function (_, index) {
+        let stop = `${index * step}`;
+        let tmpColorName = `--${colorName}-${index}`;
+        let color = getComputedVariable(tmpColorName);
+        color = color === "" ? "black" : color;
+        return [stop, color];
+    });
+};
 
-var ulColorStops = [
-    ["0", "#FF8000"],
-    ["0.5", "#FF8000"],
-    ["1.0", "#FF0000"],
-];
+var dlColorStops = generateColorStops("dl-color");
+var ulColorStops = generateColorStops("ul-color");
 
 var dlProgressColor;
 var dlProgressGlowColor;
@@ -134,7 +137,7 @@ const SPEEDTEST_DATA_MAPPING = Object.freeze({
  */
 var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
-function updateTestState(testStateObj, abort = false) {
+let updateTestState = function (testStateObj, abort = false) {
     // + 1 because we start at 0, not -1 (unlike librespeed).
     let speedtestState = speedtestData.testState + 1;
     let testKind = SPEEDTEST_STATES[speedtestState];
@@ -167,10 +170,10 @@ function updateTestState(testStateObj, abort = false) {
         testStateObj["prev_state"] = speedtestState;
     }
     return testStateObj;
-}
+};
 
 var hysteresisRecord = {};
-function hysteresis(t, key, eps = 0.01, step = 1 / 15) {
+let hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     let prevT = hysteresisRecord[key] || 0;
     let delta = Math.abs(t - prevT);
     if (delta > eps) {
@@ -179,14 +182,7 @@ function hysteresis(t, key, eps = 0.01, step = 1 / 15) {
     }
     hysteresisRecord[key] = t;
     return t;
-}
-
-function receiveMessage(event) {
-    if (event.data === "start") {
-        eventObj = event;
-    }
-    console.log(`Received event of ${event}`);
-}
+};
 
 let openingAnimation = async function (duration, timingFunc) {
     let transformFunc = function (v, t) {
@@ -255,11 +251,7 @@ let closingAnimation = async function (duration, timingFunc) {
     );
 };
 
-let updateFunc = function () {
-    return false;
-};
-
-function drawMeter(stateName, outerMeterColor, innerMeterColor) {
+let drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
     if (!stateName) {
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
@@ -286,14 +278,20 @@ function drawMeter(stateName, outerMeterColor, innerMeterColor) {
             METER_MIN,
             METER_MAX
         );
-        t = hysteresis(t, "meter");
+        // t = hysteresis(t, "meter");
+        t = 1;
         let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
 
+        // Draw the meter twice here to avoid the weird aliasing
+        // issue around the rounded end caps thereof.
         setRoundedArcColor(outerMeter, outerMeterColor);
         outerMeter.draw(canvasObj, t);
+        outerMeter.draw(canvasObj, t);
+
+        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
 
         setRoundedArcColor(innerMeter, innerMeterColor);
         innerMeter.draw(canvasObj, t);
@@ -301,9 +299,9 @@ function drawMeter(stateName, outerMeterColor, innerMeterColor) {
         meterDot.draw(canvasObj);
         meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
     }
-}
+};
 
-function drawProgressBar(stateName) {
+let drawProgressBar = function (stateName) {
     if (!stateName) {
         progressBarMesh.draw(canvasObj, 0);
     } else {
@@ -315,7 +313,7 @@ function drawProgressBar(stateName) {
         t = hysteresis(t, "progressBar");
         progressBarMesh.draw(canvasObj, t);
     }
-}
+};
 
 let updateInfoUI = function (stateName, stateObj) {
     let stateKindEl = document.getElementById(stateName);
@@ -337,11 +335,15 @@ let updateInfoUI = function (stateName, stateObj) {
             999
         );
         stateObj[stateName] = 3;
-        drawFunc();
+        animationLoopDraw();
     }
 };
 
-let drawFunc = function (t) {
+let animationLoopUpdate = function () {
+    return false;
+};
+
+let animationLoopDraw = function (t) {
     if (speedtestData === null || speedtestObj.getState() != 3) {
         return false;
     }
@@ -356,6 +358,10 @@ let drawFunc = function (t) {
         stateName === "upload"
     ) {
         updateInfoUI(stateName, testStateObj);
+        // We need to clear the canvas here,
+        // else we'll get a strange flashing
+        // due to the canvas clearing faster than
+        // we can draw.
         canvasObj.clear();
 
         if (stateName === "ping") {
@@ -373,7 +379,7 @@ let drawFunc = function (t) {
     }
 };
 
-let initFunc = function () {
+let animationLoopInit = function () {
     let canvas = document.getElementById("test-meter");
     let ctx = canvas.getContext("2d");
 
@@ -491,7 +497,7 @@ let speedtestOnUpdate = function (data) {
 
 let speedtestOnEnd = function (aborted) {
     document.getElementById("start-btn").classList.remove("running");
-    drawFunc();
+    animationLoopDraw();
 };
 
 async function onload() {
@@ -519,13 +525,6 @@ async function onload() {
             },
         }
     );
-
-    // fluidText(
-    //     el,
-    //     document.getElementById("test-amount").parentElement.parentElement,
-    //     true,
-    //     ["font-size"]
-    // );
 }
 
 let openingSlide = once(async function () {
@@ -622,8 +621,8 @@ async function onend() {
 
 window.onload = async function () {
     onload();
-    initFunc();
-    animationLoopOuter(updateFunc, drawFunc);
+    animationLoopInit();
+    animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
 
 document.getElementById("start-btn").addEventListener("click", function (ev) {

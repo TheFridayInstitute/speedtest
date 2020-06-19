@@ -65,6 +65,7 @@
       -ms-flex-align: center;
           align-items: center;
   background-color: var(--color-secondary);
+  position: relative;
   border-radius: var(--border-radius-primary);
   color: black;
   cursor: pointer;
@@ -77,8 +78,6 @@
       -ms-flex-pack: center;
           justify-content: center;
   border: none;
-  height: 100%;
-  width: 100%;
 }
 
 .start-btn.running {
@@ -90,6 +89,7 @@
   border: none;
   background-image: none;
   outline: 0;
+  position: relative;
   --border-size: 0.2rem;
   --box-shadow-hl: 2px;
   --box-shadow-vl: 0px;
@@ -190,8 +190,8 @@ main {
       grid-template-areas: "test" "info" "button";
   -ms-grid-rows: (3)[1fr];
       grid-template-rows: repeat(1fr, 3);
-  max-height: 64rem;
-  max-width: 32rem;
+  max-width: calc(min(32rem, 100%));
+  max-height: calc(min(64rem, 100%));
   overflow-x: hidden;
   row-gap: 1rem;
 }
@@ -221,7 +221,6 @@ main .start-btn-container {
   grid-area: button;
   -ms-grid-column-align: center;
       justify-self: center;
-  position: relative;
 }
 
 .pane-container {
@@ -465,8 +464,8 @@ main .start-btn-container {
     -webkit-column-gap: 1rem;
             column-gap: 1rem;
         grid-template-areas: "test info" "button button";
-    max-width: 100%;
-    max-height: 100%;
+    max-width: calc(min(64rem, 100%));
+    max-height: calc(min(32rem, 100%));
     -ms-grid-columns: 1fr 1fr;
         grid-template-columns: 1fr 1fr;
     -ms-grid-rows: 0.8fr 0.2fr;

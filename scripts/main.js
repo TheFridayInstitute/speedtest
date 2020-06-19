@@ -589,7 +589,7 @@ async function onend() {
 
     await closingAnimation(duration, easeInOutCubic);
 
-    await slideRight(testEl, width, 0);
+    slideRight(testEl, width, 0);
     testEl.classList.add("hidden");
     slideRight(completeModal, 0, -width);
     completeModal.classList.remove("hidden");

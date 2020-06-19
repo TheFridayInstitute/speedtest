@@ -89,8 +89,8 @@ main {
         "button";
 
     grid-template-rows: repeat(1fr, 3);
-    max-width: calc(min(#{$meter-width}, 100%));
     max-height: calc(min(#{$meter-height}, 100%));
+    max-width: calc(min(#{$meter-width}, 100%));
 
     overflow-x: hidden;
 
@@ -154,16 +154,17 @@ main {
 .modal {
     display: flex;
     position: absolute;
-    height: 100%;
-    width: 100%;
 
     transform: translateY(-100%);
     align-items: center;
     background-color: rgba(0, 0, 0, 0.705);
     justify-content: center;
-    pointer-events: none;
+    height: 100%;
+    width: 100%;
+
     transition: all ease-out 250ms;
     visibility: hidden;
+
     z-index: 999;
 
     .modal-content {
@@ -233,8 +234,8 @@ main {
             display: flex;
 
             flex: 1;
-            @include space-between-row(0.5rem);
             flex-direction: column;
+            @include space-between-row(0.5rem);
 
             .test-kind {
                 padding: 0.25rem 0;
@@ -309,11 +310,11 @@ main {
             "test info"
             "button button";
 
-        max-width: calc(min(#{$meter-height}, 100%));
-        max-height: calc(min(#{$meter-width}, 100%));
-
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 0.8fr 0.2fr;
+        max-height: calc(min(#{$meter-width}, 100%));
+
+        max-width: calc(min(#{$meter-height}, 100%));
 
         .test-container {
             align-self: start;
@@ -326,17 +327,17 @@ main {
             flex-direction: column;
 
             .info {
-                padding: 0.25rem 0.5rem;
                 margin: 0;
+                padding: 0.25rem 0.5rem;
                 width: 100%;
-
-                @include space-between-column(0.5rem);
 
                 align-items: center;
                 background: var(--background-color-secondary);
                 border-radius: var(--border-radius-primary);
                 box-sizing: border-box;
                 flex-direction: row;
+
+                @include space-between-column(0.5rem);
 
                 .test-kind {
                     flex: 1;

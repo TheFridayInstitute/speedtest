@@ -16,6 +16,7 @@ import {
     normalize,
     easeInOutCubic,
     slerpPoints,
+    bounceInEase,
 } from "./math.js";
 
 import {
@@ -93,13 +94,6 @@ var dlProgressGlowColor;
 
 var ulProgressColor;
 var ulProgressGlowColor;
-
-let makeGlowColor = function (value) {
-    let [stop, color] = value;
-    let newColor = new Color(color);
-    newColor.opacity = 0.3;
-    return [stop, newColor.colorString];
-};
 
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
@@ -255,16 +249,14 @@ let drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
             .draw(canvasObj)
             .rotate(-METER_ANGLE_START, true);
     } else {
-        let stateAmount =
-            parseFloat(
-                speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
-            ) || 0;
+        let stateAmount = parseFloat(
+            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
+        );
+        stateAmount = Number.isNaN(stateAmount)
+            ? 0
+            : clamp(stateAmount.toPrecision(3), 0, 999);
 
-        document.getElementById("test-amount").innerHTML = clamp(
-            stateAmount,
-            0,
-            999
-        ).toPrecision(3);
+        document.getElementById("test-amount").innerHTML = stateAmount;
 
         let t = normalize(
             clamp(stateAmount, METER_MIN, METER_MAX),
@@ -392,6 +384,13 @@ let animationLoopInit = function () {
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
 
+    let makeGlowColor = function (value) {
+        let [stop, color] = value;
+        let newColor = new Color(color);
+        newColor.opacity = 0.3;
+        return [stop, newColor.colorString];
+    };
+
     dlProgressGlowColor = generateGradientWrapper(
         canvas,
         dlColorStops.map(makeGlowColor)
@@ -518,17 +517,14 @@ async function onload() {
         }
     );
 
-    // let offset = getOffset(document.getElementById("start-btn"));
-    // let y = clamp(
-    //     offset.top,
-    //     0,
-    //     window.innerHeight
-    // );
-    // smoothScroll(y, window.scrollY, 1000);
+    smoothScroll(
+        getOffset(document.getElementById("start-btn")).top,
+        window.scrollY,
+        1000
+    );
 }
 
 let openingSlide = once(async function () {
-    let duration = 1000;
     let testEl = document.getElementById("test-pane");
     let infoEl = document.getElementById("info-progress-container");
 
@@ -544,7 +540,7 @@ let openingSlide = once(async function () {
     startModal.classList.add("hidden");
     slideLeft([testEl, infoEl], 0, width, 500);
 
-    await openingAnimation(duration, smoothStep3);
+    await openingAnimation(2000, easeInOutCubic);
 });
 
 async function onstart() {
@@ -554,7 +550,7 @@ async function onstart() {
         document.querySelector("#start-btn .text").innerHTML = "Start";
 
         updateTestState(testStateObj, true);
-        openingAnimation(1000, smoothStep3);
+        openingAnimation(2000, bounceInEase);
 
         await sleep(500);
 
@@ -581,7 +577,7 @@ async function onstart() {
 }
 
 async function onend() {
-    let duration = 1000;
+    let duration = 750;
     let buttonEl = document.getElementById("start-btn");
     let testEl = document.getElementById("test-pane");
     let completeModal = document.getElementById("complete-pane");
@@ -589,12 +585,12 @@ async function onend() {
 
     await closingAnimation(duration, easeInOutCubic);
 
-    await slideRight(testEl, width, 0, 500);
+    await slideLeft(testEl, -width, 0, duration);
     testEl.classList.add("hidden");
-    slideRight(completeModal, 0, -width, 500);
+    slideRight(completeModal, 0, -width, duration);
     completeModal.classList.remove("hidden");
 
-    slideRightWrap(buttonEl, 0, 0, 1000, function () {
+    slideRightWrap(buttonEl, 0, 0, duration, function () {
         document.querySelector("#start-btn .text").innerHTML = "Next →";
     });
 

@@ -1,4 +1,4 @@
-import { clamp, bounceInEase, easeInOutCubic, smoothStep3 } from "./math.js";
+import { clamp, bounceInEase, easeInOutCubic, smoothStep3, easeInBounce, easeInOutQuad, easeInCubic } from "./math.js";
 
 import { getOffset } from "./utils.js";
 
@@ -195,7 +195,7 @@ export async function animateElements(
     from,
     duration,
     transformFunc,
-    timingFunc = smoothStep3
+    timingFunc = easeInOutCubic
 ) {
     to = to === undefined ? window.innerWidth : to;
     from = from === undefined ? 0 : from;

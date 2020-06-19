@@ -591,7 +591,7 @@ async function onend() {
 
     await slideRight(testEl, width, 0);
     testEl.classList.add("hidden");
-    await slideRight(completeModal, 0, -width);
+    slideRight(completeModal, 0, -width);
     completeModal.classList.remove("hidden");
 
     slideRightWrap(buttonEl, 0, 0, 1000, function () {
@@ -636,17 +636,17 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
         duration
     );
 
-    // if (testStateObj["upload"] === 3) {
-    //     if (eventObj !== null) {
-    //         console.log("Posting next message.");
-    //         eventObj.source.postMessage("next", eventObj.origin);
-    //     } else {
-    //         document.querySelector(".modal").classList.toggle("visible");
-    //         console.log("Cannot post to null event object. Aborting...");
-    //     }
-    // } else {
-    //     onstart();
-    // }
+    if (testStateObj["upload"] === 3) {
+        if (eventObj !== null) {
+            console.log("Posting next message.");
+            eventObj.source.postMessage("next", eventObj.origin);
+        } else {
+            document.querySelector(".modal").classList.toggle("visible");
+            console.log("Cannot post to null event object. Aborting...");
+        }
+    } else {
+        onstart();
+    }
 });
 
 addEventListeners(window, "click touchend", function (ev) {

@@ -64,6 +64,7 @@
       -ms-flex-align: center;
           align-items: center;
   background-color: var(--color-secondary);
+  position: relative;
   border-radius: var(--border-radius-primary);
   color: black;
   cursor: pointer;
@@ -76,8 +77,6 @@
       -ms-flex-pack: center;
           justify-content: center;
   border: none;
-  height: 100%;
-  width: 100%;
 }
 
 .start-btn.running {
@@ -89,6 +88,7 @@
   border: none;
   background-image: none;
   outline: 0;
+  position: relative;
   --border-size: 0.2rem;
   --box-shadow-hl: 2px;
   --box-shadow-vl: 0px;

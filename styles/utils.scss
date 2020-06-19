@@ -133,7 +133,7 @@
 .start-btn {
     align-items: center;
     background-color: var(--color-secondary);
-
+    position: relative;
     border-radius: var(--border-radius-primary);
     color: black;
     cursor: pointer;
@@ -142,8 +142,6 @@
     font-weight: normal;
     justify-content: center;
     border: none;
-    height: 100%;
-    width: 100%;
 
     &.running {
         background-color: var(--dl-color-2);
@@ -158,6 +156,7 @@
     border: none;
     background-image: none;
     outline: 0;
+    position: relative;
 
     --border-size: 0.2rem;
 

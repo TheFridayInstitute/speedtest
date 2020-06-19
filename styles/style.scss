@@ -71,6 +71,7 @@ body {
     color: var(--font-color-primary);
     font-family: var(--font-family-primary);
     justify-content: center;
+
     min-height: 100%;
     min-width: 100%;
 }
@@ -88,8 +89,9 @@ main {
         "button";
 
     grid-template-rows: repeat(1fr, 3);
-    max-height: $meter-height;
-    max-width: $meter-width;
+    max-width: calc(min(#{$meter-width}, 100%));
+    max-height: calc(min(#{$meter-height}, 100%));
+
     overflow-x: hidden;
 
     row-gap: $row-gap;
@@ -109,7 +111,6 @@ main {
         align-self: flex-start;
         grid-area: button;
         justify-self: center;
-        position: relative;
     }
 }
 
@@ -308,10 +309,10 @@ main {
             "test info"
             "button button";
 
-        max-width: 100%;
-        max-height: 100%;
-        grid-template-columns: 1fr 1fr;
+        max-width: calc(min(#{$meter-height}, 100%));
+        max-height: calc(min(#{$meter-width}, 100%));
 
+        grid-template-columns: 1fr 1fr;
         grid-template-rows: 0.8fr 0.2fr;
 
         .test-container {

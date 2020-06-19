@@ -307,10 +307,14 @@ main {
         grid-template-areas:
             "test info"
             "test button";
+
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr 1fr;
         max-height: $meter-width;
         max-width: $meter-height;
+
+        align-items: center;
+        justify-content: center;
 
         .test-container {
             align-self: center;
@@ -338,7 +342,6 @@ main {
                     text-align: left;
                 }
                 .unit-container {
-                    // --font-size-lg: 3.5rem;
                     flex: 1;
                     text-align: center;
                 }

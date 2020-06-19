@@ -617,7 +617,7 @@ async function onend() {
     }
 }
 
-window.onload = async function () {
+window.onload = function () {
     onload();
     animationLoopInit();
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
@@ -654,5 +654,12 @@ addEventListeners(window, "click touchend", function (ev) {
         modal.parentElement.classList.toggle("visible");
     }
 });
+
+function receiveMessage(event) {
+    if (event.data === "start") {
+        eventObj = event;
+    }
+    console.log(`Received event of ${event}`);
+}
 
 window.addEventListener("message", receiveMessage, false);

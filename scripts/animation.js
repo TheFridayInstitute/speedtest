@@ -1,4 +1,12 @@
-import { clamp, bounceInEase, easeInOutCubic, smoothStep3, easeInBounce, easeInOutQuad, easeInCubic } from "./math.js";
+import {
+    clamp,
+    bounceInEase,
+    easeInOutCubic,
+    smoothStep3,
+    easeInBounce,
+    easeInOutQuad,
+    easeInCubic,
+} from "./math.js";
 
 import { getOffset } from "./utils.js";
 
@@ -87,8 +95,8 @@ export async function smoothAnimate(
     timingFunc
 ) {
     let distance = to - from;
-
     let clock = new Clock();
+    let handle = null;
 
     function update() {}
 
@@ -123,16 +131,18 @@ export async function smoothAnimate(
         if (force || clock.elapsedTicks / duration >= 1) {
             return true;
         } else {
-            requestAnimationFrame(animationLoop);
+            handle = requestAnimationFrame(animationLoop);
         }
     }
     clock.start();
-    requestAnimationFrame(animationLoop);
+    handle = requestAnimationFrame(animationLoop);
     await sleep(duration);
+    return handle;
 }
 
 export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
     let clock = new Clock(true, timeStep, timeOut);
+    let handle = null;
 
     function update() {
         return updateFunc(clock.elapsedTicks) || false;
@@ -165,12 +175,13 @@ export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
         if (force) {
             return true;
         } else {
-            requestAnimationFrame(animationLoop);
+            handle = requestAnimationFrame(animationLoop);
         }
     }
 
     clock.start();
-    requestAnimationFrame(animationLoop);
+    handle = requestAnimationFrame(animationLoop);
+    return handle;
 }
 
 export async function blockCSSTimingTransition(el, func) {

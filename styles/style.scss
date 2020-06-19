@@ -71,6 +71,7 @@ body {
     color: var(--font-color-primary);
     font-family: var(--font-family-primary);
     justify-content: center;
+    position: relative;
 
     min-height: 100%;
     min-width: 100%;
@@ -157,9 +158,9 @@ main {
 
     transform: translateY(-100%);
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.705);
+    background-color: rgba(0, 0, 0, 0.75);
     justify-content: center;
-    height: 100%;
+    min-height: 100%;
     width: 100%;
 
     transition: all ease-out 250ms;

@@ -278,8 +278,7 @@ let drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
             METER_MIN,
             METER_MAX
         );
-        // t = hysteresis(t, "meter");
-        t = 1;
+        t = hysteresis(t, "meter");
         let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
@@ -589,13 +588,12 @@ async function onend() {
 
     await closingAnimation(duration, easeInOutCubic);
 
+    await slideRight(testEl, width, 0);
+    testEl.classList.add("hidden");
+    await slideRight(completeModal, 0, -width);
     completeModal.classList.remove("hidden");
 
-    await slideRight(testEl, width, 0);
-    slideRight(completeModal, 0, -width);
-    testEl.classList.add("hidden");
-
-    await slideRightWrap(buttonEl, 0, 0, 1000, function () {
+    slideRightWrap(buttonEl, 0, 0, 1000, function () {
         document.querySelector("#start-btn .text").innerHTML = "Next →";
     });
 

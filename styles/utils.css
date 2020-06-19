@@ -75,8 +75,9 @@
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  position: relative;
   border: none;
+  height: 100%;
+  width: 100%;
 }
 
 .start-btn.running {
@@ -84,7 +85,6 @@
 }
 
 .btn-prime {
-  position: relative;
   overflow: hidden;
   border: none;
   background-image: none;

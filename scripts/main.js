@@ -16,11 +16,6 @@ import {
     normalize,
     easeInOutCubic,
     slerpPoints,
-    bounceInEase,
-    easeInBounce,
-    easeInQuad,
-    easeOutCubic,
-    range,
 } from "./math.js";
 
 import {
@@ -34,20 +29,18 @@ import {
     animateProgressBarWrapper,
     rippleButton,
     slideRightWrap,
-    animateElements,
+    smoothScroll,
 } from "./animation.js";
 
 import {
     getOffset,
     once,
     getComputedVariable,
-    fluidText,
     emToPixels,
-    setAttributes,
     addEventListeners,
 } from "./utils.js";
 
-import { Color, interpColor } from "./colors.js";
+import { Color } from "./colors.js";
 
 // Global speedtest and event state variables.
 var eventObj = null;
@@ -342,7 +335,7 @@ let animationLoopUpdate = function () {
     return false;
 };
 
-let animationLoopDraw = function (t) {
+let animationLoopDraw = function () {
     if (speedtestData === null || speedtestObj.getState() != 3) {
         return false;
     }
@@ -494,7 +487,7 @@ let speedtestOnUpdate = function (data) {
     speedtestData = data;
 };
 
-let speedtestOnEnd = function (aborted) {
+let speedtestOnEnd = function () {
     document.getElementById("start-btn").classList.remove("running");
     animationLoopDraw();
 };
@@ -524,6 +517,14 @@ async function onload() {
             },
         }
     );
+
+    // let offset = getOffset(document.getElementById("start-btn"));
+    // let y = clamp(
+    //     offset.top,
+    //     0,
+    //     window.innerHeight
+    // );
+    // smoothScroll(y, window.scrollY, 1000);
 }
 
 let openingSlide = once(async function () {
@@ -635,17 +636,17 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
         duration
     );
 
-    if (testStateObj["upload"] === 3) {
-        if (eventObj !== null) {
-            console.log("Posting next message.");
-            eventObj.source.postMessage("next", eventObj.origin);
-        } else {
-            document.querySelector(".modal").classList.toggle("visible");
-            console.log("Cannot post to null event object. Aborting...");
-        }
-    } else {
-        onstart();
-    }
+    // if (testStateObj["upload"] === 3) {
+    //     if (eventObj !== null) {
+    //         console.log("Posting next message.");
+    //         eventObj.source.postMessage("next", eventObj.origin);
+    //     } else {
+    //         document.querySelector(".modal").classList.toggle("visible");
+    //         console.log("Cannot post to null event object. Aborting...");
+    //     }
+    // } else {
+    //     onstart();
+    // }
 });
 
 addEventListeners(window, "click touchend", function (ev) {

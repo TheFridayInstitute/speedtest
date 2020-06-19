@@ -308,10 +308,10 @@ main {
         column-gap: $row-gap;
         grid-template-areas:
             "test info"
-            "button button";
+            "test button";
 
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 0.8fr 0.2fr;
+        grid-template-rows: 1fr 1fr;
         max-height: calc(min(#{$meter-width}, 100%));
 
         max-width: calc(min(#{$meter-height}, 100%));

@@ -362,13 +362,14 @@ export async function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
     let buttonOffset = getOffset(buttonEl);
     let x = ev.clientX;
     let y = ev.clientY;
+    console.log(x, y);
 
     x -= buttonOffset.left + buttonOffset.width / 2;
     y -= buttonOffset.top + buttonOffset.height / 2;
 
     rippleEl.style.transform = `translate(${x}px, ${y}px)`;
-    rippleEl.style.width = 0;
-    rippleEl.style.height = 0;
+    // rippleEl.style.width = 0;
+    // rippleEl.style.height = 0;
 
     let transformFunc = function (v, t) {
         let r = `${v}rem`;
@@ -393,4 +394,11 @@ export async function slideRightWrap(el, to, from, duration, func) {
     el.classList.remove("hidden");
 
     await slideRight(el, to, from - width, time);
+}
+
+export async function smoothScroll(to, from, duration) {
+    let transformFunc = function (v) {
+        window.scroll(0, v);
+    };
+    await smoothAnimate(to, from, duration, transformFunc, bounceInEase);
 }

@@ -109,6 +109,7 @@ main {
         align-self: flex-start;
         grid-area: button;
         justify-self: center;
+        position: relative;
     }
 }
 
@@ -229,14 +230,13 @@ main {
 
         .info {
             display: flex;
-            padding: 0.25rem;
+
             flex: 1;
+            @include space-between-row(0.5rem);
             flex-direction: column;
 
             .test-kind {
                 padding: 0.25rem 0;
-
-                font-size: 1rem;
                 font-weight: bold;
             }
 
@@ -306,18 +306,16 @@ main {
         column-gap: $row-gap;
         grid-template-areas:
             "test info"
-            "test button";
+            "button button";
 
+        max-width: 100%;
+        max-height: 100%;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        max-height: $meter-width;
-        max-width: $meter-height;
 
-        align-items: center;
-        justify-content: center;
+        grid-template-rows: 0.8fr 0.2fr;
 
         .test-container {
-            align-self: center;
+            align-self: start;
         }
     }
 
@@ -327,9 +325,11 @@ main {
             flex-direction: column;
 
             .info {
-                margin: 0.25em;
                 padding: 0.25rem 0.5rem;
-                width: 75%;
+                margin: 0;
+                width: 100%;
+
+                @include space-between-column(0.5rem);
 
                 align-items: center;
                 background: var(--background-color-secondary);

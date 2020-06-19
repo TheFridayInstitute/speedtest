@@ -211,16 +211,14 @@ const objectMap = (obj, fn) =>
         Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)])
     );
 
-export function fluidText(
-    el,
-    constrainEl = undefined,
-    maximize = false,
-    attributes = undefined,
-    min = 0,
-    max = Number.MAX_SAFE_INTEGER
-) {
-    constrainEl = !constrainEl ? el.parentElement : constrainEl;
-    attributes = !attributes ? ["font-size"] : attributes;
+export function fluidText(el, options) {
+    let constrainEl = !options.constrainEl
+        ? el.parentElement
+        : options.constrainEl;
+    let attributes = !options.attributes ? ["font-size"] : options.attributes;
+    let percent = !options.percent ? 0.1 : options.percent;
+    let dynamic = !options.dynamic ? false : options.dynamic;
+
     let offsetOriginal = getOffset(constrainEl);
     let attributesObj = {};
 
@@ -230,15 +228,16 @@ export function fluidText(
 
     let _resize = function () {
         let offset = getOffset(constrainEl);
-        let maxSize = Math.ceil(Math.min(offset.width, offset.height));
 
-        let ratio =
-            Math.min(offset.height, offset.width) /
-            Math.min(offsetOriginal.height, offsetOriginal.width);
+        let ratio = dynamic
+            ? Math.min(offset.height, offset.width) /
+              Math.min(offsetOriginal.height, offsetOriginal.width)
+            : 1;
 
         let mappedAttributes = objectMap(attributesObj, function (attr) {
-            let size = maximize ? maxSize : clamp(attr * ratio, 0, maxSize);
-            size = clamp(size, min, max);
+            let size = dynamic
+                ? clamp(attr * ratio, 0, percent * offset.width)
+                : percent * offset.width;
             return `${size}px`;
         });
 

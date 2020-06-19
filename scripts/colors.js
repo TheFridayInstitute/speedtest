@@ -72,7 +72,7 @@ export function HSLAToRGBA(color) {
         Math.round(r * 255),
         Math.round(g * 255),
         Math.round(b * 255),
-        a || 0
+        a || 0,
     ];
 }
 
@@ -194,33 +194,41 @@ export function interpColor(
     endPoints = true,
     interpFunc = lerp
 ) {
-    let palettes = new Array((colors.length - 1) * steps).fill(0);
-    colors.forEach((value, index) => {
-        colors[index] = parseColor(value);
+    colors = colors.map(function (color) {
+        return parseColor(color);
     });
-    let i = 0;
-    for (let [n, color] of colors.entries()) {
-        if (n < colors.length - 1) {
-            let [r1, g1, b1, a1] = color;
-            let [r2, g2, b2, a2] = colors[n + 1];
 
-            for (let m = endPoints & (n === 0) ? 0 : 1; m <= steps; m++) {
-                if (m === steps && n === colors.length - 2 && !endPoints) break;
-                let t = m / steps;
-                let ri = Math.ceil(interpFunc(r1, r2, t));
-                let gi = Math.ceil(interpFunc(g1, g2, t));
-                let bi = Math.ceil(interpFunc(b1, b2, t));
-                let ai = interpFunc(a1, a2, t);
-                ai = ai > 1 ? Math.ceil(ai) : ai;
-
-                let colorString = ` rgba(${ri}, ${gi}, ${bi}, ${ai}) `;
-                palettes[i++] = RGBAToHex(parseColor(colorString));
+    let interpColor = function (t, color1, color2) {
+        return new Array(color1.length).fill().map(function (_, index) {
+            let value = interpFunc(t, color1[index], color2[index]);
+            if (index < 3) {
+                return clamp(Math.ceil(value), 0, 255);
+            } else {
+                return clamp(value, 0, 1);
             }
-        } else {
-            break;
+        });
+    };
+
+    let interpSection = function (color1, color2) {
+        let section = [];
+        for (let t = 0; t <= 1; t += 1 / steps) {
+            let [r, g, b, a] = interpColor(t, color1, color2);
+            let colorString = `rgba(${r}, ${g}, ${b}, ${a})`;
+            let colorObj = new Color(colorString);
+            section.push(colorObj.hex);
         }
-    }
-    return palettes;
+        return section;
+    };
+
+    let sections = colors.map(function (_, index) {
+        if (index < colors.length - 1) {
+            return interpSection(colors[index], colors[index + 1]);
+        } else {
+            return [];
+        }
+    });
+
+    return [].concat.apply([], sections);
 }
 
 export class Color {

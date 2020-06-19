@@ -581,7 +581,7 @@ async function onstart() {
 }
 
 async function onend() {
-    let duration = 2000;
+    let duration = 1000;
     let buttonEl = document.getElementById("start-btn");
     let testEl = document.getElementById("test-pane");
     let completeModal = document.getElementById("complete-pane");
@@ -589,9 +589,9 @@ async function onend() {
 
     await closingAnimation(duration, easeInOutCubic);
 
-    slideRight(testEl, width, 0);
+    await slideRight(testEl, width, 0, 500);
     testEl.classList.add("hidden");
-    slideRight(completeModal, 0, -width);
+    slideRight(completeModal, 0, -width, 500);
     completeModal.classList.remove("hidden");
 
     slideRightWrap(buttonEl, 0, 0, 1000, function () {

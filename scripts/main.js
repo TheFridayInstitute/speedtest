@@ -43,6 +43,8 @@ import {
 
 import { Color } from "./colors.js";
 
+var animationLoopHandle = null;
+
 // Global speedtest and event state variables.
 var eventObj = null;
 var speedtestObj = null;
@@ -451,6 +453,7 @@ let animationLoopInit = function () {
         METER_BACKGROUND_COLOR,
         1
     );
+
     meterDot.fillColor = METER_BACKGROUND_COLOR;
 
     let barWidth = outerRadius;
@@ -516,12 +519,6 @@ async function onload() {
             },
         }
     );
-
-    smoothScroll(
-        getOffset(document.getElementById("start-btn")).top,
-        window.scrollY,
-        1000
-    );
 }
 
 let openingSlide = once(async function () {
@@ -573,28 +570,35 @@ async function onstart() {
         document.querySelector("#start-btn .text").innerHTML = "Stop";
         speedtestObj.start();
         openingSlide();
+        smoothScroll(
+            getOffset(document.getElementById("test-meter")).top -
+                window.innerHeight / 2,
+            window.scrollY,
+            1000
+        );
     }
 }
 
 async function onend() {
-    let duration = 750;
     let buttonEl = document.getElementById("start-btn");
     let testEl = document.getElementById("test-pane");
     let completeModal = document.getElementById("complete-pane");
     let width = window.innerWidth;
+    // This doesn't work.
+    cancelAnimationFrame(animationLoopHandle);
 
-    await closingAnimation(duration, easeInOutCubic);
+    await closingAnimation(2000, easeInOutCubic);
 
-    await slideLeft(testEl, -width, 0, duration);
+    await slideLeft(testEl, -width, 0, 500);
     testEl.classList.add("hidden");
-    slideRight(completeModal, 0, -width, duration);
+    slideRight(completeModal, 0, -width, 500);
     completeModal.classList.remove("hidden");
 
-    slideRightWrap(buttonEl, 0, 0, duration, function () {
+    await slideRightWrap(buttonEl, 0, 0, 500, function () {
         document.querySelector("#start-btn .text").innerHTML = "Next →";
     });
 
-    await sleep(duration);
+    await sleep(2000);
 
     let ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
@@ -617,7 +621,10 @@ async function onend() {
 window.onload = function () {
     onload();
     animationLoopInit();
-    animationLoopOuter(animationLoopUpdate, animationLoopDraw);
+    animationLoopHandle = animationLoopOuter(
+        animationLoopUpdate,
+        animationLoopDraw
+    );
 };
 
 document.getElementById("start-btn").addEventListener("click", function (ev) {

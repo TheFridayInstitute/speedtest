@@ -530,7 +530,7 @@ let openingSlide = once(async function () {
 
     let width = window.innerWidth;
 
-    slideRight([testEl, infoEl, completeModal], width, 0, 1);
+     slideRight([testEl, infoEl, completeModal], width, 0, 1);
     [testEl, infoEl].forEach((el) => el.classList.remove("hidden"));
 
     await slideLeft(startModal, -width, 0, 500);

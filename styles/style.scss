@@ -22,7 +22,7 @@ $ALPHA_0: $PI * 0.8;
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
     --background-color-primary-dark: rgb(37, 37, 37);
-    --background-color-secondary: rgb(66, 66, 66, 1);
+    --background-color-secondary: rgb(61, 61, 61, 1);
     --font-color-primary: #fff;
 
     --color-primary: #fff;
@@ -55,6 +55,8 @@ $ALPHA_0: $PI * 0.8;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.75rem;
+
+    --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.25);
 }
 
 html {
@@ -64,6 +66,7 @@ html {
 
 body {
     display: flex;
+    position: relative;
     margin: 0;
     padding: 0;
     align-items: center;
@@ -71,7 +74,6 @@ body {
     color: var(--font-color-primary);
     font-family: var(--font-family-primary);
     justify-content: center;
-    position: relative;
 
     min-height: 100%;
     min-width: 100%;
@@ -93,7 +95,7 @@ main {
     max-height: calc(min(#{$meter-height}, 100%));
     max-width: calc(min(#{$meter-width}, 100%));
 
-    overflow-x: hidden;
+    // overflow-x: hidden;
 
     row-gap: $row-gap;
 
@@ -126,6 +128,7 @@ main {
     padding: var(--padding);
     height: 100%;
     width: 100%;
+    box-shadow: var(--box-shadow-main);
     box-sizing: border-box;
 
     h1,
@@ -155,13 +158,13 @@ main {
 .modal {
     display: flex;
     position: absolute;
+    width: 100%;
 
     transform: translateY(-100%);
     align-items: center;
     background-color: rgba(0, 0, 0, 0.75);
     justify-content: center;
     min-height: 100%;
-    width: 100%;
 
     transition: all ease-out 250ms;
     visibility: hidden;
@@ -323,28 +326,39 @@ main {
     }
 
     .test-info-progress-container {
+        width: 75%;
+        margin: auto;
         .test-info-container {
             align-items: center;
             flex-direction: column;
 
             .info {
                 margin: 0;
-                padding: 0.25rem 0.5rem;
+                display: flex;
+
                 width: 100%;
 
-                align-items: center;
-                background: var(--background-color-secondary);
-                border-radius: var(--border-radius-primary);
                 box-sizing: border-box;
                 flex-direction: row;
 
                 @include space-between-column(0.5rem);
 
                 .test-kind {
+                    display: flex;
+                    margin: 0 0.25rem;
+                    padding: 0.5rem;
+
+                    align-items: center;
                     flex: 1;
+
+                    box-sizing: border-box;
+                    font-size: 1.25rem;
                     text-align: left;
+                    background: var(--background-color-secondary);
+                    border-radius: var(--border-radius-primary);
                 }
                 .unit-container {
+                    margin: 0 0.25rem;
                     flex: 1;
                     text-align: center;
                 }
@@ -352,23 +366,3 @@ main {
         }
     }
 }
-
-// @media all and (max-width: $screen-size-md) {
-//     html,
-//     body {
-//         font-size: 0.95rem;
-//     }
-// }
-
-// @media all and (max-width: $screen-size-sm) {
-//     html,
-//     body {
-//         font-size: 0.9rem;
-//     }
-// }
-
-// @media all and (max-width: $screen-size-xs) {
-//     html {
-//         font-size: 0.95rem;
-//     }
-// }

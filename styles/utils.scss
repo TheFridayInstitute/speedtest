@@ -194,3 +194,36 @@
     right: 0;
     margin: auto;
 }
+
+.modal {
+    display: flex;
+    position: absolute;
+    width: 100%;
+
+    transform: translateY(-100%);
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    min-height: 100%;
+
+    transition: all ease-out 250ms;
+    visibility: hidden;
+
+    z-index: 999;
+
+    .modal-content {
+        height: 75%;
+        width: 75%;
+        opacity: 100%;
+    }
+
+    &.visible {
+        transform: translateY(0);
+        visibility: visible;
+    }
+}
+
+.hidden {
+    pointer-events: none;
+    visibility: hidden;
+}

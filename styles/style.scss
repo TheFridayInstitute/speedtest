@@ -57,6 +57,7 @@ $ALPHA_0: $PI * 0.8;
     --border-radius-primary: 0.75rem;
 
     --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.25);
+    --column-gap: 0.5rem;
 }
 
 html {
@@ -95,9 +96,7 @@ main {
     max-height: calc(min(#{$meter-height}, 100%));
     max-width: calc(min(#{$meter-width}, 100%));
 
-    // overflow-x: hidden;
-
-    row-gap: $row-gap;
+    row-gap: calc(3 * var(--column-gap));
 
     .test-container {
         align-self: end;
@@ -118,8 +117,6 @@ main {
 }
 
 .pane-container {
-    background: var(--background-color-secondary);
-    border-radius: var(--border-radius-primary);
     grid-area: test;
 }
 
@@ -146,7 +143,7 @@ main {
 
     hr {
         --main-color: white;
-        height: 0.1em;
+        height: 0.1rem;
         width: calc(100% + var(--padding));
         background-color: var(--main-color);
         border: none;
@@ -155,71 +152,47 @@ main {
     }
 }
 
-.modal {
-    display: flex;
-    position: absolute;
-    width: 100%;
 
-    transform: translateY(-100%);
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.75);
-    justify-content: center;
-    min-height: 100%;
-
-    transition: all ease-out 250ms;
-    visibility: hidden;
-
-    z-index: 999;
-
-    .modal-content {
-        height: 75%;
-        width: 75%;
-        opacity: 100%;
-    }
-
-    &.visible {
-        transform: translateY(0);
-        visibility: visible;
-    }
-}
-
-.hidden {
-    pointer-events: none;
-    visibility: hidden;
-}
 
 .test-container {
+    $y: (1 - sin($ALPHA_0))/2 - 0.025;
     position: relative;
+    display: grid;
+    grid-template-rows: auto;
+    row-gap: var(--column-gap);
 
     .info {
-        --border-radius: 1rem;
-        $y: (1 - sin($ALPHA_0))/2 - 0.025;
-        display: flex;
-        position: absolute;
-        margin: 0 auto;
-        height: calc(100% *#{$y});
-        width: 75%;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        align-items: center;
+        --font-size: 4rem;
+        display: grid;
+        grid-template-columns: 3fr 1fr;
 
-        background-color: var(--background-color-primary-dark);
-        border-top-left-radius: var(--border-radius);
-        border-top-right-radius: var(--border-radius);
-
-        justify-content: center;
+        column-gap: var(--column-gap);
 
         .unit-container {
-            --font-size-lg: 3.5rem;
-            height: var(--font-size-lg);
+            --font-size-lg: var(--font-size);
             align-items: baseline;
+
+
             flex-direction: row;
-            margin-left: var(--font-size-sm);
+            justify-content: center;
+
+            background-color: var(--background-color-primary-dark);
+            border-radius: var(--border-radius-primary);
+            font-weight: bold;
+        }
+
+        .kind {
+            text-align: center;
+            font-size: var(--font-size);
+            background-color: var(--background-color-primary-dark);
+            border-radius: var(--border-radius-primary);
         }
     }
 
     .square-box {
+        background: var(--background-color-secondary);
+        border-radius: var(--border-radius-primary);
+
         z-index: 1;
 
         canvas {
@@ -248,6 +221,7 @@ main {
 
             .unit-container {
                 padding: 0.5rem;
+
                 height: 100%;
                 width: 100%;
 
@@ -298,6 +272,7 @@ main {
     }
 
     .amount {
+        
         height: var(--font-size-lg);
         font-size: var(--font-size-lg);
     }
@@ -326,15 +301,15 @@ main {
     }
 
     .test-info-progress-container {
-        width: 75%;
         margin: auto;
+        width: 75%;
         .test-info-container {
             align-items: center;
             flex-direction: column;
 
             .info {
-                margin: 0;
                 display: flex;
+                margin: 0;
 
                 width: 100%;
 
@@ -349,13 +324,13 @@ main {
                     padding: 0.5rem;
 
                     align-items: center;
-                    flex: 1;
-
-                    box-sizing: border-box;
-                    font-size: 1.25rem;
-                    text-align: left;
                     background: var(--background-color-secondary);
                     border-radius: var(--border-radius-primary);
+
+                    box-sizing: border-box;
+                    flex: 1;
+                    font-size: 1.25rem;
+                    text-align: left;
                 }
                 .unit-container {
                     margin: 0 0.25rem;

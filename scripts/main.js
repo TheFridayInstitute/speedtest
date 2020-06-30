@@ -381,7 +381,7 @@ let animationLoopInit = function () {
     innerRadius = outerRadius - meterGap;
 
     let originX = canvas.width / 2;
-    let originY = canvas.height / 2;
+    let originY = canvas.height / 2 ;
 
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
@@ -554,7 +554,7 @@ async function onstart() {
         document.getElementById("test-amount").innerHTML = "0";
 
         document
-            .querySelectorAll(".test-info-container .unit-container")
+            .querySelectorAll(".info-container .unit-container")
             .forEach((el) => {
                 el.classList.add("in-progress");
                 el.querySelector(".amount").innerHTML = "0";

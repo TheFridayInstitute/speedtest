@@ -80,6 +80,11 @@ body {
     min-width: 100%;
 }
 
+@mixin cell-styling($gap) {
+    background-color: var(--background-color-primary);
+    border-radius: var(--border-radius-primary);
+}
+
 main {
     display: grid;
     padding: $row-gap/2;
@@ -96,21 +101,21 @@ main {
     max-height: calc(min(#{$meter-height}, 100%));
     max-width: calc(min(#{$meter-width}, 100%));
 
-    row-gap: calc(3 * var(--column-gap));
+    row-gap: calc(4 * var(--column-gap));
 
-    .test-container {
+    .speedtest-container {
         align-self: end;
         grid-area: test;
     }
 
-    .test-info-progress-container {
+    .info-progress-container {
         grid-area: info;
     }
 
     .start-btn-container {
         height: 3rem;
         width: 75%;
-        align-self: flex-start;
+
         grid-area: button;
         justify-self: center;
     }
@@ -152,58 +157,74 @@ main {
     }
 }
 
-
-
-.test-container {
+.speedtest-container {
     $y: (1 - sin($ALPHA_0))/2 - 0.025;
-    position: relative;
     display: grid;
-    grid-template-rows: auto;
+    position: relative;
+    grid-template-rows: auto auto;
     row-gap: var(--column-gap);
+    grid-template-areas:
+        "speedtest"
+        "info";
 
     .info {
-        --font-size: 4rem;
+        grid-area: info;
+        --font-size: 3.5rem;
         display: grid;
-        grid-template-columns: 3fr 1fr;
-
         column-gap: var(--column-gap);
+        grid-template-columns: 2fr 1fr;
 
-        .unit-container {
-            --font-size-lg: var(--font-size);
-            align-items: baseline;
-
-
-            flex-direction: row;
-            justify-content: center;
-
+        .unit-info-container {
+            padding: var(--column-gap);
             background-color: var(--background-color-primary-dark);
             border-radius: var(--border-radius-primary);
-            font-weight: bold;
+            box-sizing: border-box;
+
+            .header {
+                font-size: 1rem;
+            }
+            .unit-container {
+                --font-size-lg: var(--font-size);
+                align-items: baseline;
+
+                flex-direction: row;
+
+                font-weight: bold;
+            }
+
+            .footer {
+                color: rgba(255, 255, 255, 0.25);
+            }
         }
 
         .kind {
-            text-align: center;
-            font-size: var(--font-size);
+            display: flex;
+            align-items: center;
             background-color: var(--background-color-primary-dark);
             border-radius: var(--border-radius-primary);
+            font-size: var(--font-size);
+            justify-content: center;
         }
     }
 
-    .square-box {
+    .speedtest {
+        grid-area: speedtest;
         background: var(--background-color-secondary);
         border-radius: var(--border-radius-primary);
-
+        
         z-index: 1;
 
         canvas {
+            
+          
             padding: 0.5rem;
             box-sizing: border-box;
         }
     }
 }
 
-.test-info-progress-container {
-    .test-info-container {
+.info-progress-container {
+    .info-container {
         display: flex;
         flex-direction: row;
 
@@ -214,7 +235,7 @@ main {
             flex-direction: column;
             @include space-between-row(0.5rem);
 
-            .test-kind {
+            .kind {
                 padding: 0.25rem 0;
                 font-weight: bold;
             }
@@ -272,7 +293,6 @@ main {
     }
 
     .amount {
-        
         height: var(--font-size-lg);
         font-size: var(--font-size-lg);
     }
@@ -286,58 +306,45 @@ main {
     main {
         column-gap: $row-gap;
         grid-template-areas:
-            "test info"
-            "test button";
+            "test test"
+            "info button";
 
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        max-height: calc(min(#{$meter-width}, 100%));
+        grid-template-columns: auto auto;
+        grid-template-rows: auto auto;
+        align-items: center;
+        // max-height: calc(min(#{$meter-width}, 100%));
+        // max-width: calc(min(#{$meter-height}, 100%));
 
-        max-width: calc(min(#{$meter-height}, 100%));
-
-        .test-container {
+        .speedtest-container {
             align-self: start;
+        }
+
+        .start-btn-container {
+            width: 100%;
         }
     }
 
-    .test-info-progress-container {
-        margin: auto;
-        width: 75%;
-        .test-info-container {
-            align-items: center;
-            flex-direction: column;
+    .speedtest-container {
+        grid-template-areas: "speedtest info";
+        grid-template-rows: 1fr;
+        grid-template-columns: 2fr 1fr;
+        column-gap: var(--column-gap);
 
-            .info {
+        .info {
+            grid-area: info;
+            grid-template-rows: 3fr 1fr;
+            grid-template-columns: auto;
+            row-gap: var(--column-gap);
+            .unit-info-container {
                 display: flex;
-                margin: 0;
-
-                width: 100%;
-
-                box-sizing: border-box;
-                flex-direction: row;
-
-                @include space-between-column(0.5rem);
-
-                .test-kind {
-                    display: flex;
-                    margin: 0 0.25rem;
-                    padding: 0.5rem;
-
-                    align-items: center;
-                    background: var(--background-color-secondary);
-                    border-radius: var(--border-radius-primary);
-
-                    box-sizing: border-box;
-                    flex: 1;
-                    font-size: 1.25rem;
-                    text-align: left;
-                }
-                .unit-container {
-                    margin: 0 0.25rem;
-                    flex: 1;
-                    text-align: center;
-                }
+                justify-content: center;
+                align-items: baseline;
+                flex-direction: column;
             }
+        }
+
+        .speedtest {
+            grid-area: speedtest;
         }
     }
 }

@@ -11,11 +11,11 @@
         <link rel="stylesheet" href="styles/extras.css" />
         <link rel="stylesheet" href="styles/utils.css" />
 
-        <title>speedtest.fi</title>
+        <title>speedtest.fi ⏱</title>
     </head>
 
     <body>
-        <div class="modal">
+        <section class="modal">
             <div class="pane-container pane-info modal-content">
                 <h1>Heads up!</h1>
 
@@ -26,10 +26,10 @@
                     part of the survey. Try reloading the webpage.
                 </p>
             </div>
-        </div>
+        </section>
 
         <main>
-            <div class="pane-container hidden" id="start-pane">
+            <section class="pane-container hidden" id="start-pane">
                 <div class="pane-info">
                     <h1>
                         Let's test your internet speed.
@@ -50,9 +50,9 @@
                         button to begin.
                     </p>
                 </div>
-            </div>
+            </section>
 
-            <div class="pane-container hidden" id="complete-pane">
+            <section class="pane-container hidden" id="complete-pane">
                 <div class="pane-info">
                     <h1>
                         Speed test complete.
@@ -65,37 +65,41 @@
                         automatically progress.
                     </p>
                 </div>
-            </div>
+            </section>
 
-            <div class="pane-container test-container" id="test-pane">
-                <div class="square-box">
+            <section class="pane-container speedtest-container" id="test-pane">
+                <div class="speedtest square-box">
                     <canvas class="square-box" id="test-meter"></canvas>
                 </div>
 
                 <div class="info">
-                    
-                    <div class="unit-container" id="test-amount-container">
-                        <div
-                            id="test-amount"
-                            class="amount"
-                            aria-label="active-test-speed"
-                        >
-                            0
+                    <div class="unit-info-container">
+                        <div class="header">Current Metric</div>
+                        <div class="unit-container" id="test-amount-container">
+                            <div
+                                id="test-amount"
+                                class="amount"
+                                aria-label="active-test-speed"
+                            >
+                                0
+                            </div>
+                            <div id="test-amount-unit" class="unit">Mbps</div>
                         </div>
-                        <div id="test-amount-unit" class="unit">Mbps</div>
+
+                        <div class="footer">Downloading...</div>
                     </div>
 
                     <div class="kind">↑</div>
                 </div>
-            </div>
+            </section>
 
-            <div
-                class="test-info-progress-container"
+            <section
+                class="info-progress-container"
                 id="info-progress-container"
             >
-                <div class="test-info-container">
+                <div class="info-container">
                     <div class="info" id="ping">
-                        <div class="test-kind">
+                        <div class="kind">
                             Latency
                         </div>
 
@@ -108,7 +112,7 @@
                     </div>
 
                     <div class="info" id="download">
-                        <div class="test-kind">
+                        <div class="kind">
                             Download
                         </div>
                         <div class="unit-container in-progress">
@@ -120,7 +124,7 @@
                     </div>
 
                     <div class="info" id="upload">
-                        <div class="test-kind">
+                        <div class="kind">
                             Upload
                         </div>
                         <div class="unit-container in-progress">
@@ -132,7 +136,7 @@
                     </div>
                 </div>
                 <div class="progress-bar-container" id="progress-bar"></div>
-            </div>
+            </section>
 
             <button
                 class="start-btn-container start-btn btn-prime"

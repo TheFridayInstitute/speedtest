@@ -7,12 +7,11 @@ import {
     roundedArc,
     setRoundedArcColor,
     roundedRectangle,
-} from './canvas.js';
+} from "./canvas.js";
 
 import {
     clamp,
     lerp,
-    smoothStep3,
     normalize,
     easeInOutCubic,
     slerpPoints,
@@ -43,32 +42,30 @@ import {
 
 import { Color } from "./colors.js";
 
-var animationLoopHandle = null;
-
 // Global speedtest and event state variables.
-var eventObj = null;
-var speedtestObj = null;
-var speedtestData = null;
+let eventObj = null;
+let speedtestObj = null;
+let speedtestData = null;
 
 // Global state variables for the canvas
-var canvasObj;
-var meterDial;
-var outerMeter;
-var innerMeter;
-var meterDot;
-var progressBarMesh;
-var progressBarEl;
+let canvasObj;
+let meterDial;
+let outerMeter;
+let innerMeter;
+let meterDot;
+let progressBarMesh;
+let progressBarEl;
 
 const METER_ANGLE_START = Math.PI * 0.8;
 const METER_ANGLE_END = 2 * Math.PI * 1.1;
 const METER_MIN = 0;
 const METER_MAX = 100;
 
-var lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
+let lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
 
-var outerRadius;
-var innerRadius;
-var meterDotSize = 60;
+let outerRadius;
+let innerRadius;
+const meterDotSize = 60;
 
 const DOTS = `<div class="dot-container dot-typing"></div>`;
 
@@ -77,25 +74,26 @@ const METER_BACKGROUND_COLOR = getComputedVariable("--meter-background-color");
 const PROGRESS_BAR_COLOR = "#fff";
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 
-let generateColorStops = function (colorName, step = 0.5) {
-    let stops = Math.floor(1 / step) + 1;
+const generateColorStops = function (colorName, step = 0.5) {
+    const stops = Math.floor(1 / step) + 1;
+
     return new Array(stops).fill().map(function (_, index) {
-        let stop = `${index * step}`;
-        let tmpColorName = `--${colorName}-${index}`;
+        const stop = `${index * step}`;
+        const tmpColorName = `--${colorName}-${index}`;
         let color = getComputedVariable(tmpColorName);
         color = color === "" ? "black" : color;
         return [stop, color];
     });
 };
 
-var dlColorStops = generateColorStops("dl-color");
-var ulColorStops = generateColorStops("ul-color");
+const dlColorStops = generateColorStops("dl-color");
+const ulColorStops = generateColorStops("ul-color");
 
-var dlProgressColor;
-var dlProgressGlowColor;
+let dlProgressColor;
+let dlProgressGlowColor;
 
-var ulProgressColor;
-var ulProgressGlowColor;
+let ulProgressColor;
+let ulProgressGlowColor;
 
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
@@ -124,22 +122,22 @@ const SPEEDTEST_DATA_MAPPING = Object.freeze({
  * 2: finished;
  * 3: manually set, drawing complete.
  */
-var testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
+const testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
-let updateTestState = function (testStateObj, abort = false) {
+const updateTestState = function (testStateObj, abort = false) {
     // + 1 because we start at 0, not -1 (unlike librespeed).
-    let speedtestState = speedtestData.testState + 1;
-    let testKind = SPEEDTEST_STATES[speedtestState];
-    let prevState = testStateObj["prev_state"];
-    let prevKey = SPEEDTEST_STATES[prevState];
+    const speedtestState = speedtestData.testState + 1;
+    const testKind = SPEEDTEST_STATES[speedtestState];
+    const prevState = testStateObj["prev_state"];
+    const prevKey = SPEEDTEST_STATES[prevState];
 
     if (abort || testKind === "aborted") {
-        for (let [key] of Object.entries(testStateObj)) {
+        for (const [key] of Object.entries(testStateObj)) {
             testStateObj[key] = -1;
         }
     } else {
-        for (let [key, value] of Object.entries(testStateObj)) {
-            let state = value + 1;
+        for (const [key, value] of Object.entries(testStateObj)) {
+            const state = value + 1;
 
             if (key === testKind) {
                 if (value < 1) {
@@ -161,10 +159,10 @@ let updateTestState = function (testStateObj, abort = false) {
     return testStateObj;
 };
 
-var hysteresisRecord = {};
-let hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
-    let prevT = hysteresisRecord[key] || 0;
-    let delta = Math.abs(t - prevT);
+const hysteresisRecord = {};
+const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
+    const prevT = hysteresisRecord[key] || 0;
+    const delta = Math.abs(t - prevT);
     if (delta > eps) {
         // t = easeOutCubic(step, prevT, t - prevT, 1);
         t = lerp(step, prevT, t);
@@ -173,8 +171,8 @@ let hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     return t;
 };
 
-let openingAnimation = async function (duration, timingFunc) {
-    let transformFunc = function (v, t) {
+const openingAnimation = async function (duration, timingFunc) {
+    const transformFunc = function (v, t) {
         canvasObj.clear();
 
         outerMeter.radius = outerRadius * t;
@@ -185,7 +183,11 @@ let openingAnimation = async function (duration, timingFunc) {
         outerMeter.draw(canvasObj, t);
         meterDot.draw(canvasObj, t);
 
-        let theta = lerp(t, METER_ANGLE_START, 4 * Math.PI + METER_ANGLE_START);
+        const theta = lerp(
+            t,
+            METER_ANGLE_START,
+            4 * Math.PI + METER_ANGLE_START
+        );
 
         meterDial
             .rotate(theta, true)
@@ -207,8 +209,8 @@ let openingAnimation = async function (duration, timingFunc) {
     );
 };
 
-let closingAnimation = async function (duration, timingFunc) {
-    let transformFunc = function (v, t) {
+const closingAnimation = async function (duration, timingFunc) {
+    const transformFunc = function (v, t) {
         canvasObj.clear();
         t = clamp(1 - t, 0.0001, 1);
 
@@ -218,7 +220,11 @@ let closingAnimation = async function (duration, timingFunc) {
         outerMeter.draw(canvasObj, t);
         meterDot.draw(canvasObj, t);
 
-        let theta = lerp(t, METER_ANGLE_START, 4 * Math.PI + METER_ANGLE_START);
+        const theta = lerp(
+            t,
+            METER_ANGLE_START,
+            4 * Math.PI + METER_ANGLE_START
+        );
 
         meterDial
             .rotate(theta, true)
@@ -240,7 +246,7 @@ let closingAnimation = async function (duration, timingFunc) {
     );
 };
 
-let drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
+const drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
     if (!stateName) {
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
@@ -266,7 +272,7 @@ let drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
             METER_MAX
         );
         t = hysteresis(t, "meter");
-        let theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
+        const theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
@@ -287,11 +293,11 @@ let drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
     }
 };
 
-let drawProgressBar = function (stateName) {
+const drawProgressBar = function (stateName) {
     if (!stateName) {
         progressBarMesh.draw(canvasObj, 0);
     } else {
-        let stateProgress =
+        const stateProgress =
             parseFloat(
                 speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]
             ) || 0;
@@ -301,16 +307,16 @@ let drawProgressBar = function (stateName) {
     }
 };
 
-let updateInfoUI = function (stateName, stateObj) {
-    let stateKindEl = document.getElementById(stateName);
-    let unitContainer = stateKindEl.querySelector(".unit-container");
-    let state = stateObj[stateName];
+const updateInfoUI = function (stateName, stateObj) {
+    const stateKindEl = document.getElementById(stateName);
+    const unitContainer = stateKindEl.querySelector(".unit-container");
+    const state = stateObj[stateName];
 
     if (state === 0) {
         unitContainer.querySelector(".amount").innerHTML = DOTS;
     } else if (state === 1) {
     } else if (state === 2) {
-        let stateAmount =
+        const stateAmount =
             speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
 
         animateProgressBarWrapper(progressBarEl, 1000, 3);
@@ -325,17 +331,17 @@ let updateInfoUI = function (stateName, stateObj) {
     }
 };
 
-let animationLoopUpdate = function () {
+const animationLoopUpdate = function () {
     return false;
 };
 
-let animationLoopDraw = function () {
+const animationLoopDraw = function () {
     if (speedtestData === null || speedtestObj.getState() != 3) {
         return false;
     }
 
-    let prevState = testStateObj["prev_state"];
-    let stateName = SPEEDTEST_STATES[prevState];
+    const prevState = testStateObj["prev_state"];
+    const stateName = SPEEDTEST_STATES[prevState];
     updateTestState(testStateObj);
 
     if (
@@ -365,30 +371,30 @@ let animationLoopDraw = function () {
     }
 };
 
-let animationLoopInit = function () {
-    let canvas = document.getElementById("test-meter");
-    let ctx = canvas.getContext("2d");
+const animationLoopInit = function () {
+    const canvas = document.getElementById("test-meter");
+    const ctx = canvas.getContext("2d");
 
-    let canvasOffset = getOffset(canvas);
-    let dpr = window.devicePixelRatio || 1;
+    const canvasOffset = getOffset(canvas);
+    const dpr = window.devicePixelRatio || 1;
     lineWidth *= dpr;
 
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
-    let meterGap = lineWidth * 1.25;
+    const meterGap = lineWidth * 1.25;
 
     outerRadius = canvas.width / 2 - lineWidth / 2;
     innerRadius = outerRadius - meterGap;
 
-    let originX = canvas.width / 2;
-    let originY = canvas.height / 2 ;
+    const originX = canvas.width / 2;
+    const originY = canvas.height / 2;
 
     dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
     ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
 
-    let makeGlowColor = function (value) {
-        let [stop, color] = value;
-        let newColor = new Color(color);
+    const makeGlowColor = function (value) {
+        const [stop, color] = value;
+        const newColor = new Color(color);
         newColor.opacity = 0.3;
         return [stop, newColor.colorString];
     };
@@ -402,19 +408,19 @@ let animationLoopInit = function () {
         ulColorStops.map(makeGlowColor)
     );
 
-    let dialBase = lineWidth / 1.2;
-    let dialHeight = innerRadius * 0.8;
-    let dialTop = dialBase / 1.8;
+    const dialBase = lineWidth / 1.2;
+    const dialHeight = innerRadius * 0.8;
+    const dialTop = dialBase / 1.8;
 
     // Initializing polygons
-    let base = [
+    const base = [
         [0, 0],
         [dialBase, 0],
     ];
 
-    let points = slerpPoints(base[0], base[1]);
+    const points = slerpPoints(base[0], base[1]);
 
-    let meterPoints = [
+    const meterPoints = [
         ...points,
         [dialBase - dialTop, -dialHeight],
         [dialTop, -dialHeight],
@@ -456,17 +462,17 @@ let animationLoopInit = function () {
 
     meterDot.fillColor = METER_BACKGROUND_COLOR;
 
-    let barWidth = outerRadius;
-    let barHeight = lineWidth / 4;
+    const barWidth = outerRadius;
+    const barHeight = lineWidth / 4;
 
-    let progressBar = roundedRectangle(
+    const progressBar = roundedRectangle(
         0,
         0,
         barWidth,
         barHeight,
         PROGRESS_BAR_COLOR
     );
-    let progressBarBackground = roundedRectangle(
+    const progressBarBackground = roundedRectangle(
         0,
         0,
         barWidth,
@@ -485,11 +491,11 @@ let animationLoopInit = function () {
     canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
-let speedtestOnUpdate = function (data) {
+const speedtestOnUpdate = function (data) {
     speedtestData = data;
 };
 
-let speedtestOnEnd = function () {
+const speedtestOnEnd = function () {
     document.getElementById("start-btn").classList.remove("running");
     animationLoopDraw();
 };
@@ -521,16 +527,16 @@ async function onload() {
     );
 }
 
-let openingSlide = once(async function () {
-    let testEl = document.getElementById("test-pane");
-    let infoEl = document.getElementById("info-progress-container");
+const openingSlide = once(async function () {
+    const testEl = document.getElementById("test-pane");
+    const infoEl = document.getElementById("info-progress-container");
 
-    let startModal = document.getElementById("start-pane");
-    let completeModal = document.getElementById("complete-pane");
+    const startModal = document.getElementById("start-pane");
+    const completeModal = document.getElementById("complete-pane");
 
-    let width = window.innerWidth;
+    const width = window.innerWidth;
 
-     slideRight([testEl, infoEl, completeModal], width, 0, 1);
+    slideRight([testEl, infoEl, completeModal], width, 0, 1);
     [testEl, infoEl].forEach((el) => el.classList.remove("hidden"));
 
     await slideLeft(startModal, -width, 0, 500);
@@ -580,12 +586,10 @@ async function onstart() {
 }
 
 async function onend() {
-    let buttonEl = document.getElementById("start-btn");
-    let testEl = document.getElementById("test-pane");
-    let completeModal = document.getElementById("complete-pane");
-    let width = window.innerWidth;
-    // This doesn't work.
-    cancelAnimationFrame(animationLoopHandle);
+    const buttonEl = document.getElementById("start-btn");
+    const testEl = document.getElementById("test-pane");
+    const completeModal = document.getElementById("complete-pane");
+    const width = window.innerWidth;
 
     await closingAnimation(2000, easeInOutCubic);
 
@@ -600,9 +604,9 @@ async function onend() {
 
     await sleep(2000);
 
-    let ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
+    const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
-    let outData = {
+    const outData = {
         dlStatus: speedtestData.dlStatus,
         ulStatus: speedtestData.ulStatus,
         pingStatus: speedtestData.pingStatus,
@@ -621,14 +625,11 @@ async function onend() {
 window.onload = function () {
     onload();
     animationLoopInit();
-    animationLoopHandle = animationLoopOuter(
-        animationLoopUpdate,
-        animationLoopDraw
-    );
+    animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
 
 document.getElementById("start-btn").addEventListener("click", function (ev) {
-    let duration = 1000;
+    const duration = 1000;
 
     rippleButton(
         ev,
@@ -653,7 +654,7 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
 });
 
 addEventListeners(window, "click touchend", function (ev) {
-    let modal = document.querySelector(".modal-content");
+    const modal = document.querySelector(".modal-content");
     if (ev.target == modal || ev.target == modal.parentElement) {
         modal.parentElement.classList.toggle("visible");
     }

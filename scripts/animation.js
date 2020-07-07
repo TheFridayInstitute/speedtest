@@ -1,12 +1,4 @@
-import {
-    clamp,
-    bounceInEase,
-    easeInOutCubic,
-    smoothStep3,
-    easeInBounce,
-    easeInOutQuad,
-    easeInCubic,
-} from "./math.js";
+import { clamp, bounceInEase, easeInOutCubic, smoothStep3 } from "./math.js";
 
 import { getOffset } from "./utils.js";
 
@@ -68,12 +60,12 @@ export function debounce(func, wait, immediate = true) {
     };
 }
 
-let clock = new Clock();
-let started = false;
-let delta = clock.tick();
+
 
 export function throttle(func, wait) {
     var delta = null;
+    let clock = new Clock();
+    let started = false;
 
     return function () {
         var context = this;
@@ -276,7 +268,7 @@ export async function smoothRotate(el, to, from, duration, rad = false) {
         elArray = el;
     }
 
-    let transformFunc = function (v, t) {
+    let transformFunc = function (v) {
         for (let el of elArray) {
             el.style.transform = `rotate(${v}${suffix})`;
             el.setAttribute("rotation", v);
@@ -348,7 +340,7 @@ export async function animateProgressBar(el, to, from, duration, stops) {
         el.setAttribute("percent-complete", to);
     }
 
-    let transformFunc = function (v, t) {
+    let transformFunc = function (v) {
         for (let el of elArray) {
             setProgressBar(el, v);
         }

@@ -7,10 +7,9 @@ import {
     rotateAboutPoint,
     slerpPoints,
     lerp,
-    sum,
 } from "./math.js";
 
-export class Canvas {
+class Canvas {
     constructor(canvasEl, ctx, origin) {
         this.canvasEl = canvasEl;
         this.ctx = ctx;
@@ -94,7 +93,7 @@ export class Canvas {
     }
 }
 
-export class Shape {
+class Shape {
     constructor(points, color, lineWidth, fillColor, shadowColor, shadowBlur) {
         this._points = points;
         this._color = color == undefined ? "black" : color;
@@ -203,7 +202,7 @@ export class Shape {
     }
 }
 
-export class Polygon extends Shape {
+class Polygon extends Shape {
     constructor(points, color, lineWidth, fillColor) {
         super(points, color, lineWidth, fillColor);
     }
@@ -251,7 +250,7 @@ export class Polygon extends Shape {
     }
 }
 
-export class Arc extends Shape {
+class Arc extends Shape {
     constructor(
         originX,
         originY,
@@ -335,7 +334,7 @@ export class Arc extends Shape {
     }
 }
 
-export class Rectangle extends Polygon {
+class Rectangle extends Polygon {
     constructor(leftX, leftY, width, height, fillColor) {
         let points = [
             [leftX, leftY],
@@ -370,7 +369,7 @@ export class Rectangle extends Polygon {
     }
 }
 
-export class Text extends Shape {
+class Text extends Shape {
     constructor(text, x, y, font) {
         super([[x, y]], undefined, undefined, undefined);
         this.text = text;
@@ -423,7 +422,7 @@ export class Text extends Shape {
     }
 }
 
-export class Mesh {
+class Mesh {
     constructor(...shapes) {
         this.shapes = shapes;
     }
@@ -477,7 +476,7 @@ export class Mesh {
     }
 }
 
-export function roundedArc(
+function roundedArc(
     originX,
     originY,
     radius,
@@ -486,7 +485,7 @@ export function roundedArc(
     color,
     lineWidth
 ) {
-    let slump = -0.000;
+    let slump = -0.0;
     let outerEdge = radius + lineWidth / 2;
 
     let barHeight = 0.05;
@@ -571,7 +570,7 @@ export function roundedArc(
     return roundedArcMesh;
 }
 
-export function setRoundedArcColor(roundedArc, color) {
+function setRoundedArcColor(roundedArc, color) {
     roundedArc.map((shape, index) => {
         if (shape instanceof Arc) {
             shape.color = color;
@@ -581,7 +580,7 @@ export function setRoundedArcColor(roundedArc, color) {
     });
 }
 
-export function roundedRectangle(leftX, leftY, width, height, fillColor) {
+function roundedRectangle(leftX, leftY, width, height, fillColor) {
     let slump = -0.3;
 
     let r = Math.abs((leftY - height) / 2);
@@ -639,7 +638,7 @@ export function roundedRectangle(leftX, leftY, width, height, fillColor) {
     return roundedBarMesh;
 }
 
-export function generateGradient(ctx, colorStops, x0, y0, x1, y1) {
+function generateGradient(ctx, colorStops, x0, y0, x1, y1) {
     let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
     for (let [stop, color] of colorStops) {
         gradient.addColorStop(stop, color);
@@ -647,7 +646,7 @@ export function generateGradient(ctx, colorStops, x0, y0, x1, y1) {
     return gradient;
 }
 
-export function generateGradientWrapper(canvas, colorStops) {
+function generateGradientWrapper(canvas, colorStops) {
     let ctx = canvas.getContext("2d");
     let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
     for (let [stop, color] of colorStops) {
@@ -656,7 +655,7 @@ export function generateGradientWrapper(canvas, colorStops) {
     return gradient;
 }
 
-export function progressBarIntervals(leftX, leftY, width, height, colors) {
+function progressBarIntervals(leftX, leftY, width, height, colors) {
     let shapes = [];
     let step = 0;
     let w = width / colors.length - height / colors.length;
@@ -697,3 +696,18 @@ export function progressBarIntervals(leftX, leftY, width, height, colors) {
     };
     return intervalMesh;
 }
+
+export {
+    Canvas,
+    progressBarIntervals,
+    roundedArc,
+    roundedRectangle,
+    setRoundedArcColor,
+    generateGradientWrapper,
+    generateGradient,
+    Mesh,
+    Rectangle,
+    Arc,
+    Polygon,
+    Shape,
+};

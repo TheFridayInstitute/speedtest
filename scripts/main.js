@@ -7,7 +7,7 @@ import {
     roundedArc,
     setRoundedArcColor,
     roundedRectangle,
-} from "./canvas.js";
+} from './canvas.js';
 
 import {
     clamp,

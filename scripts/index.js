@@ -42,7 +42,7 @@ import {
 
 import { Color } from "./colors.js";
 
-import { $ } from "./dollar.js";
+import { $, $$ } from "./dollar.js";
 
 // Global speedtest and event state variables.
 let eventObj = null;
@@ -600,7 +600,7 @@ async function onend() {
     }
 }
 
-window.onload = function () {
+$(window).onload = function () {
     onload();
     animationLoopInit();
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
@@ -638,15 +638,15 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
 //     }
 // });
 
-$(window).on("click touchend", function (ev) {
-    const modal = document.querySelector(".modal-content");
+// $(window).on("click touchend", function (ev) {
+//     const modal = document.querySelector(".modal-content");
 
-    modal.parentElement.classList.toggle("visible");
+//     modal.parentElement.classList.toggle("visible");
 
-    // if (ev.target == modal || ev.target == modal.parentElement) {
-    //     modal.parentElement.classList.toggle("visible");
-    // }
-});
+//     // if (ev.target == modal || ev.target == modal.parentElement) {
+//     //     modal.parentElement.classList.toggle("visible");
+//     // }
+// });
 
 function receiveMessage(event) {
     if (event.data === "start") {

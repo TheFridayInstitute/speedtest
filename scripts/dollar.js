@@ -87,14 +87,13 @@ const foldFunctions = function (funcs) {
 
 const dollarFoldedFunctions = foldFunctions(dollarFunctions);
 
-const $ = function (query, context = document) {
+const $$ = function (query, context = document) {
     const nodes =
         query instanceof NodeList || query instanceof Array
             ? query
             : typeof query === "string"
             ? context.querySelectorAll(query)
             : [query];
-    console.log(nodes);
 
     if (nodes === undefined) {
         return undefined;
@@ -104,4 +103,14 @@ const $ = function (query, context = document) {
     }
 };
 
-export { $ };
+const $ = function (query, context = document) {
+    const node = typeof query === "string" ? context.querySelector(query) : query;
+
+    if (node === undefined) {
+        return undefined;
+    } else {
+        return Object.assign(node, dollarFunctions);
+    }
+};
+
+export { $, $$ };

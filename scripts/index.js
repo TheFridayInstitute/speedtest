@@ -6,7 +6,7 @@ import {
     Canvas,
     roundedArc,
     setRoundedArcColor,
-    roundedRectangle,
+    roundedRectangle
 } from "./canvas.js";
 
 import {
@@ -15,7 +15,7 @@ import {
     normalize,
     easeInOutCubic,
     slerpPoints,
-    bounceInEase,
+    bounceInEase
 } from "./math.js";
 
 import {
@@ -29,7 +29,7 @@ import {
     animateProgressBarWrapper,
     rippleButton,
     slideRightWrap,
-    smoothScroll,
+    smoothScroll
 } from "./animation.js";
 
 import {
@@ -37,10 +37,12 @@ import {
     once,
     getComputedVariable,
     emToPixels,
-    addEventListeners,
+    addEventListeners
 } from "./utils.js";
 
 import { Color } from "./colors.js";
+
+import { $ } from "./dollar.js";
 
 // Global speedtest and event state variables.
 let eventObj = null;
@@ -102,7 +104,7 @@ const SPEEDTEST_STATES = Object.freeze({
     3: "ping",
     4: "upload",
     5: "finished",
-    6: "aborted",
+    6: "aborted"
 });
 
 const SPEEDTEST_DATA_MAPPING = Object.freeze({
@@ -111,7 +113,7 @@ const SPEEDTEST_DATA_MAPPING = Object.freeze({
     upload_amount: "ulStatus",
     ping_progress: "pingStatus",
     download_progress: "dlProgress",
-    upload_progress: "ulProgress",
+    upload_progress: "ulProgress"
 });
 
 /**
@@ -145,11 +147,7 @@ const updateTestState = function (testStateObj, abort = false) {
                 } else if (value === 2 && speedtestState !== prevState) {
                     testStateObj[key] = 0;
                 }
-            } else if (
-                key === prevKey &&
-                value > 0 &&
-                speedtestState !== prevState
-            ) {
+            } else if (key === prevKey && value > 0 && speedtestState !== prevState) {
                 testStateObj[prevKey] = state;
                 break;
             }
@@ -183,11 +181,7 @@ const openingAnimation = async function (duration, timingFunc) {
         outerMeter.draw(canvasObj, t);
         meterDot.draw(canvasObj, t);
 
-        const theta = lerp(
-            t,
-            METER_ANGLE_START,
-            4 * Math.PI + METER_ANGLE_START
-        );
+        const theta = lerp(t, METER_ANGLE_START, 4 * Math.PI + METER_ANGLE_START);
 
         meterDial
             .rotate(theta, true)
@@ -220,11 +214,7 @@ const closingAnimation = async function (duration, timingFunc) {
         outerMeter.draw(canvasObj, t);
         meterDot.draw(canvasObj, t);
 
-        const theta = lerp(
-            t,
-            METER_ANGLE_START,
-            4 * Math.PI + METER_ANGLE_START
-        );
+        const theta = lerp(t, METER_ANGLE_START, 4 * Math.PI + METER_ANGLE_START);
 
         meterDial
             .rotate(theta, true)
@@ -344,11 +334,7 @@ const animationLoopDraw = function () {
     const stateName = SPEEDTEST_STATES[prevState];
     updateTestState(testStateObj);
 
-    if (
-        stateName === "ping" ||
-        stateName === "download" ||
-        stateName === "upload"
-    ) {
+    if (stateName === "ping" || stateName === "download" || stateName === "upload") {
         updateInfoUI(stateName, testStateObj);
         // We need to clear the canvas here,
         // else we'll get a strange flashing
@@ -415,7 +401,7 @@ const animationLoopInit = function () {
     // Initializing polygons
     const base = [
         [0, 0],
-        [dialBase, 0],
+        [dialBase, 0]
     ];
 
     const points = slerpPoints(base[0], base[1]);
@@ -423,7 +409,7 @@ const animationLoopInit = function () {
     const meterPoints = [
         ...points,
         [dialBase - dialTop, -dialHeight],
-        [dialTop, -dialHeight],
+        [dialTop, -dialHeight]
     ];
 
     meterDial = new Polygon(meterPoints, null, null, "white");
@@ -465,13 +451,7 @@ const animationLoopInit = function () {
     const barWidth = outerRadius;
     const barHeight = lineWidth / 4;
 
-    const progressBar = roundedRectangle(
-        0,
-        0,
-        barWidth,
-        barHeight,
-        PROGRESS_BAR_COLOR
-    );
+    const progressBar = roundedRectangle(0, 0, barWidth, barHeight, PROGRESS_BAR_COLOR);
     const progressBarBackground = roundedRectangle(
         0,
         0,
@@ -515,14 +495,14 @@ async function onload() {
         {
             styles: {
                 "border-top-left-radius": BORDER_RADIUS_PRIMARY,
-                "border-bottom-left-radius": BORDER_RADIUS_PRIMARY,
-            },
+                "border-bottom-left-radius": BORDER_RADIUS_PRIMARY
+            }
         },
         {
             styles: {
                 "border-top-right-radius": BORDER_RADIUS_PRIMARY,
-                "border-bottom-right-radius": BORDER_RADIUS_PRIMARY,
-            },
+                "border-bottom-right-radius": BORDER_RADIUS_PRIMARY
+            }
         }
     );
 }
@@ -559,12 +539,10 @@ async function onstart() {
 
         document.getElementById("test-amount").innerHTML = "0";
 
-        document
-            .querySelectorAll(".info-container .unit-container")
-            .forEach((el) => {
-                el.classList.add("in-progress");
-                el.querySelector(".amount").innerHTML = "0";
-            });
+        document.querySelectorAll(".info-container .unit-container").forEach((el) => {
+            el.classList.add("in-progress");
+            el.querySelector(".amount").innerHTML = "0";
+        });
         animateProgressBar(
             progressBarEl,
             0,
@@ -611,7 +589,7 @@ async function onend() {
         ulStatus: speedtestData.ulStatus,
         pingStatus: speedtestData.pingStatus,
         jitterStatus: speedtestData.jitterStatus,
-        ip: ip,
+        ip: ip
     };
 
     if (eventObj !== null) {
@@ -653,11 +631,21 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
     }
 });
 
-addEventListeners(window, "click touchend", function (ev) {
+// addEventListeners(window, "click touchend", function (ev) {
+//     const modal = document.querySelector(".modal-content");
+//     if (ev.target == modal || ev.target == modal.parentElement) {
+//         modal.parentElement.classList.toggle("visible");
+//     }
+// });
+
+$(window).on("click touchend", function (ev) {
     const modal = document.querySelector(".modal-content");
-    if (ev.target == modal || ev.target == modal.parentElement) {
-        modal.parentElement.classList.toggle("visible");
-    }
+
+    modal.parentElement.classList.toggle("visible");
+
+    // if (ev.target == modal || ev.target == modal.parentElement) {
+    //     modal.parentElement.classList.toggle("visible");
+    // }
 });
 
 function receiveMessage(event) {

@@ -6,7 +6,7 @@ import {
     scale,
     rotateAboutPoint,
     slerpPoints,
-    lerp,
+    lerp
 } from "./math.js";
 
 class Canvas {
@@ -251,15 +251,7 @@ class Polygon extends Shape {
 }
 
 class Arc extends Shape {
-    constructor(
-        originX,
-        originY,
-        radius,
-        beginAngle,
-        endAngle,
-        color,
-        lineWidth
-    ) {
+    constructor(originX, originY, radius, beginAngle, endAngle, color, lineWidth) {
         super([[originX, originY]], color, lineWidth);
 
         this._radius = radius;
@@ -340,7 +332,7 @@ class Rectangle extends Polygon {
             [leftX, leftY],
             [leftX + width, leftY],
             [leftX + width, leftY + height],
-            [leftX, leftY + height],
+            [leftX, leftY + height]
         ];
         super(points, undefined, undefined, fillColor);
 
@@ -476,15 +468,7 @@ class Mesh {
     }
 }
 
-function roundedArc(
-    originX,
-    originY,
-    radius,
-    beginAngle,
-    endAngle,
-    color,
-    lineWidth
-) {
+function roundedArc(originX, originY, radius, beginAngle, endAngle, color, lineWidth) {
     let slump = -0.0;
     let outerEdge = radius + lineWidth / 2;
 
@@ -493,7 +477,7 @@ function roundedArc(
 
     let base = [
         [0, barHeight],
-        [barWidth, barHeight],
+        [barWidth, barHeight]
     ];
 
     let slerps = slerpPoints(base[0], base[1]);
@@ -505,15 +489,7 @@ function roundedArc(
     theta += delta;
 
     let startCap = new Polygon(points, null, null, color);
-    let arc = new Arc(
-        originX,
-        originY,
-        radius,
-        theta + slump,
-        0,
-        color,
-        lineWidth
-    );
+    let arc = new Arc(originX, originY, radius, theta + slump, 0, color, lineWidth);
     let endCap = new Polygon(
         // Hack to return a copy of the original array.
         JSON.parse(JSON.stringify(points)),
@@ -587,12 +563,12 @@ function roundedRectangle(leftX, leftY, width, height, fillColor) {
 
     let leftSide = [
         [leftX, leftY],
-        [leftX, leftY - height],
+        [leftX, leftY - height]
     ];
 
     let rightSide = [
         [leftX + width, leftY],
-        [leftX + width, leftY - height],
+        [leftX + width, leftY - height]
     ];
 
     width -= 2 * r;
@@ -709,5 +685,5 @@ export {
     Rectangle,
     Arc,
     Polygon,
-    Shape,
+    Shape
 };

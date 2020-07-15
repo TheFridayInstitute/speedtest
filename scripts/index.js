@@ -6,27 +6,34 @@ import { Color } from "./colors.js";
 import { $, $$ } from "./dollar";
 // Global speedtest and event state variables.
 let eventObj;
-let speedtestObj;
+let speedtestObject;
 let speedtestData;
 // Global state variables for the canvas
-let canvasObj;
-let meterDial;
-let outerMeter;
-let innerMeter;
-let meterDot;
-let progressBarMesh;
-const METER_ANGLE_START = Math.PI * 0.8;
-const METER_ANGLE_END = 2 * Math.PI * 1.1;
-const METER_MIN = 0;
-const METER_MAX = 100;
-let lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
-let outerRadius;
-let innerRadius;
-const meterDotSize = 60;
+let canvasObject;
+let meterObject = {
+    startAngle: Math.PI * 0.8,
+    endAngle: 2 * Math.PI * 1.1,
+    minValue: 0,
+    maxValue: 100,
+    lineWidth: 2 * emToPixels(getComputedVariable("font-size")),
+    backgroundColor: getComputedVariable("--meter-background-color")
+};
+let progressBarObject = {
+    color: "#fff",
+    backgroundColor: meterObject.backgroundColor
+};
+// const meterObject.startAngle = Math.PI * 0.8;
+// const meterObject.endAngle = 2 * Math.PI * 1.1;
+// const METER_MIN = 0;
+// const METER_MAX = 100;
+// let lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
+// let outerRadius: number;
+// let innerRadius: number;
+// const meterDotSize = 60;
 const DOTS = `<div class="dot-container dot-typing"></div>`;
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
-const METER_BACKGROUND_COLOR = getComputedVariable("--meter-background-color");
-const PROGRESS_BAR_COLOR = "#fff";
+// const meterObject.backgroundColor = getComputedVariable("--meter-background-color");
+// const PROGRESS_BAR_COLOR = "#fff";
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 const generateColorStops = function (colorName, step = 0.5) {
     const stops = Math.floor(1 / step) + 1;
@@ -41,10 +48,10 @@ const generateColorStops = function (colorName, step = 0.5) {
 };
 const dlColorStops = generateColorStops("dl-color");
 const ulColorStops = generateColorStops("ul-color");
-let dlProgressColor;
-let dlProgressGlowColor;
-let ulProgressColor;
-let ulProgressGlowColor;
+// let dlProgressColor: CanvasColor;
+// let dlProgressGlowColor: CanvasColor;
+// let ulProgressColor: CanvasColor;
+// let ulProgressGlowColor: CanvasColor;
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
     1: "started",
@@ -119,77 +126,77 @@ const getStateAmount = function (stateName) {
 };
 const openingAnimation = async function (duration, timingFunc) {
     const transformFunc = function (v, t) {
-        canvasObj.clear();
+        canvasObject.clear();
         meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
-        outerMeter.draw(canvasObj, t);
-        meterDot.draw(canvasObj, t);
-        const theta = lerp(t, METER_ANGLE_START, 4 * Math.PI + METER_ANGLE_START);
+        outerMeter.draw(canvasObject, t);
+        meterDot.draw(canvasObject, t);
+        const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
         meterDial
             .rotate(theta, true)
             .scale(t)
-            .draw(canvasObj)
+            .draw(canvasObject)
             .rotate(-theta, true)
             .scale(1 / t);
-        progressBarMesh.draw(canvasObj, 0);
+        progressBarMesh.draw(canvasObject, 0);
     };
-    await smoothAnimate(METER_ANGLE_END, METER_ANGLE_START, duration, transformFunc, timingFunc);
+    await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
 };
 const closingAnimation = async function (duration, timingFunc) {
     const transformFunc = function (v, t) {
-        canvasObj.clear();
+        canvasObject.clear();
         t = clamp(1 - t, 0.0001, 1);
-        outerMeter.draw(canvasObj, t);
-        meterDot.draw(canvasObj, t);
-        const theta = lerp(t, METER_ANGLE_START, 4 * Math.PI + METER_ANGLE_START);
+        outerMeter.draw(canvasObject, t);
+        meterDot.draw(canvasObject, t);
+        const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
         meterDial
             .rotate(theta, true)
             .scale(t)
-            .draw(canvasObj)
+            .draw(canvasObject)
             .rotate(-theta, true)
             .scale(1 / t);
-        progressBarMesh.draw(canvasObj, t);
+        progressBarMesh.draw(canvasObject, t);
     };
-    await smoothAnimate(METER_ANGLE_END, METER_ANGLE_START, duration, transformFunc, timingFunc);
+    await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
 };
 const drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
     if (!stateName) {
-        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
-        outerMeter.draw(canvasObj, 1);
-        meterDot.draw(canvasObj);
+        setRoundedArcColor(outerMeter, meterObject.backgroundColor);
+        outerMeter.draw(canvasObject, 1);
+        meterDot.draw(canvasObject);
         meterDial
-            .rotate(METER_ANGLE_START, true)
-            .draw(canvasObj)
-            .rotate(-METER_ANGLE_START, true);
+            .rotate(meterObject.startAngle, true)
+            .draw(canvasObject)
+            .rotate(-meterObject.startAngle, true);
     }
     else {
         const stateAmount = getStateAmount(stateName);
         $("#test-amount").innerHTML = stateAmount.toPrecision(3);
         let t = normalize(stateAmount, METER_MIN, METER_MAX);
         t = hysteresis(t, "meter");
-        const theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
-        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
-        outerMeter.draw(canvasObj, 1);
+        const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
+        setRoundedArcColor(outerMeter, meterObject.backgroundColor);
+        outerMeter.draw(canvasObject, 1);
         // Draw the meter twice here to avoid the weird aliasing
         // issue around the rounded end caps thereof.
         setRoundedArcColor(outerMeter, outerMeterColor);
-        outerMeter.draw(canvasObj, t);
-        outerMeter.draw(canvasObj, t);
-        setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
+        outerMeter.draw(canvasObject, t);
+        outerMeter.draw(canvasObject, t);
+        setRoundedArcColor(outerMeter, meterObject.backgroundColor);
         setRoundedArcColor(innerMeter, innerMeterColor);
-        innerMeter.draw(canvasObj, t);
-        meterDot.draw(canvasObj);
-        meterDial.rotate(theta, true).draw(canvasObj).rotate(-theta, true);
+        innerMeter.draw(canvasObject, t);
+        meterDot.draw(canvasObject);
+        meterDial.rotate(theta, true).draw(canvasObject).rotate(-theta, true);
     }
 };
 const drawMeterProgressBar = function (stateName) {
     if (!stateName) {
-        progressBarMesh.draw(canvasObj, 0);
+        progressBarMesh.draw(canvasObject, 0);
     }
     else {
         const stateProgress = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]) || 0;
         let t = clamp(stateProgress, 0, 1);
         t = hysteresis(t, "progressBar");
-        progressBarMesh.draw(canvasObj, t);
+        progressBarMesh.draw(canvasObject, t);
     }
 };
 const updateInfoUI = function (stateName, stateObj) {
@@ -214,7 +221,7 @@ const animationLoopUpdate = function () {
     return false;
 };
 const animationLoopDraw = function () {
-    if (speedtestData === null || speedtestObj.getState() != 3) {
+    if (speedtestData === null || speedtestObject.getState() != 3) {
         return false;
     }
     const prevState = testStateObj["prev_state"];
@@ -226,7 +233,7 @@ const animationLoopDraw = function () {
         // else we'll get a strange flashing
         // due to the canvas clearing faster than
         // we can draw.
-        canvasObj.clear();
+        canvasObject.clear();
         if (stateName === "ping") {
             // drawMeter();
             // drawMeterProgressBar();
@@ -245,60 +252,88 @@ const animationLoopDraw = function () {
     }
 };
 const animationLoopInit = function () {
+    // Cast the generic element to a canvas element for better linting.
     const canvas = $("#test-meter");
     const ctx = canvas.getContext("2d");
     const canvasOffset = getOffset(canvas);
     const dpr = window.devicePixelRatio || 1;
-    lineWidth *= dpr;
+    const lineWidth = meterObject.lineWidth * dpr;
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
     const meterGap = lineWidth * 1.25;
-    outerRadius = canvas.width / 2 - lineWidth / 2;
-    innerRadius = outerRadius - meterGap;
+    const outerRadius = canvas.width / 2 - lineWidth / 2;
+    const innerRadius = outerRadius - meterGap;
     const originX = canvas.width / 2;
     const originY = canvas.height / 2;
-    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
-    dlProgressColor = generateGradient(canvas, dlColorStops);
-    ulProgressColor = generateGradient(canvas, ulColorStops);
-    const makeGlowColor = function (value) {
+    canvasObject = new Canvas(canvas, ctx, [originX, originY]);
+    // Creation of the meter polygons.
+    const dialBase = lineWidth / 1.2;
+    const dialHeight = innerRadius * 0.8;
+    const dialTop = dialBase / 1.8;
+    const baseCoords = [
+        [0, 0],
+        [dialBase, 0]
+    ];
+    const points = slerpPoints(baseCoords[0], baseCoords[1]);
+    const dialPoints = [
+        ...points,
+        [dialBase - dialTop, -dialHeight],
+        [dialTop, -dialHeight]
+    ];
+    const dialMesh = new Polygon(dialPoints, null, null, "white");
+    dialMesh.translate(-dialMesh.centroid[0], 0).rotate(90, false);
+    const outerMeterMesh = roundedArc(0, 0, outerRadius, meterObject.startAngle, meterObject.endAngle, meterObject.backgroundColor, lineWidth);
+    const innerMeterMesh = roundedArc(0, 0, innerRadius, meterObject.startAngle, meterObject.endAngle, meterObject.backgroundColor, lineWidth);
+    const dotMesh = new Arc(0, 0, outerRadius / 5, 0, Math.PI * 2, meterObject.backgroundColor, 1);
+    dotMesh.fillColor = meterObject.backgroundColor;
+    // Creation of the speedtest colors for the meters.
+    const outerDlColor = generateGradient(canvas, dlColorStops);
+    const outerUlColor = generateGradient(canvas, ulColorStops);
+    const genInnerMeterColor = function (value) {
         const [stop, color] = value;
         const newColor = new Color(color);
         newColor.opacity = 0.3;
         return [stop, newColor.colorString];
     };
-    dlProgressGlowColor = generateGradient(canvas, dlColorStops.map(makeGlowColor));
-    ulProgressGlowColor = generateGradient(canvas, ulColorStops.map(makeGlowColor));
-    const dialBase = lineWidth / 1.2;
-    const dialHeight = innerRadius * 0.8;
-    const dialTop = dialBase / 1.8;
-    // Initializing polygons
-    const base = [
-        [0, 0],
-        [dialBase, 0]
-    ];
-    const points = slerpPoints(base[0], base[1]);
-    const meterPoints = [
-        ...points,
-        [dialBase - dialTop, -dialHeight],
-        [dialTop, -dialHeight]
-    ];
-    meterDial = new Polygon(meterPoints, null, null, "white");
-    // Centering the meter meterDial and laying it flat.
-    meterDial.translate(-meterDial.centroid[0], 0).rotate(90, false);
-    outerMeter = roundedArc(0, 0, outerRadius, METER_ANGLE_START, METER_ANGLE_END, METER_BACKGROUND_COLOR, lineWidth);
-    innerMeter = roundedArc(0, 0, innerRadius, METER_ANGLE_START, METER_ANGLE_END, METER_BACKGROUND_COLOR, lineWidth);
-    meterDot = new Arc(0, 0, outerRadius / 5, 0, Math.PI * 2, METER_BACKGROUND_COLOR, 1);
-    meterDot.fillColor = METER_BACKGROUND_COLOR;
+    const innerDlColor = generateGradient(canvas, dlColorStops.map(genInnerMeterColor));
+    const innerUlColor = generateGradient(canvas, ulColorStops.map(genInnerMeterColor));
+    meterObject = Object.assign(meterObject, {
+        outerMeter: {
+            mesh: outerMeterMesh,
+            radius: outerRadius,
+            dlColor: outerDlColor,
+            ulColor: outerUlColor
+        },
+        innerMeter: {
+            mesh: innerMeterMesh,
+            radius: innerRadius,
+            dlColor: innerDlColor,
+            ulColor: innerUlColor
+        },
+        dot: {
+            color: "black",
+            radius: outerRadius / 5,
+            mesh: dotMesh
+        },
+        dial: {
+            color: meterObject.backgroundColor,
+            mesh: dialMesh
+        }
+    });
+    // Meter progress bar creation.Î
     const barWidth = outerRadius;
     const barHeight = lineWidth / 4;
-    const progressBar = roundedRectangle(0, 0, barWidth, barHeight, PROGRESS_BAR_COLOR);
-    const progressBarBackground = roundedRectangle(0, 0, barWidth, barHeight, METER_BACKGROUND_COLOR);
-    progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(0, outerRadius / 1.5 - barHeight / 2);
+    const progressBar = roundedRectangle(0, 0, barWidth, barHeight, progressBarObject.color);
+    const progressBarBackground = roundedRectangle(0, 0, barWidth, barHeight, progressBarObject.backgroundColor);
+    const progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(0, outerRadius / 1.5 - barHeight / 2);
     progressBarMesh.draw = function (ctx, t) {
         this.shapes[0].draw(ctx, 1);
         this.shapes[1].draw(ctx, t);
         return this;
     };
+    progressBarObject = Object.assign(progressBarObject, {
+        mesh: progressBarMesh
+    });
 };
 const speedtestOnUpdate = function (data) {
     speedtestData = data;
@@ -309,11 +344,13 @@ const speedtestOnEnd = function () {
 };
 async function onload() {
     // @ts-ignore
-    speedtestObj = new Speedtest();
-    speedtestObj.setParameter("getIp_ispInfo", false);
-    speedtestObj.setParameter("getIp_ispInfo_distance", false);
-    speedtestObj.onupdate = speedtestOnUpdate;
-    speedtestObj.onend = speedtestOnEnd;
+    speedtestObject = new Speedtest();
+    speedtestObject.setParameter("getIp_ispInfo", false);
+    speedtestObject.setParameter("getIp_ispInfo_distance", false);
+    speedtestObject.onupdate = speedtestOnUpdate;
+    speedtestObject.onend = speedtestOnEnd;
+    // Progress bar for the speedtest as a whole.
+    // The progress bar object is for an individual state.
     createProgressBar($("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
         styles: {
             "border-top-left-radius": BORDER_RADIUS_PRIMARY,
@@ -341,8 +378,8 @@ const openingSlide = once(async function () {
 });
 async function onstart() {
     const startButton = $("#start-btn");
-    if (speedtestObj.getState() === 3) {
-        speedtestObj.abort();
+    if (speedtestObject.getState() === 3) {
+        speedtestObject.abort();
         startButton.classList.remove("running");
         $(".text", startButton).innerHTML = "Start";
         updateTestState(testStateObj, true);
@@ -358,7 +395,7 @@ async function onstart() {
     else {
         startButton.classList.add("running");
         $(".text", startButton).innerHTML = "Stop";
-        speedtestObj.start();
+        speedtestObject.start();
         openingSlide();
         smoothScroll(getOffset($("#test-meter")).top - window.innerHeight / 2, window.scrollY, 1000);
     }

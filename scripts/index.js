@@ -32,13 +32,7 @@ import {
     smoothScroll
 } from "./animation.js";
 
-import {
-    getOffset,
-    once,
-    getComputedVariable,
-    emToPixels,
-    addEventListeners
-} from "./utils.js";
+import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 
 import { Color } from "./colors.js";
 
@@ -606,12 +600,12 @@ $(window).onload = function () {
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
 
-document.getElementById("start-btn").addEventListener("click", function (ev) {
+$("#start-btn").on("click", function (ev) {
     const duration = 1000;
 
     rippleButton(
         ev,
-        this,
+        ev.target,
         document.querySelector("#start-btn .ripple"),
         15,
         0,
@@ -623,7 +617,7 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
             console.log("Posting next message.");
             eventObj.source.postMessage("next", eventObj.origin);
         } else {
-            document.querySelector(".modal").classList.toggle("visible");
+            $(".modal").classList.toggle("visible");
             console.log("Cannot post to null event object. Aborting...");
         }
     } else {
@@ -631,28 +625,19 @@ document.getElementById("start-btn").addEventListener("click", function (ev) {
     }
 });
 
-// addEventListeners(window, "click touchend", function (ev) {
-//     const modal = document.querySelector(".modal-content");
-//     if (ev.target == modal || ev.target == modal.parentElement) {
-//         modal.parentElement.classList.toggle("visible");
-//     }
-// });
+$(window).on("click touchend", function (ev) {
+    const modal = $(".modal-content");
 
-// $(window).on("click touchend", function (ev) {
-//     const modal = document.querySelector(".modal-content");
+    if (ev.target == modal || ev.target == modal.parentElement) {
+        modal.parentElement.classList.toggle("visible");
+    }
+});
 
-//     modal.parentElement.classList.toggle("visible");
-
-//     // if (ev.target == modal || ev.target == modal.parentElement) {
-//     //     modal.parentElement.classList.toggle("visible");
-//     // }
-// });
-
-function receiveMessage(event) {
+const receiveMessage = function (event) {
     if (event.data === "start") {
         eventObj = event;
     }
     console.log(`Received event of ${event}`);
-}
+};
 
-window.addEventListener("message", receiveMessage, false);
+$(window).on("message", receiveMessage);

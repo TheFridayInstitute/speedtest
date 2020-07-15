@@ -155,7 +155,7 @@ const updateTestState = function (
 };
 
 const hysteresisRecord = {};
-const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
+const hysteresis = function (t: number, key: string, eps = 0.01, step = 1 / 15) {
     const prevT = hysteresisRecord[key] || 0;
     const delta = Math.abs(t - prevT);
     if (delta > eps) {
@@ -166,8 +166,8 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     return t;
 };
 
-const openingAnimation = async function (duration, timingFunc) {
-    const transformFunc = function (v, t) {
+const openingAnimation = async function (duration: number, timingFunc: any) {
+    const transformFunc = function (v: number, t: number) {
         canvasObj.clear();
 
         outerMeter.radius = outerRadius * t;
@@ -200,8 +200,8 @@ const openingAnimation = async function (duration, timingFunc) {
     );
 };
 
-const closingAnimation = async function (duration, timingFunc) {
-    const transformFunc = function (v, t) {
+const closingAnimation = async function (duration: number, timingFunc: any) {
+    const transformFunc = function (v: number, t: number) {
         canvasObj.clear();
         t = clamp(1 - t, 0.0001, 1);
 
@@ -233,7 +233,7 @@ const closingAnimation = async function (duration, timingFunc) {
     );
 };
 
-const drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
+const drawMeter = function (stateName: string, outerMeterColor: undefined, innerMeterColor: undefined) {
     if (!stateName) {
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
@@ -251,7 +251,7 @@ const drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
             ? 0
             : clamp(stateAmount.toPrecision(3), 0, 999);
 
-        $("#test-amount").innerHTML = stateAmount;
+        $("#test-amount").innerHTML = String(stateAmount);
 
         let t = normalize(
             clamp(stateAmount, METER_MIN, METER_MAX),

@@ -60,7 +60,7 @@ const foldFunctions = function (funcs) {
     return folded;
 };
 const dollarFoldedFunctions = foldFunctions(dollarFunctions);
-const $$ = function (query, context = document) {
+function $$(query, context = document) {
     const nodes = query instanceof NodeList || Array.isArray(query)
         ? query
         : typeof query === "string"
@@ -73,8 +73,8 @@ const $$ = function (query, context = document) {
         const arr = Array.from(nodes).map((el) => Object.assign(el, dollarFunctions));
         return Object.assign(arr, dollarFoldedFunctions);
     }
-};
-const $ = function (query, context = document) {
+}
+function $(query, context = document) {
     const node = typeof query === "string" ? context.querySelector(query) : query;
     if (node === undefined) {
         return undefined;
@@ -82,5 +82,5 @@ const $ = function (query, context = document) {
     else {
         return Object.assign(node, dollarFunctions);
     }
-};
+}
 export { $, $$ };

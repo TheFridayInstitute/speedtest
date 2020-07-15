@@ -76,14 +76,14 @@ const foldFunctions = function (funcs) {
 
 const dollarFoldedFunctions = foldFunctions(dollarFunctions);
 
-interface DollarElement extends Element {
+interface IDollarElement {
     on: (name: string, func: (event: Event) => void) => EventTarget;
     off: (name: string, func: (event: Event) => void) => EventTarget;
     setattr: (attrs: Object) => HTMLElement;
     css: (attrs: Object) => HTMLElement;
 }
 
-const $$ = function (
+function $$(
     query: NodeList | Array<Node> | string,
     context: Document | Element = document
 ) {
@@ -100,12 +100,12 @@ const $$ = function (
         const arr = Array.from(nodes).map((el) => Object.assign(el, dollarFunctions));
         return Object.assign(arr, dollarFoldedFunctions);
     }
-};
+}
 
-const $ = function (
-    query: string | Element | Window,
-    context: Document | Element = document
-) {
+function $(query: string, context?: Document | Element): IDollarElement & Element;
+function $<T>(query: T, context?: Document | Element): IDollarElement & T;
+
+function $<T>(query: T, context = document) {
     const node = typeof query === "string" ? context.querySelector(query) : query;
 
     if (node === undefined) {
@@ -113,6 +113,6 @@ const $ = function (
     } else {
         return Object.assign(node, dollarFunctions);
     }
-};
+}
 
 export { $, $$ };

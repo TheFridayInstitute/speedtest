@@ -166,7 +166,7 @@ const drawMeter = function (stateName, outerMeterColor, innerMeterColor) {
         stateAmount = Number.isNaN(stateAmount)
             ? 0
             : clamp(stateAmount.toPrecision(3), 0, 999);
-        $("#test-amount").innerHTML = stateAmount;
+        $("#test-amount").innerHTML = String(stateAmount);
         let t = normalize(clamp(stateAmount, METER_MIN, METER_MAX), METER_MIN, METER_MAX);
         t = hysteresis(t, "meter");
         const theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);

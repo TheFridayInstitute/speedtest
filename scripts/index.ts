@@ -240,13 +240,17 @@ const getStateAmount = function (stateName: string) {
 };
 
 const openingAnimation = async function (duration: number, timingFunc: any) {
+    const dot = meterObject.dot;
+    const outerMeter = meterObject.outerMeter;
+    const dial = meterObject.dial;
+
     const transformFunc = function (v: number, t: number) {
         canvasObject.clear();
 
-        meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
+        dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
 
-        outerMeter.draw(canvasObject, t);
-        meterDot.draw(canvasObject, t);
+        outerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject, t);
 
         const theta = lerp(
             t,
@@ -254,7 +258,7 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
             4 * Math.PI + meterObject.startAngle
         );
 
-        meterDial
+        dial.mesh
             .rotate(theta, true)
             .scale(t)
 
@@ -263,7 +267,7 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
             .rotate(-theta, true)
             .scale(1 / t);
 
-        progressBarMesh.draw(canvasObject, 0);
+        progressBarObject.mesh.draw(canvasObject, 0);
     };
     await smoothAnimate(
         meterObject.endAngle,

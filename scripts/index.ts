@@ -2,12 +2,13 @@ import {
     Polygon,
     Arc,
     Mesh,
-    generateGradientWrapper,
     Canvas,
     roundedArc,
     setRoundedArcColor,
-    roundedRectangle
-} from "./canvas.js";
+    roundedRectangle,
+    CanvasColor,
+    generateGradient
+} from "./canvas";
 
 import {
     clamp,
@@ -16,7 +17,7 @@ import {
     easeInOutCubic,
     slerpPoints,
     bounceInEase
-} from "./math.js";
+} from "./math";
 
 import {
     smoothAnimate,
@@ -36,21 +37,21 @@ import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 
 import { Color } from "./colors.js";
 
-import { $, $$, IDollarElement } from "./dollar.js";
+import { $, $$, IDollarElement } from "./dollar";
 
 // Global speedtest and event state variables.
-let eventObj = null;
-let speedtestObj = null;
-let speedtestData = null;
+let eventObj: MessageEvent;
+
+let speedtestObj;
+let speedtestData;
 
 // Global state variables for the canvas
-let canvasObj;
-let meterDial;
-let outerMeter;
-let innerMeter;
-let meterDot;
-let progressBarMesh;
-let progressBarEl;
+let canvasObj: Canvas;
+let meterDial: Polygon;
+let outerMeter: Mesh;
+let innerMeter: Mesh;
+let meterDot: Arc;
+let progressBarMesh: Mesh;
 
 const METER_ANGLE_START = Math.PI * 0.8;
 const METER_ANGLE_END = 2 * Math.PI * 1.1;
@@ -59,8 +60,8 @@ const METER_MAX = 100;
 
 let lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
 
-let outerRadius;
-let innerRadius;
+let outerRadius: number;
+let innerRadius: number;
 const meterDotSize = 60;
 
 const DOTS = `<div class="dot-container dot-typing"></div>`;
@@ -70,26 +71,31 @@ const METER_BACKGROUND_COLOR = getComputedVariable("--meter-background-color");
 const PROGRESS_BAR_COLOR = "#fff";
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 
-const generateColorStops = function (colorName, step = 0.5) {
+const generateColorStops = function (
+    colorName: string,
+    step = 0.5
+): Array<[number, string]> {
     const stops = Math.floor(1 / step) + 1;
 
-    return new Array(stops).fill(0).map(function (_, index) {
-        const stop = `${index * step}`;
-        const tmpColorName = `--${colorName}-${index}`;
-        let color = getComputedVariable(tmpColorName);
-        color = color === "" ? "black" : color;
-        return [stop, color];
-    });
+    return Array(stops)
+        .fill(0)
+        .map(function (_, index) {
+            const stop = index * step;
+            const tmpColorName = `--${colorName}-${index}`;
+            const color: string = getComputedVariable(tmpColorName);
+
+            return [stop, color];
+        });
 };
 
 const dlColorStops = generateColorStops("dl-color");
 const ulColorStops = generateColorStops("ul-color");
 
-let dlProgressColor;
-let dlProgressGlowColor;
+let dlProgressColor: CanvasColor;
+let dlProgressGlowColor: CanvasColor;
 
-let ulProgressColor;
-let ulProgressGlowColor;
+let ulProgressColor: CanvasColor;
+let ulProgressGlowColor: CanvasColor;
 
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
@@ -166,12 +172,16 @@ const hysteresis = function (t: number, key: string, eps = 0.01, step = 1 / 15) 
     return t;
 };
 
+const getStateAmount = function (stateName: string) {
+    const stateAmount = parseFloat(
+        speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
+    );
+    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, 999);
+};
+
 const openingAnimation = async function (duration: number, timingFunc: any) {
     const transformFunc = function (v: number, t: number) {
         canvasObj.clear();
-
-        outerMeter.radius = outerRadius * t;
-        innerMeter.radius = innerRadius * t;
 
         meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
 
@@ -205,9 +215,6 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
         canvasObj.clear();
         t = clamp(1 - t, 0.0001, 1);
 
-        outerMeter.radius = outerRadius * t;
-        meterDot.radius = meterDotSize * t;
-
         outerMeter.draw(canvasObj, t);
         meterDot.draw(canvasObj, t);
 
@@ -235,8 +242,8 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
 
 const drawMeter = function (
     stateName: string,
-    outerMeterColor: undefined,
-    innerMeterColor: undefined
+    outerMeterColor: CanvasColor,
+    innerMeterColor: CanvasColor
 ) {
     if (!stateName) {
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
@@ -248,20 +255,11 @@ const drawMeter = function (
             .draw(canvasObj)
             .rotate(-METER_ANGLE_START, true);
     } else {
-        let stateAmount = parseFloat(
-            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]
-        );
-        stateAmount = Number.isNaN(stateAmount)
-            ? 0
-            : clamp(stateAmount.toPrecision(3), 0, 999);
+        const stateAmount = getStateAmount(stateName);
 
-        $("#test-amount").innerHTML = String(stateAmount);
+        $("#test-amount").innerHTML = stateAmount.toPrecision(3);
 
-        let t = normalize(
-            clamp(stateAmount, METER_MIN, METER_MAX),
-            METER_MIN,
-            METER_MAX
-        );
+        let t = normalize(stateAmount, METER_MIN, METER_MAX);
         t = hysteresis(t, "meter");
         const theta = lerp(t, METER_ANGLE_START, METER_ANGLE_END);
 
@@ -284,7 +282,7 @@ const drawMeter = function (
     }
 };
 
-const drawProgressBar = function (stateName) {
+const drawMeterProgressBar = function (stateName: string) {
     if (!stateName) {
         progressBarMesh.draw(canvasObj, 0);
     } else {
@@ -298,25 +296,26 @@ const drawProgressBar = function (stateName) {
     }
 };
 
-const updateInfoUI = function (stateName, stateObj) {
+const updateInfoUI = function (
+    stateName: string,
+    stateObj: {
+        [x: string]: number;
+    }
+) {
     const stateKindEl = $("#" + stateName);
-    const unitContainer = stateKindEl.querySelector(".unit-container");
+    const unitContainer = $(".unit-container", stateKindEl);
     const state = stateObj[stateName];
 
     if (state === 0) {
         unitContainer.querySelector(".amount").innerHTML = DOTS;
     } else if (state === 1) {
     } else if (state === 2) {
-        const stateAmount =
-            speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]];
+        animateProgressBarWrapper($("#progress-bar"), 1000, 3);
 
-        animateProgressBarWrapper(progressBarEl, 1000, 3);
         unitContainer.classList.remove("in-progress");
-        unitContainer.querySelector(".amount").innerHTML = clamp(
-            Math.round(parseFloat(stateAmount)),
-            0,
-            999
-        );
+        const stateAmount = getStateAmount(stateName);
+        $(".amount", unitContainer).innerHTML = stateAmount.toPrecision(3);
+
         stateObj[stateName] = 3;
         animationLoopDraw();
     }
@@ -344,14 +343,14 @@ const animationLoopDraw = function () {
         canvasObj.clear();
 
         if (stateName === "ping") {
-            drawMeter();
-            drawProgressBar();
+            // drawMeter();
+            // drawMeterProgressBar();
         } else if (stateName === "download") {
             drawMeter(stateName, dlProgressColor, dlProgressGlowColor);
-            drawProgressBar(stateName);
+            drawMeterProgressBar(stateName);
         } else if (stateName === "upload") {
             drawMeter(stateName, ulProgressColor, ulProgressGlowColor);
-            drawProgressBar(stateName);
+            drawMeterProgressBar(stateName);
         }
     } else if (stateName === "finished") {
         onend();
@@ -359,8 +358,7 @@ const animationLoopDraw = function () {
 };
 
 const animationLoopInit = function () {
-    const canvas = $("#test-meter");
-
+    const canvas = <HTMLCanvasElement & IDollarElement>$("#test-meter");
     const ctx = canvas.getContext("2d");
 
     const canvasOffset = getOffset(canvas);
@@ -377,24 +375,20 @@ const animationLoopInit = function () {
     const originX = canvas.width / 2;
     const originY = canvas.height / 2;
 
-    dlProgressColor = generateGradientWrapper(canvas, dlColorStops);
-    ulProgressColor = generateGradientWrapper(canvas, ulColorStops);
+    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 
-    const makeGlowColor = function (value) {
+    dlProgressColor = generateGradient(canvas, dlColorStops);
+    ulProgressColor = generateGradient(canvas, ulColorStops);
+
+    const makeGlowColor = function (value: [number, string]): [number, string] {
         const [stop, color] = value;
         const newColor = new Color(color);
         newColor.opacity = 0.3;
         return [stop, newColor.colorString];
     };
 
-    dlProgressGlowColor = generateGradientWrapper(
-        canvas,
-        dlColorStops.map(makeGlowColor)
-    );
-    ulProgressGlowColor = generateGradientWrapper(
-        canvas,
-        ulColorStops.map(makeGlowColor)
-    );
+    dlProgressGlowColor = generateGradient(canvas, dlColorStops.map(makeGlowColor));
+    ulProgressGlowColor = generateGradient(canvas, ulColorStops.map(makeGlowColor));
 
     const dialBase = lineWidth / 1.2;
     const dialHeight = innerRadius * 0.8;
@@ -468,9 +462,8 @@ const animationLoopInit = function () {
     progressBarMesh.draw = function (ctx, t) {
         this.shapes[0].draw(ctx, 1);
         this.shapes[1].draw(ctx, t);
+        return this;
     };
-
-    canvasObj = new Canvas(canvas, ctx, [originX, originY]);
 };
 
 const speedtestOnUpdate = function (data) {
@@ -483,6 +476,7 @@ const speedtestOnEnd = function () {
 };
 
 async function onload() {
+    // @ts-ignore
     speedtestObj = new Speedtest();
     speedtestObj.setParameter("getIp_ispInfo", false);
     speedtestObj.setParameter("getIp_ispInfo_distance", false);
@@ -490,9 +484,8 @@ async function onload() {
     speedtestObj.onupdate = speedtestOnUpdate;
     speedtestObj.onend = speedtestOnEnd;
 
-    progressBarEl = $("#progress-bar");
     createProgressBar(
-        progressBarEl,
+        $("#progress-bar"),
         [PROGRESS_BAR_GRADIENT],
         {
             styles: {
@@ -545,14 +538,9 @@ async function onstart() {
 
         $$(".info-container .unit-container").forEach((el) => {
             el.classList.add("in-progress");
-            el.querySelector(".amount").innerHTML = "0";
+            $(".amount", el).innerHTML = "0";
         });
-        animateProgressBar(
-            progressBarEl,
-            0,
-            parseFloat(progressBarEl.getAttribute("percent-complete")),
-            1000
-        );
+        animateProgressBarWrapper($("#progress-bar"), 1000, 3);
     } else {
         startButton.classList.add("running");
         $(".text", startButton).innerHTML = "Stop";
@@ -599,6 +587,8 @@ async function onend() {
 
     if (eventObj !== null) {
         console.log(`Payload of speedtest data sent: ${outData}`);
+        //@ts-ignore
+        // TODO: Figure out why this doesn't type correctly.
         eventObj.source.postMessage(JSON.stringify(outData), eventObj.origin);
     } else {
         console.log(`Failed to post speedtest data to external event.`);
@@ -611,8 +601,6 @@ window.onload = function () {
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
 
-const tmp = $(".id");
-
 $("#start-btn").on("click", function (ev) {
     const duration = 1000;
 
@@ -621,10 +609,11 @@ $("#start-btn").on("click", function (ev) {
     if (testStateObj["upload"] === 3) {
         if (eventObj !== null) {
             console.log("Posting next message.");
+            //@ts-ignore
             eventObj.source.postMessage("next", eventObj.origin);
         } else {
-            $(".modal").classList.toggle("visible");
             console.log("Cannot post to null event object. Aborting...");
+            $(".modal").classList.toggle("visible");
         }
     } else {
         onstart();
@@ -639,7 +628,8 @@ $(window).on("click touchend", function (ev) {
     }
 });
 
-const receiveMessage = function (event) {
+const receiveMessage = function (event: MessageEvent) {
+    // TODO: add secret key here?
     if (event.data === "start") {
         eventObj = event;
     }

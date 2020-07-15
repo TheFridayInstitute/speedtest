@@ -150,7 +150,7 @@ class Polygon extends Shape {
     constructor(points, color, lineWidth, fillColor) {
         super(points, color, lineWidth, fillColor);
     }
-    draw(ctx) {
+    draw(ctx, t) {
         let originX = 0;
         let originY = 0;
         if (ctx instanceof Canvas) {
@@ -438,16 +438,13 @@ function roundedRectangle(leftX, leftY, width, height, fillColor) {
     };
     return roundedBarMesh;
 }
-function generateGradient(ctx, colorStops, x0, y0, x1, y1) {
-    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-    for (let [stop, color] of colorStops) {
-        gradient.addColorStop(stop, color);
-    }
-    return gradient;
-}
-function generateGradientWrapper(canvas, colorStops) {
+function generateGradient(canvas, colorStops, x0, y0, x1, y1) {
+    x0 = x0 == null ? 0 : x0;
+    y0 = y0 == null ? 0 : y0;
+    x1 = x1 == null ? canvas.width : x1;
+    y1 = y1 == null ? 0 : y1;
     let ctx = canvas.getContext("2d");
-    let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
     for (let [stop, color] of colorStops) {
         gradient.addColorStop(stop, color);
     }
@@ -491,4 +488,4 @@ function progressBarIntervals(leftX, leftY, width, height, colors) {
     };
     return intervalMesh;
 }
-export { Canvas, progressBarIntervals, roundedArc, roundedRectangle, setRoundedArcColor, generateGradientWrapper, generateGradient, Mesh, Rectangle, Arc, Polygon, Shape };
+export { Canvas, progressBarIntervals, roundedArc, roundedRectangle, setRoundedArcColor, generateGradient, Mesh, Rectangle, Arc, Polygon, Shape };

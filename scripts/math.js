@@ -43,21 +43,9 @@ export function dot(xy1, xy2) {
     });
     return s;
 }
-export function sum(arr, key) {
-    if (key === undefined) {
-        key = function (value) {
-            return value;
-        };
-    }
-    let s = 0;
-    arr.forEach(function (value) {
-        s += key(value);
-    });
-    return s;
-}
 export function mag(xy1) {
     let s = 0;
-    xy1.forEach(function (value, index) {
+    xy1.forEach((value) => {
         s += Math.pow(value, 2);
     });
     return Math.sqrt(s);

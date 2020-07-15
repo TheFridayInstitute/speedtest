@@ -125,19 +125,22 @@ const getStateAmount = function (stateName) {
     return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, 999);
 };
 const openingAnimation = async function (duration, timingFunc) {
+    const dot = meterObject.dot;
+    const outerMeter = meterObject.outerMeter;
+    const dial = meterObject.dial;
     const transformFunc = function (v, t) {
         canvasObject.clear();
-        meterDot.radius = (1 - t) * outerRadius + meterDotSize * t;
-        outerMeter.draw(canvasObject, t);
-        meterDot.draw(canvasObject, t);
+        dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
+        outerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject, t);
         const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
-        meterDial
+        dial.mesh
             .rotate(theta, true)
             .scale(t)
             .draw(canvasObject)
             .rotate(-theta, true)
             .scale(1 / t);
-        progressBarMesh.draw(canvasObject, 0);
+        progressBarObject.mesh.draw(canvasObject, 0);
     };
     await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
 };

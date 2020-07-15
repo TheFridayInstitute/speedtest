@@ -102,7 +102,9 @@ function $$(
     }
 }
 
-function $(query: string, context?: Document | Element): IDollarElement & Element;
+type DomElement = HTMLElement | SVGAElement | Element;
+
+function $(query: string, context?: Document | DomElement): IDollarElement & DomElement;
 function $<T>(query: T, context?: Document | Element): IDollarElement & T;
 
 function $<T>(query: T, context = document) {
@@ -116,3 +118,5 @@ function $<T>(query: T, context = document) {
 }
 
 export { $, $$ };
+
+export { IDollarElement };

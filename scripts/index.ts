@@ -8,7 +8,7 @@ import {
     roundedRectangle,
     CanvasColor,
     generateGradient
-} from "./canvas";
+} from "./canvas.js";
 
 import {
     clamp,
@@ -17,7 +17,7 @@ import {
     easeInOutCubic,
     slerpPoints,
     bounceInEase
-} from "./math";
+} from "./math.js";
 
 import {
     smoothAnimate,
@@ -37,7 +37,7 @@ import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 
 import { Color } from "./colors.js";
 
-import { $, $$, IDollarElement } from "./dollar";
+import { $, $$, IDollarElement } from "./dollar.js";
 
 // Global speedtest and event state variables.
 let eventObj: MessageEvent;

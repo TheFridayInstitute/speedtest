@@ -240,9 +240,7 @@ const getStateAmount = function (stateName: string) {
 };
 
 const openingAnimation = async function (duration: number, timingFunc: any) {
-    const dot = meterObject.dot;
-    const outerMeter = meterObject.outerMeter;
-    const dial = meterObject.dial;
+    const { dot, outerMeter, dial } = meterObject;
 
     const transformFunc = function (v: number, t: number) {
         canvasObject.clear();
@@ -279,12 +277,14 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
 };
 
 const closingAnimation = async function (duration: number, timingFunc: any) {
+    const { dot, outerMeter, dial } = meterObject;
+
     const transformFunc = function (v: number, t: number) {
         canvasObject.clear();
         t = clamp(1 - t, 0.0001, 1);
 
-        outerMeter.draw(canvasObject, t);
-        meterDot.draw(canvasObject, t);
+        outerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject, t);
 
         const theta = lerp(
             t,
@@ -292,7 +292,7 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
             4 * Math.PI + meterObject.startAngle
         );
 
-        meterDial
+        dial.mesh
             .rotate(theta, true)
             .scale(t)
 
@@ -301,7 +301,7 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
             .rotate(-theta, true)
             .scale(1 / t);
 
-        progressBarMesh.draw(canvasObject, t);
+        progressBarObject.mesh.draw(canvasObject, t);
     };
     await smoothAnimate(
         meterObject.endAngle,
@@ -312,17 +312,26 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
     );
 };
 
-const drawMeter = function (
-    stateName: string,
-    outerMeterColor: CanvasColor,
-    innerMeterColor: CanvasColor
-) {
-    if (!stateName) {
-        setRoundedArcColor(outerMeter, meterObject.backgroundColor);
-        outerMeter.draw(canvasObject, 1);
+const drawMeter = function (stateName: string) {
+    const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
 
-        meterDot.draw(canvasObject);
-        meterDial
+    let outerMeterColor: CanvasColor = backgroundColor;
+    let innerMeterColor: CanvasColor = backgroundColor;
+
+    if (stateName === "download") {
+        outerMeterColor = outerMeter.dlColor;
+        innerMeterColor = innerMeter.dlColor;
+    } else if (stateName === "upload") {
+        outerMeterColor = outerMeter.ulColor;
+        innerMeterColor = innerMeter.ulColor;
+    }
+
+    if (!stateName) {
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        outerMeter.mesh.draw(canvasObject, 1);
+
+        dot.mesh.draw(canvasObject);
+        dial.mesh
             .rotate(meterObject.startAngle, true)
             .draw(canvasObject)
             .rotate(-meterObject.startAngle, true);
@@ -331,40 +340,38 @@ const drawMeter = function (
 
         $("#test-amount").innerHTML = stateAmount.toPrecision(3);
 
-        let t = normalize(stateAmount, METER_MIN, METER_MAX);
+        let t = normalize(stateAmount, meterObject.minValue, meterObject.maxValue);
         t = hysteresis(t, "meter");
         const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
 
-        setRoundedArcColor(outerMeter, meterObject.backgroundColor);
-        outerMeter.draw(canvasObject, 1);
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        outerMeter.mesh.draw(canvasObject, 1);
 
         // Draw the meter twice here to avoid the weird aliasing
         // issue around the rounded end caps thereof.
-        setRoundedArcColor(outerMeter, outerMeterColor);
-        outerMeter.draw(canvasObject, t);
-        outerMeter.draw(canvasObject, t);
+        setRoundedArcColor(outerMeter.mesh, outerMeterColor);
+        outerMeter.mesh.draw(canvasObject, t);
+        outerMeter.mesh.draw(canvasObject, t);
 
-        setRoundedArcColor(outerMeter, meterObject.backgroundColor);
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
 
-        setRoundedArcColor(innerMeter, innerMeterColor);
-        innerMeter.draw(canvasObject, t);
+        setRoundedArcColor(innerMeter.mesh, innerMeterColor);
+        innerMeter.mesh.draw(canvasObject, t);
 
-        meterDot.draw(canvasObject);
-        meterDial.rotate(theta, true).draw(canvasObject).rotate(-theta, true);
+        dot.mesh.draw(canvasObject);
+        dial.mesh.rotate(theta, true).draw(canvasObject).rotate(-theta, true);
     }
 };
 
 const drawMeterProgressBar = function (stateName: string) {
     if (!stateName) {
-        progressBarMesh.draw(canvasObject, 0);
+        progressBarObject.mesh.draw(canvasObject, 0);
     } else {
-        const stateProgress =
-            parseFloat(
-                speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_progress"]]
-            ) || 0;
-        let t = clamp(stateProgress, 0, 1);
+        const stateAmount = getStateAmount(stateName);
+
+        let t = clamp(stateAmount, 0, 1);
         t = hysteresis(t, "progressBar");
-        progressBarMesh.draw(canvasObject, t);
+        progressBarObject.mesh.draw(canvasObject, t);
     }
 };
 
@@ -418,10 +425,10 @@ const animationLoopDraw = function () {
             // drawMeter();
             // drawMeterProgressBar();
         } else if (stateName === "download") {
-            drawMeter(stateName, dlProgressColor, dlProgressGlowColor);
+            drawMeter(stateName);
             drawMeterProgressBar(stateName);
         } else if (stateName === "upload") {
-            drawMeter(stateName, ulProgressColor, ulProgressGlowColor);
+            drawMeter(stateName);
             drawMeterProgressBar(stateName);
         }
     } else if (stateName === "finished") {

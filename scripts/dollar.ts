@@ -83,8 +83,10 @@ interface IDollarElement {
     css: (attrs: Object) => HTMLElement;
 }
 
+type DomElement = HTMLElement | SVGAElement | Element;
+
 function $$(
-    query: NodeList | Array<Node> | string,
+    query: NodeListOf<DomElement> | Array<DomElement> | string,
     context: Document | Element = document
 ) {
     const nodes =
@@ -101,8 +103,6 @@ function $$(
         return Object.assign(arr, dollarFoldedFunctions);
     }
 }
-
-type DomElement = HTMLElement | SVGAElement | Element;
 
 function $(query: string, context?: Document | DomElement): IDollarElement & DomElement;
 function $<T>(query: T, context?: Document | Element): IDollarElement & T;

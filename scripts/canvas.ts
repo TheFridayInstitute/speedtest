@@ -207,7 +207,7 @@ class Polygon extends Shape {
         super(points, color, lineWidth, fillColor);
     }
 
-    draw(ctx: CanvasRenderingContext2D) {
+    draw(ctx: CanvasRenderingContext2D | Canvas, t?: number) {
         let originX = 0;
         let originY = 0;
 
@@ -272,7 +272,7 @@ class Arc extends Shape {
         this._endAngle = endAngle;
     }
 
-    draw(ctx: CanvasRenderingContext2D, t: number) {
+    draw(ctx: CanvasRenderingContext2D | Canvas, t?: number) {
         let originX = 0;
         let originY = 0;
 
@@ -386,18 +386,18 @@ class Rectangle extends Polygon {
 }
 
 class Mesh {
-    shapes: (Polygon | Arc)[];
+    shapes: (Polygon | Arc | Mesh)[];
 
-    constructor(...shapes: (Polygon | Arc)[]) {
+    constructor(...shapes: (Mesh | Polygon | Arc)[]) {
         this.shapes = shapes;
     }
 
-    add(shape: Polygon | Arc) {
+    add(shape: Polygon | Arc | Mesh) {
         this.shapes.push(shape);
         return this;
     }
 
-    draw(ctx: CanvasRenderingContext2D, t: number) {
+    draw(ctx: CanvasRenderingContext2D | Canvas, t: number) {
         for (let shape of this.shapes) {
             shape.draw(ctx, t);
         }
@@ -604,26 +604,20 @@ function roundedRectangle(
 }
 
 function generateGradient(
-    ctx: CanvasRenderingContext2D,
-    colorStops: Array<[number, string]>,
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number
-) {
-    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-    for (let [stop, color] of colorStops) {
-        gradient.addColorStop(stop, color);
-    }
-    return gradient;
-}
-
-function generateGradientWrapper(
     canvas: HTMLCanvasElement,
-    colorStops: Array<[number, string]>
+    colorStops: Array<[number, string]>,
+    x0?: number,
+    y0?: number,
+    x1?: number,
+    y1?: number
 ) {
+    x0 = x0 == null ? 0 : x0;
+    y0 = y0 == null ? 0 : y0;
+    x1 = x1 == null ? canvas.width : x1;
+    y1 = y1 == null ? 0 : y1;
+
     let ctx = canvas.getContext("2d");
-    let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
     for (let [stop, color] of colorStops) {
         gradient.addColorStop(stop, color);
     }
@@ -685,11 +679,11 @@ export {
     roundedArc,
     roundedRectangle,
     setRoundedArcColor,
-    generateGradientWrapper,
     generateGradient,
     Mesh,
     Rectangle,
     Arc,
     Polygon,
-    Shape
+    Shape,
+    CanvasColor
 };

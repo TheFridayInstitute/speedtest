@@ -36,7 +36,7 @@ import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 
 import { Color } from "./colors.js";
 
-import { $, $$ } from "./dollar.js";
+import { $, $$, IDollarElement } from "./dollar.js";
 
 // Global speedtest and event state variables.
 let eventObj = null;
@@ -233,7 +233,11 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
     );
 };
 
-const drawMeter = function (stateName: string, outerMeterColor: undefined, innerMeterColor: undefined) {
+const drawMeter = function (
+    stateName: string,
+    outerMeterColor: undefined,
+    innerMeterColor: undefined
+) {
     if (!stateName) {
         setRoundedArcColor(outerMeter, METER_BACKGROUND_COLOR);
         outerMeter.draw(canvasObj, 1);
@@ -356,6 +360,7 @@ const animationLoopDraw = function () {
 
 const animationLoopInit = function () {
     const canvas = $("#test-meter");
+
     const ctx = canvas.getContext("2d");
 
     const canvasOffset = getOffset(canvas);

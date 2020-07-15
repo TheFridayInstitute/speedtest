@@ -1,5 +1,5 @@
 import { Color } from "./colors.js";
-import { rotate, translate, scale, rotateAboutPoint, slerpPoints, lerp } from "./math";
+import { rotate, translate, scale, rotateAboutPoint, slerpPoints, lerp } from "./math.js";
 class Canvas {
     constructor(canvasEl, ctx, origin) {
         this.canvasEl = canvasEl;

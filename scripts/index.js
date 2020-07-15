@@ -1,9 +1,9 @@
-import { Polygon, Arc, Mesh, Canvas, roundedArc, setRoundedArcColor, roundedRectangle, generateGradient } from "./canvas";
-import { clamp, lerp, normalize, easeInOutCubic, slerpPoints, bounceInEase } from "./math";
+import { Polygon, Arc, Mesh, Canvas, roundedArc, setRoundedArcColor, roundedRectangle, generateGradient } from "./canvas.js";
+import { clamp, lerp, normalize, easeInOutCubic, slerpPoints, bounceInEase } from "./math.js";
 import { smoothAnimate, animationLoopOuter, slideRight, sleep, slideLeft, createProgressBar, animateProgressBarWrapper, rippleButton, slideRightWrap, smoothScroll } from "./animation.js";
 import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 import { Color } from "./colors.js";
-import { $, $$ } from "./dollar";
+import { $, $$ } from "./dollar.js";
 // Global speedtest and event state variables.
 let eventObj;
 let speedtestObject;

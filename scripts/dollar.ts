@@ -47,7 +47,7 @@ const dollarFunctions = {
     off: function (name: string, func: (event: Event) => void) {
         return off(name, func, this);
     },
-    attr: function (attrs: Object) {
+    setattr: function (attrs: Object) {
         return setAttributes(attrs, this);
     },
     css: function (attrs: Object) {
@@ -76,12 +76,19 @@ const foldFunctions = function (funcs) {
 
 const dollarFoldedFunctions = foldFunctions(dollarFunctions);
 
+interface DollarElement extends Element {
+    on: (name: string, func: (event: Event) => void) => EventTarget;
+    off: (name: string, func: (event: Event) => void) => EventTarget;
+    setattr: (attrs: Object) => HTMLElement;
+    css: (attrs: Object) => HTMLElement;
+}
+
 const $$ = function (
-    query: NodeList | Array<Element> | string,
-    context = document
-): Array<Element> {
+    query: NodeList | Array<Node> | string,
+    context: Document | Element = document
+) {
     const nodes =
-        query instanceof NodeList || query instanceof Array
+        query instanceof NodeList || Array.isArray(query)
             ? query
             : typeof query === "string"
             ? context.querySelectorAll(query)
@@ -90,14 +97,15 @@ const $$ = function (
     if (nodes === undefined) {
         return undefined;
     } else {
-        const arr = Array.from(nodes).map((el: Element) =>
-            Object.assign(el, dollarFunctions)
-        );
+        const arr = Array.from(nodes).map((el) => Object.assign(el, dollarFunctions));
         return Object.assign(arr, dollarFoldedFunctions);
     }
 };
 
-const $ = function (query: string | Element, context = document): Element {
+const $ = function (
+    query: string | Element | Window,
+    context: Document | Element = document
+) {
     const node = typeof query === "string" ? context.querySelector(query) : query;
 
     if (node === undefined) {

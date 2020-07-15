@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.$$ = exports.$ = void 0;
 const on = function (names, func, context) {
     names.split(" ").forEach((event) => {
         context.addEventListener(event, func);
@@ -42,7 +39,7 @@ const dollarFunctions = {
     off: function (name, func) {
         return off(name, func, this);
     },
-    attr: function (attrs) {
+    setattr: function (attrs) {
         return setAttributes(attrs, this);
     },
     css: function (attrs) {
@@ -64,7 +61,7 @@ const foldFunctions = function (funcs) {
 };
 const dollarFoldedFunctions = foldFunctions(dollarFunctions);
 const $$ = function (query, context = document) {
-    const nodes = query instanceof NodeList || query instanceof Array
+    const nodes = query instanceof NodeList || Array.isArray(query)
         ? query
         : typeof query === "string"
             ? context.querySelectorAll(query)
@@ -77,7 +74,6 @@ const $$ = function (query, context = document) {
         return Object.assign(arr, dollarFoldedFunctions);
     }
 };
-exports.$$ = $$;
 const $ = function (query, context = document) {
     const node = typeof query === "string" ? context.querySelector(query) : query;
     if (node === undefined) {
@@ -87,4 +83,4 @@ const $ = function (query, context = document) {
         return Object.assign(node, dollarFunctions);
     }
 };
-exports.$ = $;
+export { $, $$ };

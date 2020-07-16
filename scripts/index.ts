@@ -775,6 +775,8 @@ async function onend() {
         }
     };
     postMessage(eventObject, windowMessage);
+    // TODO: Make post request to database here.
+    // $.post("backend/record.php", windowMessage);
 }
 
 window.onload = function () {

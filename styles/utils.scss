@@ -129,6 +129,7 @@
     font-weight: normal;
     justify-content: center;
     border: none;
+    font-family: var(--font-family-primary);
 
     &.running {
         background-color: var(--dl-color-2);

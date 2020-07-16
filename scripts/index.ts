@@ -266,7 +266,7 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
     const transformFunc = function (v: number, t: number) {
         canvasObject.clear();
 
-        dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
+        // dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
 
         outerMeter.mesh.draw(canvasObject, t);
         dot.mesh.draw(canvasObject, t);
@@ -274,17 +274,17 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
         const theta = lerp(
             t,
             meterObject.startAngle,
-            4 * Math.PI + meterObject.startAngle
+            meterObject.startAngle + 2 * Math.PI
         );
 
         dial.mesh
             .rotate(theta, true)
-            .scale(t)
+            .scale(1)
 
             .draw(canvasObject)
 
             .rotate(-theta, true)
-            .scale(1 / t);
+            .scale(1);
 
         progressBarObject.mesh.draw(canvasObject, 0);
     };
@@ -712,7 +712,7 @@ const onstart = throttle(async function () {
         $(".text", startButton).innerHTML = "Start";
 
         updateTestState(testStateObj, true);
-        openingAnimation(2000, bounceInEase);
+        openingAnimation(2000, easeInOutCubic);
 
         await sleep(500);
 

@@ -29,6 +29,7 @@ $ALPHA_0: $PI * 0.8;
     --color-secondary: #34c83c;
     --color-secondary-dark: #2ead34;
     --font-family-primary: "Helvetica", sans-serif;
+    // --font-family-primary: "IBM Plex Mono";
 
     --dl-color-0: #6728d3;
     --dl-color-1: #d359ff;
@@ -100,6 +101,7 @@ main {
     grid-template-rows: repeat(1fr, 3);
     max-height: calc(min(#{$meter-height}, 100%));
     max-width: calc(min(#{$meter-width}, 100%));
+    overflow-x: hidden;
 
     row-gap: calc(4 * var(--column-gap));
 
@@ -125,12 +127,12 @@ main {
     grid-area: test;
 
     .content {
-        background-color: var(--background-color-secondary);
-        border-radius: var(--border-radius-primary);
         --padding: 1rem;
         padding: var(--padding);
         height: 100%;
         width: 100%;
+        background-color: var(--background-color-secondary);
+        border-radius: var(--border-radius-primary);
         box-shadow: var(--box-shadow-main);
         box-sizing: border-box;
 
@@ -163,17 +165,17 @@ main {
     $y: (1 - sin($ALPHA_0))/2 - 0.025;
     display: grid;
     position: relative;
-    grid-template-rows: auto auto;
-    row-gap: var(--column-gap);
     grid-template-areas:
         "speedtest"
         "info";
+    grid-template-rows: auto auto;
+    row-gap: var(--column-gap);
 
     .info-container {
-        grid-area: info;
         --font-size: 3.5rem;
         display: grid;
         column-gap: var(--column-gap);
+        grid-area: info;
         grid-template-columns: 2fr 1fr;
 
         .info {
@@ -210,9 +212,9 @@ main {
     }
 
     .speedtest {
-        grid-area: speedtest;
         background: var(--background-color-secondary);
         border-radius: var(--border-radius-primary);
+        grid-area: speedtest;
 
         z-index: 1;
 
@@ -274,7 +276,7 @@ main {
 }
 
 .unit-container {
-    --font-size-lg: 2.25rem;
+    --font-size-lg: 2.5rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
 
@@ -304,6 +306,7 @@ main {
 
 @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
     main {
+        align-items: center;
         column-gap: $row-gap;
         grid-template-areas:
             "test test"
@@ -311,7 +314,6 @@ main {
 
         grid-template-columns: auto auto;
         grid-template-rows: auto auto;
-        align-items: center;
         // max-height: calc(min(#{$meter-width}, 100%));
         // max-width: calc(min(#{$meter-height}, 100%));
 
@@ -325,22 +327,22 @@ main {
     }
 
     .speedtest-container {
-        grid-template-areas: "speedtest info";
-        grid-template-rows: 1fr;
-        grid-template-columns: 2fr 1fr;
         column-gap: var(--column-gap);
+        grid-template-areas: "speedtest info";
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 1fr;
 
         .info-container {
             grid-area: info;
-            grid-template-rows: 3fr 1fr;
             grid-template-columns: auto;
+            grid-template-rows: 3fr 1fr;
             row-gap: var(--column-gap);
 
             .info {
                 display: flex;
-                justify-content: center;
                 align-items: baseline;
                 flex-direction: column;
+                justify-content: center;
             }
         }
 

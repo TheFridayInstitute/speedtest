@@ -57,7 +57,7 @@ $ALPHA_0: $PI * 0.8;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.75rem;
 
-    --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.25);
+    // --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.10);
     --column-gap: 0.5rem;
 }
 
@@ -103,7 +103,7 @@ main {
     max-width: calc(min(#{$meter-width}, 100%));
     overflow-x: hidden;
 
-    row-gap: calc(4 * var(--column-gap));
+    row-gap: calc(1 * var(--column-gap));
 
     .speedtest-container {
         align-self: end;
@@ -116,7 +116,7 @@ main {
 
     .start-btn-container {
         height: 3rem;
-        width: 75%;
+        width: 66%;
 
         grid-area: button;
         justify-self: center;

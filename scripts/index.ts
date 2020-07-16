@@ -419,12 +419,24 @@ const updateStateInfo = function (
     if (state === 0) {
         $(".amount", unitContainer).innerHTML = DOTS;
     } else if (state === 1) {
+        //
     } else if (state === 2) {
+        const stateAmount = getStateAmount(stateName);
+
+        let meterInfo = {
+            amount: stateAmount.toPrecision(3)
+        };
+
+        if (stateName === "download" || stateName === "upload") {
+            meterInfo = Object.assign(meterInfo, {
+                unit: "Mbps"
+            });
+        }
+
         animateProgressBarEl();
 
         unitContainer.classList.remove("in-progress");
-        const stateAmount = getStateAmount(stateName);
-        $(".amount", unitContainer).innerHTML = stateAmount.toPrecision(3);
+        setUnitInfo(meterInfo, unitContainer);
 
         stateObj[stateName] = 3;
     }
@@ -775,8 +787,6 @@ async function onend() {
         }
     };
     postMessage(eventObject, windowMessage);
-    // TODO: Make post request to database here.
-    // $.post("backend/record.php", windowMessage);
 }
 
 window.onload = function () {

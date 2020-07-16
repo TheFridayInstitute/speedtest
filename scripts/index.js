@@ -26,12 +26,20 @@ const DOTS = `<div class="dot-container dot-typing"></div>`;
 const BLANK = "&nbsp;";
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
+const WINDOW_KEY = "password";
 const receiveMessage = function (event) {
+    const data = event.data;
     // TODO: add secret key here?
-    if (event.data === "start") {
+    if (data.key === WINDOW_KEY) {
         eventObject = event;
+        console.log(`Received event data of ${data}`);
+        if (data.message === "start") {
+            onstart();
+        }
     }
-    console.log(`Received event of ${event}`);
+    else {
+        console.warn("Event data not accepted.");
+    }
 };
 const postMessage = function (eventObject, windowMessage) {
     return new Promise((resolve, reject) => {
@@ -133,7 +141,7 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
 };
 const getStateAmount = function (stateName, stateKind = "amount") {
     const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]);
-    const upperBound = stateKind === "amount" ? 999 : 1;
+    const upperBound = stateKind === "amount" ? 99999 : 1;
     return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
 };
 const getStateName = function () {
@@ -516,7 +524,7 @@ $("#start-btn").on("click", function (ev) {
             data: {}
         };
         postMessage(eventObject, windowMessage).catch(() => {
-            console.log("Cannot post to null event object. Aborting.");
+            console.error("Cannot post to null event object. Aborting.");
             $(".modal").classList.toggle("visible");
         });
     }

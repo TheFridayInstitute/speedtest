@@ -489,8 +489,7 @@ window.onload = function () {
 };
 $("#start-btn").on("click", function (ev) {
     const duration = 1000;
-    const startButton = ev.currentTarget;
-    rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
+    rippleButton(ev, this, $(".ripple", this), 15, 0, duration);
     const stateName = getStateName();
     if (stateName === "finished") {
         const windowMessage = {

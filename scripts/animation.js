@@ -357,8 +357,9 @@ export async function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
     let x = ev.clientX;
     let y = ev.clientY;
 
+    // TODO: fix this centering?
     x -= buttonOffset.left + buttonOffset.width / 2;
-    y -= buttonOffset.top + buttonOffset.height / 2;
+    y -= buttonOffset.top;
 
     rippleEl.style.transform = `translate(${x}px, ${y}px)`;
     rippleEl.style.width = 0;

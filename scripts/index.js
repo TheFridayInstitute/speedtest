@@ -497,9 +497,9 @@ $("#start-btn").on("click", function (ev) {
     }
 });
 $(window).on("click touchend", function (ev) {
-    const modal = $(".modal-content");
-    if (ev.target == modal || ev.target == modal.parentElement) {
-        modal.parentElement.classList.toggle("visible");
+    const modal = $(".modal");
+    if (ev.target == modal || modal.contains(ev.target)) {
+        modal.classList.toggle("visible");
     }
 });
 $(window).on("message", receiveMessage);

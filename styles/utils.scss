@@ -35,10 +35,7 @@
     $sin: 0;
     $theta: rad($theta);
     @for $i from 0 through 10 {
-        $sin: $sin +
-            ipow(-1, $i) *
-            ipow($theta, (2 * $i + 1)) /
-            factorial(2 * $i + 1);
+        $sin: $sin + ipow(-1, $i) * ipow($theta, (2 * $i + 1)) / factorial(2 * $i + 1);
     }
     @return $sin;
 }
@@ -47,13 +44,7 @@
     @return sin($PI/2 - $theta);
 }
 
-@mixin attr-x(
-    $attr,
-    $attr-count: 10,
-    $attr-steps: 10,
-    $unit: "%",
-    $attr-abrv: null
-) {
+@mixin attr-x($attr, $attr-count: 10, $attr-steps: 10, $unit: "%", $attr-abrv: null) {
     $attr-list: null;
 
     @if not $attr-abrv {
@@ -67,11 +58,7 @@
             #{$attr}: #{$attr-value}#{$unit};
         }
 
-        $attr-list: append(
-            $attr-list,
-            unquote(".#{$attr}-#{$attr-value}"),
-            comma
-        );
+        $attr-list: append($attr-list, unquote(".#{$attr}-#{$attr-value}"), comma);
     }
 
     #{$attr-list} {
@@ -176,8 +163,8 @@
 
         transform: translateY(-5px);
 
-        box-shadow: var(--box-shadow-hl) var(--box-shadow-vl)
-            var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
+        box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br)
+            var(--box-shadow-sr) var(--box-shadow-color);
     }
 }
 
@@ -210,12 +197,6 @@
     visibility: hidden;
 
     z-index: 999;
-
-    .modal-content {
-        height: 75%;
-        width: 75%;
-        opacity: 100%;
-    }
 
     &.visible {
         transform: translateY(0);

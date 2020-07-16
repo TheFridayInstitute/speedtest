@@ -123,37 +123,37 @@ main {
 
 .pane-container {
     grid-area: test;
-}
 
-.pane-info {
-    --padding: 1rem;
-    padding: var(--padding);
-    height: 100%;
-    width: 100%;
-    box-shadow: var(--box-shadow-main);
-    box-sizing: border-box;
+    .content {
+        --padding: 1rem;
+        padding: var(--padding);
+        height: 100%;
+        width: 100%;
+        box-shadow: var(--box-shadow-main);
+        box-sizing: border-box;
 
-    h1,
-    h2 {
-        text-align: left;
-    }
+        h1,
+        h2 {
+            text-align: left;
+        }
 
-    h1 {
-        font-size: 3rem;
-    }
+        h1 {
+            font-size: 3rem;
+        }
 
-    h2 {
-        font-size: 2rem;
-    }
+        h2 {
+            font-size: 2rem;
+        }
 
-    hr {
-        --main-color: white;
-        height: 0.1rem;
-        width: calc(100% + var(--padding));
-        background-color: var(--main-color);
-        border: none;
-        border-radius: 1rem;
-        margin-right: calc(-1 * var(--padding));
+        hr {
+            --main-color: white;
+            height: 0.1rem;
+            width: calc(100% + var(--padding));
+            background-color: var(--main-color);
+            border: none;
+            border-radius: 1rem;
+            margin-right: calc(-1 * var(--padding));
+        }
     }
 }
 

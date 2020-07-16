@@ -288,7 +288,7 @@ main {
     min-height: var(--height);
     text-align: center;
 
-    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
     &.in-progress {
         color: rgba(255, 255, 255, 0.25);

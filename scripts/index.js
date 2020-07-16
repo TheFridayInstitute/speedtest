@@ -1,5 +1,5 @@
 import { Polygon, Arc, Mesh, Canvas, roundedArc, setRoundedArcColor, roundedRectangle, generateGradient } from "./canvas.js";
-import { clamp, lerp, normalize, easeInOutCubic, slerpPoints, bounceInEase } from "./math.js";
+import { clamp, lerp, normalize, easeInOutCubic, slerpPoints } from "./math.js";
 import { smoothAnimate, animationLoopOuter, slideRight, sleep, slideLeft, createProgressBar, animateProgressBarWrapper, animateProgressBar, rippleButton, slideRightWrap, throttle } from "./animation.js";
 import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 import { Color } from "./colors.js";
@@ -147,16 +147,16 @@ const openingAnimation = async function (duration, timingFunc) {
     const { dot, outerMeter, dial } = meterObject;
     const transformFunc = function (v, t) {
         canvasObject.clear();
-        dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
+        // dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
         outerMeter.mesh.draw(canvasObject, t);
         dot.mesh.draw(canvasObject, t);
-        const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
+        const theta = lerp(t, meterObject.startAngle, meterObject.startAngle + 2 * Math.PI);
         dial.mesh
             .rotate(theta, true)
-            .scale(t)
+            .scale(1)
             .draw(canvasObject)
             .rotate(-theta, true)
-            .scale(1 / t);
+            .scale(1);
         progressBarObject.mesh.draw(canvasObject, 0);
     };
     await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
@@ -437,7 +437,7 @@ const onstart = throttle(async function () {
         startButton.classList.toggle("running");
         $(".text", startButton).innerHTML = "Start";
         updateTestState(testStateObj, true);
-        openingAnimation(2000, bounceInEase);
+        openingAnimation(2000, easeInOutCubic);
         await sleep(500);
         setUnitInfo({ amount: BLANK, unit: BLANK, footer: BLANK, kind: BLANK }, meterInfoElement);
         $$(".info-progress-container .unit-container").forEach((el) => {

@@ -184,6 +184,27 @@ const setUnitInfo = function (info, unitInfoElement) {
         $(`.${key}`, unitInfoElement).innerHTML = info[key];
     });
 };
+const getUnitAmountAndKind = function (stateName, stateAmount) {
+    if (stateAmount == null) {
+        stateAmount = getStateAmount(stateName);
+    }
+    const unitInfo = {};
+    if (stateName === "download" || stateName === "upload") {
+        if (stateAmount < 1000) {
+            unitInfo["unit"] = "Mbps";
+        }
+        else if (stateAmount >= 1000) {
+            unitInfo["unit"] = "Gbps";
+            stateAmount /= 1000;
+        }
+        unitInfo["amount"] = stateAmount.toPrecision(3);
+    }
+    else if (stateName === "ping") {
+        unitInfo["unit"] = "ms";
+        unitInfo["amount"] = stateAmount.toPrecision(3);
+    }
+    return unitInfo;
+};
 const drawMeter = function (stateName) {
     const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
     let outerMeterColor = backgroundColor;
@@ -245,18 +266,10 @@ const updateStateInfo = function (stateName, stateObj) {
         //
     }
     else if (state === 2) {
-        const stateAmount = getStateAmount(stateName);
-        let meterInfo = {
-            amount: stateAmount.toPrecision(3)
-        };
-        if (stateName === "download" || stateName === "upload") {
-            meterInfo = Object.assign(meterInfo, {
-                unit: "Mbps"
-            });
-        }
+        const unitInfo = getUnitAmountAndKind(stateName);
         animateProgressBarEl();
         unitContainer.classList.remove("in-progress");
-        setUnitInfo(meterInfo, unitContainer);
+        setUnitInfo(unitInfo, unitContainer);
         stateObj[stateName] = 3;
     }
 };
@@ -277,26 +290,22 @@ const animationLoopDraw = function () {
         // due to the canvas clearing faster than
         // we can draw.
         canvasObject.clear();
-        const stateAmount = getStateAmount(stateName);
-        let meterInfo = { amount: stateAmount.toPrecision(3) };
+        let meterInfo = getUnitAmountAndKind(stateName);
         if (stateName === "ping") {
             meterInfo = Object.assign(meterInfo, {
-                footer: "Pinging...",
-                unit: "ms"
+                footer: "Pinging..."
             });
         }
         else if (stateName === "download") {
             meterInfo = Object.assign(meterInfo, {
                 kind: "↓",
-                footer: "Downloading...",
-                unit: "Mbps"
+                footer: "Downloading..."
             });
         }
         else if (stateName === "upload") {
             meterInfo = Object.assign(meterInfo, {
                 kind: "↑",
-                footer: "Uploading...",
-                unit: "Mbps"
+                footer: "Uploading..."
             });
         }
         drawMeter(stateName);

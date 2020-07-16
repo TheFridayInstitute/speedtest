@@ -125,6 +125,8 @@ main {
     grid-area: test;
 
     .content {
+        background-color: var(--background-color-secondary);
+        border-radius: var(--border-radius-primary);
         --padding: 1rem;
         padding: var(--padding);
         height: 100%;
@@ -328,12 +330,13 @@ main {
         grid-template-columns: 2fr 1fr;
         column-gap: var(--column-gap);
 
-        .info {
+        .info-container {
             grid-area: info;
             grid-template-rows: 3fr 1fr;
             grid-template-columns: auto;
             row-gap: var(--column-gap);
-            .unit-info-container {
+
+            .info {
                 display: flex;
                 justify-content: center;
                 align-items: baseline;

@@ -4,7 +4,9 @@
         "es2020": true
     },
     "extends": [
-        "standard"
+        "google",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -25,7 +27,6 @@
         "object-curly-spacing": "off",
         "space-before-function-paren": "off",
         "operator-linebreak": "off",
-        "max-len": "off",
-        "indent": "off"
+        "max-len": "off"
     }
 }

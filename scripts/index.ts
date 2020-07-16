@@ -26,7 +26,6 @@ import {
     sleep,
     slideLeft,
     createProgressBar,
-    animateProgressBar,
     animateProgressBarWrapper,
     rippleButton,
     slideRightWrap,
@@ -165,7 +164,7 @@ const testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
 
 const updateTestState = function (
     testStateObj: { [s: string]: number },
-    abort: boolean = false
+    abort = false
 ) {
     // + 1 because we start at 0, not -1 (unlike librespeed).
     const speedtestState = speedtestData.testState + 1;
@@ -213,7 +212,8 @@ const getStateAmount = function (stateName: string, stateKind = "amount") {
     const stateAmount = parseFloat(
         speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]
     );
-    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, 999);
+    const upperBound = stateKind === "amount" ? 999 : 1;
+    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
 };
 
 const animateProgressBarEl = function () {
@@ -329,9 +329,10 @@ const drawMeter = function (stateName: string) {
         const stateAmount = getStateAmount(stateName);
         let t = normalize(
             clamp(stateAmount, meterObject.minValue, meterObject.maxValue),
-            0,
-            1
+            meterObject.minValue,
+            meterObject.maxValue
         );
+
         t = hysteresis(t, "meter");
         const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
 

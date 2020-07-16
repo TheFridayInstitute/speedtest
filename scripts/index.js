@@ -108,7 +108,8 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
 };
 const getStateAmount = function (stateName, stateKind = "amount") {
     const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]);
-    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, 999);
+    const upperBound = stateKind === "amount" ? 999 : 1;
+    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
 };
 const animateProgressBarEl = function () {
     animateProgressBarWrapper($("#progress-bar"), 1000, 3);
@@ -177,7 +178,7 @@ const drawMeter = function (stateName) {
     }
     else {
         const stateAmount = getStateAmount(stateName);
-        let t = normalize(clamp(stateAmount, meterObject.minValue, meterObject.maxValue), 0, 1);
+        let t = normalize(clamp(stateAmount, meterObject.minValue, meterObject.maxValue), meterObject.minValue, meterObject.maxValue);
         t = hysteresis(t, "meter");
         const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
         setRoundedArcColor(outerMeter.mesh, backgroundColor);

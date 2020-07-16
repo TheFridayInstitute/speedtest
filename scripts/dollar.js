@@ -66,7 +66,7 @@ function $$(query, context = document) {
         : typeof query === "string"
             ? context.querySelectorAll(query)
             : [query];
-    if (nodes === undefined) {
+    if (nodes == null) {
         return undefined;
     }
     else {
@@ -76,7 +76,7 @@ function $$(query, context = document) {
 }
 function $(query, context = document) {
     const node = typeof query === "string" ? context.querySelector(query) : query;
-    if (node === undefined) {
+    if (node == null) {
         return undefined;
     }
     else {

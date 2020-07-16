@@ -1,11 +1,11 @@
 import { Polygon, Arc, Mesh, Canvas, roundedArc, setRoundedArcColor, roundedRectangle, generateGradient } from "./canvas.js";
 import { clamp, lerp, normalize, easeInOutCubic, slerpPoints, bounceInEase } from "./math.js";
-import { smoothAnimate, animationLoopOuter, slideRight, sleep, slideLeft, createProgressBar, animateProgressBarWrapper, rippleButton, slideRightWrap, smoothScroll } from "./animation.js";
+import { smoothAnimate, animationLoopOuter, slideRight, sleep, slideLeft, createProgressBar, animateProgressBarWrapper, rippleButton, slideRightWrap, smoothScroll, throttle } from "./animation.js";
 import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
 import { Color } from "./colors.js";
 import { $, $$ } from "./dollar.js";
 // Global speedtest and event state variables.
-let eventObj;
+let eventObject;
 let speedtestObject;
 let speedtestData;
 // Global state variables for the canvas
@@ -22,18 +22,8 @@ let progressBarObject = {
     color: "#fff",
     backgroundColor: meterObject.backgroundColor
 };
-// const meterObject.startAngle = Math.PI * 0.8;
-// const meterObject.endAngle = 2 * Math.PI * 1.1;
-// const METER_MIN = 0;
-// const METER_MAX = 100;
-// let lineWidth = 2 * emToPixels(getComputedVariable("font-size"));
-// let outerRadius: number;
-// let innerRadius: number;
-// const meterDotSize = 60;
 const DOTS = `<div class="dot-container dot-typing"></div>`;
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
-// const meterObject.backgroundColor = getComputedVariable("--meter-background-color");
-// const PROGRESS_BAR_COLOR = "#fff";
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 const generateColorStops = function (colorName, step = 0.5) {
     const stops = Math.floor(1 / step) + 1;
@@ -48,10 +38,6 @@ const generateColorStops = function (colorName, step = 0.5) {
 };
 const dlColorStops = generateColorStops("dl-color");
 const ulColorStops = generateColorStops("ul-color");
-// let dlProgressColor: CanvasColor;
-// let dlProgressGlowColor: CanvasColor;
-// let ulProgressColor: CanvasColor;
-// let ulProgressGlowColor: CanvasColor;
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
     1: "started",
@@ -120,9 +106,12 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     hysteresisRecord[key] = t;
     return t;
 };
-const getStateAmount = function (stateName) {
-    const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_amount"]]);
+const getStateAmount = function (stateName, stateKind = "amount") {
+    const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]);
     return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, 999);
+};
+const animateProgressBarEl = function () {
+    animateProgressBarWrapper($("#progress-bar"), 1000, 3);
 };
 const openingAnimation = async function (duration, timingFunc) {
     const { dot, outerMeter, dial } = meterObject;
@@ -160,6 +149,11 @@ const closingAnimation = async function (duration, timingFunc) {
     };
     await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
 };
+const setUnitInfo = function (info, unitInfoElement) {
+    Object.keys(info).forEach((key) => {
+        $(`.${key}`, unitInfoElement).innerHTML = info[key];
+    });
+};
 const drawMeter = function (stateName) {
     const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
     let outerMeterColor = backgroundColor;
@@ -183,8 +177,7 @@ const drawMeter = function (stateName) {
     }
     else {
         const stateAmount = getStateAmount(stateName);
-        $("#test-amount").innerHTML = stateAmount.toPrecision(3);
-        let t = normalize(stateAmount, meterObject.minValue, meterObject.maxValue);
+        let t = normalize(clamp(stateAmount, meterObject.minValue, meterObject.maxValue), 0, 1);
         t = hysteresis(t, "meter");
         const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
         setRoundedArcColor(outerMeter.mesh, backgroundColor);
@@ -206,23 +199,22 @@ const drawMeterProgressBar = function (stateName) {
         progressBarObject.mesh.draw(canvasObject, 0);
     }
     else {
-        const stateAmount = getStateAmount(stateName);
+        const stateAmount = getStateAmount(stateName, "progress");
         let t = clamp(stateAmount, 0, 1);
         t = hysteresis(t, "progressBar");
         progressBarObject.mesh.draw(canvasObject, t);
     }
 };
-const updateInfoUI = function (stateName, stateObj) {
-    const stateKindEl = $("#" + stateName);
-    const unitContainer = $(".unit-container", stateKindEl);
+const updateStateInfo = function (stateName, stateObj) {
+    const unitContainer = $(`#${stateName} .unit-container`);
     const state = stateObj[stateName];
     if (state === 0) {
-        unitContainer.querySelector(".amount").innerHTML = DOTS;
+        $(".amount", unitContainer).innerHTML = DOTS;
     }
     else if (state === 1) {
     }
     else if (state === 2) {
-        animateProgressBarWrapper($("#progress-bar"), 1000, 3);
+        animateProgressBarEl();
         unitContainer.classList.remove("in-progress");
         const stateAmount = getStateAmount(stateName);
         $(".amount", unitContainer).innerHTML = stateAmount.toPrecision(3);
@@ -234,31 +226,45 @@ const animationLoopUpdate = function () {
     return false;
 };
 const animationLoopDraw = function () {
-    if (speedtestData === null || speedtestObject.getState() != 3) {
+    if (speedtestData == null || speedtestObject.getState() != 3) {
         return false;
     }
+    const meterInfoElement = $(".speedtest-container .info-container");
     const prevState = testStateObj["prev_state"];
     const stateName = SPEEDTEST_STATES[prevState];
     updateTestState(testStateObj);
     if (stateName === "ping" || stateName === "download" || stateName === "upload") {
-        updateInfoUI(stateName, testStateObj);
+        updateStateInfo(stateName, testStateObj);
         // We need to clear the canvas here,
         // else we'll get a strange flashing
         // due to the canvas clearing faster than
         // we can draw.
         canvasObject.clear();
+        const stateAmount = getStateAmount(stateName);
+        let meterInfo = { amount: stateAmount.toPrecision(3) };
         if (stateName === "ping") {
-            // drawMeter();
-            // drawMeterProgressBar();
+            meterInfo = Object.assign(meterInfo, {
+                footer: "Pinging...",
+                unit: "ms"
+            });
         }
         else if (stateName === "download") {
-            drawMeter(stateName);
-            drawMeterProgressBar(stateName);
+            meterInfo = Object.assign(meterInfo, {
+                kind: "↓",
+                footer: "Downloading...",
+                unit: "Mbps"
+            });
         }
         else if (stateName === "upload") {
-            drawMeter(stateName);
-            drawMeterProgressBar(stateName);
+            meterInfo = Object.assign(meterInfo, {
+                kind: "↑",
+                footer: "Uploading...",
+                unit: "Mbps"
+            });
         }
+        setUnitInfo(meterInfo, meterInfoElement);
+        drawMeter(stateName);
+        drawMeterProgressBar(stateName);
     }
     else if (stateName === "finished") {
         onend();
@@ -266,7 +272,7 @@ const animationLoopDraw = function () {
 };
 const animationLoopInit = function () {
     // Cast the generic element to a canvas element for better linting.
-    const canvas = $("#test-meter");
+    const canvas = $("#meter");
     const ctx = canvas.getContext("2d");
     const canvasOffset = getOffset(canvas);
     const dpr = window.devicePixelRatio || 1;
@@ -352,8 +358,8 @@ const speedtestOnUpdate = function (data) {
     speedtestData = data;
 };
 const speedtestOnEnd = function () {
-    $("#start-btn").classList.remove("running");
-    animationLoopDraw();
+    // $("#start-btn").classList.remove("running");
+    // animationLoopDraw();
 };
 async function onload() {
     // @ts-ignore
@@ -377,7 +383,7 @@ async function onload() {
     });
 }
 const openingSlide = once(async function () {
-    const testEl = $("#test-pane");
+    const testEl = $(".speedtest-container");
     const infoEl = $("#info-progress-container");
     const startModal = $("#start-pane");
     const completeModal = $("#complete-pane");
@@ -389,33 +395,38 @@ const openingSlide = once(async function () {
     slideLeft([testEl, infoEl], 0, width, 500);
     await openingAnimation(2000, easeInOutCubic);
 });
-async function onstart() {
+const onstart = throttle(async function () {
     const startButton = $("#start-btn");
-    if (speedtestObject.getState() === 3) {
+    const start = function () {
+        startButton.classList.toggle("running");
+        $(".text", startButton).innerHTML = "Stop";
+        speedtestObject.start();
+        openingSlide();
+        smoothScroll(getOffset($("#meter")).top - window.innerHeight / 2, window.scrollY, 1000);
+    };
+    const abort = async function () {
         speedtestObject.abort();
-        startButton.classList.remove("running");
+        startButton.classList.toggle("running");
         $(".text", startButton).innerHTML = "Start";
         updateTestState(testStateObj, true);
         openingAnimation(2000, bounceInEase);
         await sleep(500);
-        $("#test-amount").innerHTML = "0";
         $$(".info-container .unit-container").forEach((el) => {
             el.classList.add("in-progress");
             $(".amount", el).innerHTML = "0";
         });
-        animateProgressBarWrapper($("#progress-bar"), 1000, 3);
+        animateProgressBarEl();
+    };
+    if (speedtestObject.getState() === 3) {
+        abort();
     }
     else {
-        startButton.classList.add("running");
-        $(".text", startButton).innerHTML = "Stop";
-        speedtestObject.start();
-        openingSlide();
-        smoothScroll(getOffset($("#test-meter")).top - window.innerHeight / 2, window.scrollY, 1000);
+        start();
     }
-}
+});
 async function onend() {
     const startButton = $("#start-btn");
-    const testEl = $("#test-pane");
+    const testEl = $(".speedtest-container");
     const completeModal = $("#complete-pane");
     const width = window.innerWidth;
     await closingAnimation(2000, easeInOutCubic);
@@ -435,11 +446,11 @@ async function onend() {
         jitterStatus: speedtestData.jitterStatus,
         ip: ip
     };
-    if (eventObj !== null) {
+    if (eventObject !== null) {
         console.log(`Payload of speedtest data sent: ${outData}`);
         //@ts-ignore
         // TODO: Figure out why this doesn't type correctly.
-        eventObj.source.postMessage(JSON.stringify(outData), eventObj.origin);
+        eventObject.source.postMessage(JSON.stringify(outData), eventObject.origin);
     }
     else {
         console.log(`Failed to post speedtest data to external event.`);
@@ -452,12 +463,12 @@ window.onload = function () {
 };
 $("#start-btn").on("click", function (ev) {
     const duration = 1000;
-    rippleButton(ev, ev.target, $("#start-btn .ripple"), 15, 0, duration);
+    rippleButton(ev, ev.currentTarget, $("#start-btn .ripple"), 15, 0, duration);
     if (testStateObj["upload"] === 3) {
-        if (eventObj !== null) {
+        if (eventObject !== null) {
             console.log("Posting next message.");
             //@ts-ignore
-            eventObj.source.postMessage("next", eventObj.origin);
+            eventObject.source.postMessage("next", eventObject.origin);
         }
         else {
             console.log("Cannot post to null event object. Aborting...");
@@ -477,7 +488,7 @@ $(window).on("click touchend", function (ev) {
 const receiveMessage = function (event) {
     // TODO: add secret key here?
     if (event.data === "start") {
-        eventObj = event;
+        eventObject = event;
     }
     console.log(`Received event of ${event}`);
 };

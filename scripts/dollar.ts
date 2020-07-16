@@ -96,7 +96,7 @@ function $$(
             ? context.querySelectorAll(query)
             : [query];
 
-    if (nodes === undefined) {
+    if (nodes == null) {
         return undefined;
     } else {
         const arr = Array.from(nodes).map((el) => Object.assign(el, dollarFunctions));
@@ -110,13 +110,15 @@ function $<T>(query: T, context?: Document | Element): IDollarElement & T;
 function $<T>(query: T, context = document) {
     const node = typeof query === "string" ? context.querySelector(query) : query;
 
-    if (node === undefined) {
+    if (node == null) {
         return undefined;
     } else {
         return Object.assign(node, dollarFunctions);
     }
 }
 
+
+
 export { $, $$ };
 
-export { IDollarElement };
+export { IDollarElement, DomElement };

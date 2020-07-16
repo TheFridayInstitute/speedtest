@@ -46,6 +46,7 @@ export async function sleep(ms) {
 
 export function debounce(func, wait, immediate = true) {
     var timeout;
+
     return function () {
         var context = this;
         var args = arguments;
@@ -60,20 +61,17 @@ export function debounce(func, wait, immediate = true) {
     };
 }
 
-export function throttle(func, wait) {
-    var delta = null;
-    const clock = new Clock();
-    let started = false;
+export function throttle(func, wait = 1000) {
+    let enableCall = true;
 
-    return function () {
-        var context = this;
-        var args = arguments;
-        delta = clock.tick();
+    return function (...args) {
+        if (!enableCall) return;
 
-        if (!started || delta >= wait) {
-            func.apply(context, args);
-        }
-        started = !started ? true : started;
+        console.log("calling...");
+
+        enableCall = false;
+        func(...args);
+        setTimeout(() => (enableCall = true), wait);
     };
 }
 
@@ -297,6 +295,7 @@ export async function animateProgressBar(el, to, from, duration, stops) {
     from = from === undefined ? 0 : from;
     duration = duration === undefined ? 1000 : duration;
     stops = stops === undefined ? el.children.length : stops;
+
     const elStep = Math.floor(stops / el.children.length);
 
     const setProgressBar = function (el, t) {

@@ -4,9 +4,7 @@ import { debounce } from "./animation.js";
 if (!String.prototype.splice) {
     String.prototype.splice = function (start, delCount, newSubStr) {
         return (
-            this.slice(0, start) +
-            newSubStr +
-            this.slice(start + Math.abs(delCount))
+            this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount))
         );
     };
 }
@@ -28,8 +26,7 @@ export function setMeterNumbers(
     alpha1 = alpha1 === undefined ? 2 * Math.PI : alpha1;
 
     originX = originX === undefined ? meterOffset.width / 2 : originX;
-    originY =
-        originY === undefined ? meterOffset.height / 2 + radius / 2 : originY;
+    originY = originY === undefined ? meterOffset.height / 2 + radius / 2 : originY;
 
     delay = delay === undefined ? 100 : delay;
 
@@ -153,7 +150,7 @@ export function getOffset(el) {
         width: rect.width,
         height: rect.height,
         leftX: rect.left,
-        topY: rect.top,
+        topY: rect.top
     };
 }
 
@@ -188,10 +185,7 @@ export function setAttributes(el, attrs) {
 
     let inner = function (el) {
         for (var [key, value] of Object.entries(attrs)) {
-            if (
-                (key === "styles" || key === "style") &&
-                typeof value === "object"
-            ) {
+            if ((key === "styles" || key === "style") && typeof value === "object") {
                 for (var prop in value) {
                     el.style.setProperty(prop, value[prop]);
                 }
@@ -207,14 +201,10 @@ export function setAttributes(el, attrs) {
 }
 
 const objectMap = (obj, fn) =>
-    Object.fromEntries(
-        Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)])
-    );
+    Object.fromEntries(Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)]));
 
 export function fluidText(el, options) {
-    let constrainEl = !options.constrainEl
-        ? el.parentElement
-        : options.constrainEl;
+    let constrainEl = !options.constrainEl ? el.parentElement : options.constrainEl;
     let attributes = !options.attributes ? ["font-size"] : options.attributes;
     let percent = !options.percent ? 0.1 : options.percent;
     let dynamic = !options.dynamic ? false : options.dynamic;
@@ -255,7 +245,5 @@ export function addEventListeners(element, event, handler, ...args) {
     if (args === undefined) {
         args = [true, true];
     }
-    event
-        .split(/\s+/)
-        .forEach((e) => element.addEventListener(e, handler), ...args);
+    event.split(/\s+/).forEach((e) => element.addEventListener(e, handler), ...args);
 }

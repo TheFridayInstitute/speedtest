@@ -120,12 +120,21 @@ const BLANK = "&nbsp;";
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 
+const WINDOW_KEY = "password";
+
 const receiveMessage = function (event: MessageEvent) {
+    const data = event.data;
     // TODO: add secret key here?
-    if (event.data === "start") {
+    if (data.key === WINDOW_KEY) {
         eventObject = event;
+        console.log(`Received event data of ${data}`);
+
+        if (data.message === "start") {
+            onstart();
+        }
+    } else {
+        console.warn("Event data not accepted.");
     }
-    console.log(`Received event of ${event}`);
 };
 
 const postMessage = function (
@@ -247,7 +256,7 @@ const getStateAmount = function (stateName: string, stateKind = "amount") {
     const stateAmount = parseFloat(
         speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]
     );
-    const upperBound = stateKind === "amount" ? 999 : 1;
+    const upperBound = stateKind === "amount" ? 99999 : 1;
     return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
 };
 
@@ -818,7 +827,7 @@ $("#start-btn").on("click", function (ev) {
         };
 
         postMessage(eventObject, windowMessage).catch(() => {
-            console.log("Cannot post to null event object. Aborting.");
+            console.error("Cannot post to null event object. Aborting.");
             $(".modal").classList.toggle("visible");
         });
     } else {

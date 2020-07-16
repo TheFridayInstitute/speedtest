@@ -25,6 +25,26 @@ let progressBarObject = {
 const DOTS = `<div class="dot-container dot-typing"></div>`;
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
+const receiveMessage = function (event) {
+    // TODO: add secret key here?
+    if (event.data === "start") {
+        eventObject = event;
+    }
+    console.log(`Received event of ${event}`);
+};
+const postMessage = function (eventObject, windowMessage) {
+    return new Promise((resolve, reject) => {
+        if (eventObject != null) {
+            console.log(`Posting event message of ${windowMessage.message}`);
+            //@ts-ignore
+            eventObject.source.postMessage(windowMessage, eventObject.origin);
+            resolve(windowMessage);
+        }
+        else {
+            reject(new Error("The given event object was null."));
+        }
+    });
+};
 const generateColorStops = function (colorName, step = 0.5) {
     const stops = Math.floor(1 / step) + 1;
     return Array(stops)
@@ -36,8 +56,12 @@ const generateColorStops = function (colorName, step = 0.5) {
         return [stop, color];
     });
 };
-const dlColorStops = generateColorStops("dl-color");
-const ulColorStops = generateColorStops("ul-color");
+const generateInnerColorStops = function (value) {
+    const [stop, color] = value;
+    const newColor = new Color(color);
+    newColor.opacity = 0.3;
+    return [stop, newColor.colorString];
+};
 const SPEEDTEST_STATES = Object.freeze({
     0: "not_started",
     1: "started",
@@ -307,16 +331,12 @@ const animationLoopInit = function () {
     const dotMesh = new Arc(0, 0, outerRadius / 5, 0, Math.PI * 2, meterObject.backgroundColor, 1);
     dotMesh.fillColor = meterObject.backgroundColor;
     // Creation of the speedtest colors for the meters.
+    const dlColorStops = generateColorStops("dl-color");
+    const ulColorStops = generateColorStops("ul-color");
     const outerDlColor = generateGradient(canvas, dlColorStops);
     const outerUlColor = generateGradient(canvas, ulColorStops);
-    const genInnerMeterColor = function (value) {
-        const [stop, color] = value;
-        const newColor = new Color(color);
-        newColor.opacity = 0.3;
-        return [stop, newColor.colorString];
-    };
-    const innerDlColor = generateGradient(canvas, dlColorStops.map(genInnerMeterColor));
-    const innerUlColor = generateGradient(canvas, ulColorStops.map(genInnerMeterColor));
+    const innerDlColor = generateGradient(canvas, dlColorStops.map(generateInnerColorStops));
+    const innerUlColor = generateGradient(canvas, ulColorStops.map(generateInnerColorStops));
     meterObject = Object.assign(meterObject, {
         outerMeter: {
             mesh: outerMeterMesh,
@@ -440,22 +460,18 @@ async function onend() {
     });
     await sleep(2000);
     const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
-    const outData = {
-        dlStatus: speedtestData.dlStatus,
-        ulStatus: speedtestData.ulStatus,
-        pingStatus: speedtestData.pingStatus,
-        jitterStatus: speedtestData.jitterStatus,
-        ip: ip
+    const windowMessage = {
+        message: "complete",
+        key: "password",
+        data: {
+            dlStatus: speedtestData.dlStatus,
+            ulStatus: speedtestData.ulStatus,
+            pingStatus: speedtestData.pingStatus,
+            jitterStatus: speedtestData.jitterStatus,
+            ip: ip
+        }
     };
-    if (eventObject !== null) {
-        console.log(`Payload of speedtest data sent: ${outData}`);
-        //@ts-ignore
-        // TODO: Figure out why this doesn't type correctly.
-        eventObject.source.postMessage(JSON.stringify(outData), eventObject.origin);
-    }
-    else {
-        console.log(`Failed to post speedtest data to external event.`);
-    }
+    postMessage(eventObject, windowMessage);
 }
 window.onload = function () {
     onload();
@@ -466,15 +482,15 @@ $("#start-btn").on("click", function (ev) {
     const duration = 1000;
     rippleButton(ev, ev.currentTarget, $("#start-btn .ripple"), 15, 0, duration);
     if (testStateObj["upload"] === 3) {
-        if (eventObject !== null) {
-            console.log("Posting next message.");
-            //@ts-ignore
-            eventObject.source.postMessage("next", eventObject.origin);
-        }
-        else {
-            console.log("Cannot post to null event object. Aborting...");
+        const windowMessage = {
+            message: "next",
+            key: "password",
+            data: {}
+        };
+        postMessage(eventObject, windowMessage).catch(() => {
+            console.log("Cannot post to null event object. Aborting.");
             $(".modal").classList.toggle("visible");
-        }
+        });
     }
     else {
         onstart();
@@ -486,11 +502,4 @@ $(window).on("click touchend", function (ev) {
         modal.parentElement.classList.toggle("visible");
     }
 });
-const receiveMessage = function (event) {
-    // TODO: add secret key here?
-    if (event.data === "start") {
-        eventObject = event;
-    }
-    console.log(`Received event of ${event}`);
-};
 $(window).on("message", receiveMessage);

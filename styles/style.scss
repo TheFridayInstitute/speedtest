@@ -167,14 +167,14 @@ main {
         "speedtest"
         "info";
 
-    .info {
+    .info-container {
         grid-area: info;
         --font-size: 3.5rem;
         display: grid;
         column-gap: var(--column-gap);
         grid-template-columns: 2fr 1fr;
 
-        .unit-info-container {
+        .info {
             padding: var(--column-gap);
             background-color: var(--background-color-primary-dark);
             border-radius: var(--border-radius-primary);
@@ -211,12 +211,10 @@ main {
         grid-area: speedtest;
         background: var(--background-color-secondary);
         border-radius: var(--border-radius-primary);
-        
+
         z-index: 1;
 
         canvas {
-            
-          
             padding: 0.5rem;
             box-sizing: border-box;
         }
@@ -235,7 +233,7 @@ main {
             flex-direction: column;
             @include space-between-row(0.5rem);
 
-            .kind {
+            .header {
                 padding: 0.25rem 0;
                 font-weight: bold;
             }

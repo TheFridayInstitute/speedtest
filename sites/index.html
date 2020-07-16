@@ -66,34 +66,31 @@
                 </div>
             </section>
 
-            <section class="pane-container speedtest-container" id="test-pane">
+            <section class="pane-container speedtest-container">
                 <div class="speedtest square-box">
-                    <canvas class="square-box" id="test-meter"></canvas>
+                    <canvas class="square-box" id="meter"></canvas>
                 </div>
 
-                <div class="info">
-                    <div class="unit-info-container">
+                <div class="info-container">
+                    <div class="info">
                         <div class="header"></div>
-                        <div class="unit-container" id="test-amount-container">
-                            <div
-                                id="test-amount"
-                                class="amount"
-                                aria-label="active-test-speed"
-                            ></div>
-                            <div id="test-amount-unit" class="unit"></div>
+
+                        <div class="unit-container">
+                            <div class="amount" aria-label="active-test-speed"></div>
+                            <div class="unit"></div>
                         </div>
 
                         <div class="footer"></div>
                     </div>
 
-                    <div class="kind">↑</div>
+                    <div class="kind"></div>
                 </div>
             </section>
 
             <section class="info-progress-container" id="info-progress-container">
                 <div class="info-container">
                     <div class="info" id="ping">
-                        <div class="kind">
+                        <div class="header">
                             Latency
                         </div>
 
@@ -106,7 +103,7 @@
                     </div>
 
                     <div class="info" id="download">
-                        <div class="kind">
+                        <div class="header">
                             Download
                         </div>
                         <div class="unit-container in-progress">
@@ -118,7 +115,7 @@
                     </div>
 
                     <div class="info" id="upload">
-                        <div class="kind">
+                        <div class="header">
                             Upload
                         </div>
                         <div class="unit-container in-progress">
@@ -146,6 +143,6 @@
             type="text/javascript"
             src="../scripts/librespeed/speedtest.js"
         ></script>
-        <script defer type="module" src="../scripts/index.js"></script>
+        <script type="module" src="../scripts/index.js"></script>
     </body>
 </html>

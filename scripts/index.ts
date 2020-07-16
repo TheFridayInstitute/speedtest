@@ -116,7 +116,7 @@ let progressBarObject: IProgressBarObject = {
 };
 
 const DOTS = `<div class="dot-container dot-typing"></div>`;
-
+const BLANK = "&nbsp;";
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 
@@ -466,17 +466,15 @@ const animationLoopDraw = function () {
                 footer: "Downloading...",
                 unit: "Mbps"
             });
-            drawMeter(stateName);
-            drawMeterProgressBar(stateName);
         } else if (stateName === "upload") {
             meterInfo = Object.assign(meterInfo, {
                 kind: "↑",
                 footer: "Uploading...",
                 unit: "Mbps"
             });
-            drawMeter(stateName);
-            drawMeterProgressBar(stateName);
         }
+        drawMeter(stateName);
+        drawMeterProgressBar(stateName);
         setUnitInfo(meterInfo, meterInfoElement);
     }
 };
@@ -718,11 +716,14 @@ const onstart = throttle(async function () {
 
         await sleep(500);
 
-        setUnitInfo({ amount: "", unit: "", footer: "", kind: "" }, meterInfoElement);
+        setUnitInfo(
+            { amount: BLANK, unit: BLANK, footer: BLANK, kind: BLANK },
+            meterInfoElement
+        );
 
         $$(".info-progress-container .unit-container").forEach((el) => {
             el.classList.add("in-progress");
-            setUnitInfo({ amount: "" }, el);
+            setUnitInfo({ amount: BLANK }, el);
         });
         animateProgressBar(
             progressBar,
@@ -737,7 +738,7 @@ const onstart = throttle(async function () {
     } else {
         start();
     }
-});
+}, 500);
 
 async function onend() {
     const startButton = $("#start-btn");

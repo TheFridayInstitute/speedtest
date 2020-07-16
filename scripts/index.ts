@@ -785,10 +785,10 @@ $("#start-btn").on("click", function (ev) {
 });
 
 $(window).on("click touchend", function (ev) {
-    const modal = $(".modal-content");
+    const modal = $(".modal");
 
-    if (ev.target == modal || ev.target == modal.parentElement) {
-        modal.parentElement.classList.toggle("visible");
+    if (ev.target == modal || modal.contains(<Element>ev.target)) {
+        modal.classList.toggle("visible");
     }
 });
 

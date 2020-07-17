@@ -753,7 +753,7 @@ const onstart = throttle(async function () {
         await sleep(500);
 
         setUnitInfo(
-            { amount: BLANK, unit: BLANK, footer: BLANK, kind: BLANK },
+            { amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK },
             meterInfoElement
         );
 

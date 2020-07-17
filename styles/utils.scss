@@ -54,11 +54,11 @@
     @for $i from 1 through $attr-count {
         $attr-value: $attr-steps * $i;
 
+        $attr-list: append($attr-list, unquote(".#{$attr}-#{$attr-value}"), comma);
+
         .#{$attr-abrv}-#{$attr-value} {
             #{$attr}: #{$attr-value}#{$unit};
         }
-
-        $attr-list: append($attr-list, unquote(".#{$attr}-#{$attr-value}"), comma);
     }
 
     #{$attr-list} {
@@ -67,8 +67,8 @@
 }
 
 @mixin space-between-column($gap) {
-    margin-top: $gap;
     margin-bottom: $gap;
+    margin-top: $gap;
     &:nth-child(1) {
         margin-top: 0;
     }
@@ -105,31 +105,31 @@
 }
 
 .square-box {
-    height: 0%;
-    padding-bottom: 100%;
     position: relative;
+    height: 0%;
     width: 100%;
+    padding-bottom: 100%;
 
     * {
+        position: absolute;
         height: 100%;
         width: 100%;
-        position: absolute;
     }
 }
 
 .start-btn {
+    display: flex;
+    position: relative;
     align-items: center;
     background-color: var(--color-secondary);
-    position: relative;
+    border: none;
     border-radius: var(--border-radius-primary);
     color: black;
     cursor: pointer;
-    display: flex;
+    font-family: var(--font-family-primary);
     font-size: 1.5rem;
     font-weight: normal;
     justify-content: center;
-    border: none;
-    font-family: var(--font-family-primary);
 
     &.running {
         background-color: var(--dl-color-2);
@@ -140,12 +140,6 @@
 }
 
 .btn-prime {
-    overflow: hidden;
-    border: none;
-    background-image: none;
-    outline: 0;
-    position: relative;
-
     --border-size: 0.2rem;
 
     --box-shadow-hl: 2px;
@@ -155,10 +149,15 @@
 
     // TODO: Box shadow changes.
     --box-shadow-color: rgba(0, 0, 0, 0);
-    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+    position: relative;
+    background-image: none;
+    overflow: hidden;
+    border: none;
 
     box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br)
         var(--box-shadow-sr) var(--box-shadow-color);
+    outline: 0;
+    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
 
     &:hover {
         --box-shadow-vl: 7px;
@@ -171,17 +170,20 @@
 }
 
 .ripple {
-    border-radius: 100%;
-    background-color: rgba(255, 255, 255, 0.5);
-    width: 0;
-    height: 0;
-    opacity: 0;
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
     margin: auto;
+
+    height: 0;
+    width: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 100%;
+
+    box-sizing: border-box;
+    opacity: 0;
+
+    transform-origin: center;
 }
 
 .modal {

@@ -1,4 +1,4 @@
-import { clamp, bounceInEase, easeInOutCubic, smoothStep3 } from "./math.js";
+import { clamp, bounceInEase, easeInOutCubic, smoothStep3, translate } from "./math.js";
 
 import { getOffset } from "./utils.js";
 
@@ -354,12 +354,11 @@ export async function animateProgressBarWrapper(el, duration, stops) {
 
 export async function rippleButton(ev, buttonEl, rippleEl, to, from, duration) {
     const buttonOffset = getOffset(buttonEl);
-    let x = ev.clientX;
-    let y = ev.clientY;
 
-    // TODO: fix this centering?
-    x -= buttonOffset.left + buttonOffset.width / 2;
-    y -= buttonOffset.top;
+    const centerX = buttonOffset.left + buttonOffset.width / 2;
+    const centerY = buttonOffset.top + buttonOffset.height / 2;
+
+    const [x, y] = translate([ev.pageX, ev.pageY], -centerX, -centerY);
 
     rippleEl.style.transform = `translate(${x}px, ${y}px)`;
     rippleEl.style.width = 0;

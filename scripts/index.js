@@ -490,16 +490,6 @@ async function onend() {
     const testEl = $(".speedtest-container");
     const completeModal = $("#complete-pane");
     const width = window.innerWidth;
-    startButton.classList.toggle("running");
-    await closingAnimation(2000, easeInOutCubic);
-    await slideLeft(testEl, -width, 0, 500);
-    testEl.classList.add("hidden");
-    slideRight(completeModal, 0, -width, 500);
-    completeModal.classList.remove("hidden");
-    await slideRightWrap(startButton, 0, 0, 500, function () {
-        $(".text", startButton).innerHTML = "Next →";
-    });
-    await sleep(2000);
     const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
     const windowMessage = {
         message: "complete",
@@ -513,6 +503,16 @@ async function onend() {
         }
     };
     postMessage(eventObject, windowMessage);
+    startButton.classList.toggle("running");
+    await closingAnimation(2000, easeInOutCubic);
+    await slideLeft(testEl, -width, 0, 500);
+    testEl.classList.add("hidden");
+    slideRight(completeModal, 0, -width, 500);
+    completeModal.classList.remove("hidden");
+    await slideRightWrap(startButton, 0, 0, 500, function () {
+        $(".text", startButton).innerHTML = "Next →";
+    });
+    await sleep(2000);
 }
 window.onload = function () {
     onload();

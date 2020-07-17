@@ -20,7 +20,7 @@ const off = function (
     return context;
 };
 
-const setAttributes = function (attrs: Object, context: HTMLElement) {
+const setAttributes = function (attrs: object, context: HTMLElement) {
     for (const [key, value] of Object.entries(attrs)) {
         if ((key === "styles" || key === "style") && typeof value === "object") {
             // eslint-disable-next-line guard-for-in

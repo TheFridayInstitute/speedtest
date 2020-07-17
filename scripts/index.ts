@@ -30,6 +30,7 @@ import {
     animateProgressBar,
     rippleButton,
     slideRightWrap,
+    animateElements,
     smoothScroll,
     throttle
 } from "./animation.js";
@@ -115,7 +116,7 @@ let progressBarObject: IProgressBarObject = {
     backgroundColor: meterObject.backgroundColor
 };
 
-const DOTS = `<div class="dot-container dot-typing"></div>`;
+const DOTS = `<div class="dot-container"><div class="dot-typing"></div></div>`;
 const BLANK = "&nbsp;";
 const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
 const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
@@ -367,7 +368,12 @@ const getUnitAmountAndKind = function (stateName: string, stateAmount?: number) 
         }
         unitInfo["amount"] = stateAmount.toPrecision(3);
     } else if (stateName === "ping") {
-        unitInfo["unit"] = "ms";
+        if (stateAmount < 1000) {
+            unitInfo["unit"] = "ms";
+        } else if (stateAmount >= 1000) {
+            unitInfo["unit"] = "s";
+            stateAmount /= 1000;
+        }
         unitInfo["amount"] = stateAmount.toPrecision(3);
     }
 
@@ -713,7 +719,7 @@ const openingSlide = once(async function () {
     startModal.classList.add("hidden");
     slideLeft([testEl, infoEl], 0, width, 500);
 
-    await openingAnimation(2000, easeInOutCubic);
+    openingAnimation(2000, easeInOutCubic);
 });
 
 const onstart = throttle(async function () {
@@ -722,7 +728,7 @@ const onstart = throttle(async function () {
     const meterInfoElement = $(".speedtest-container .info-container");
 
     const start = async function () {
-        startButton.classList.toggle("running");
+        startButton.classList.add("running");
         $(".text", startButton).innerHTML = "Stop";
 
         openingSlide();
@@ -738,7 +744,7 @@ const onstart = throttle(async function () {
     const abort = async function () {
         speedtestObject.abort();
 
-        startButton.classList.toggle("running");
+        startButton.classList.remove("running");
         $(".text", startButton).innerHTML = "Start";
 
         updateTestState(testStateObj, true);
@@ -815,8 +821,10 @@ window.onload = function () {
 
 $("#start-btn").on("click", function (ev) {
     const duration = 1000;
+    const startButton = <HTMLElement>this;
 
-    rippleButton(ev, this, $(".ripple", this), 15, 0, duration);
+    rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
+
     const stateName = getStateName();
 
     if (stateName === "finished") {

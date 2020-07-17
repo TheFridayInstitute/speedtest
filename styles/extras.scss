@@ -130,7 +130,7 @@ $dotSpacing: $dotWidth + $dotWidth/2;
     align-items: center;
     display: flex;
     justify-content: center;
-    margin: 1rem auto;
+    margin: auto;
     position: relative;
 }
 
@@ -200,8 +200,7 @@ $x3: -$leftPos + $dotSpacing;
 
     @include dot;
 
-    box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor,
-        $x3 0 0 0 $dotAfterColor;
+    box-shadow: $x1 0 0 0 $dotBeforeColor, $x2 0 0 0 $dotColor, $x3 0 0 0 $dotAfterColor;
     animation: dotTyping 1.5s infinite linear;
 }
 

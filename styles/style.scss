@@ -89,6 +89,7 @@ body {
 main {
     display: grid;
     padding: $row-gap/2;
+
     height: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -114,7 +115,7 @@ main {
         grid-area: info;
     }
 
-    .start-btn-container {
+    .start-btn {
         height: 3rem;
         width: 66%;
 
@@ -129,8 +130,7 @@ main {
     .content {
         --padding: 1rem;
         padding: var(--padding);
-        height: 100%;
-        width: 100%;
+
         background-color: var(--background-color-secondary);
         border-radius: var(--border-radius-primary);
         box-shadow: var(--box-shadow-main);
@@ -252,6 +252,11 @@ main {
                 border-radius: var(--border-radius-primary);
 
                 text-align: left;
+
+                .dot-container {
+                    height: 100%;
+                    width: 100%;
+                }
             }
         }
     }
@@ -276,7 +281,7 @@ main {
 }
 
 .unit-container {
-    --font-size-lg: 2.5rem;
+    --font-size-lg: 2rem;
     --font-size-sm: calc(var(--font-size-lg) / 4);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
 
@@ -287,6 +292,7 @@ main {
     flex-direction: column;
     min-height: var(--height);
     text-align: center;
+    justify-items: center;
 
     transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
@@ -295,7 +301,7 @@ main {
     }
 
     .amount {
-        height: var(--font-size-lg);
+        height: var(--height);
         font-size: var(--font-size-lg);
     }
 
@@ -312,10 +318,8 @@ main {
             "test test"
             "info button";
 
-        grid-template-columns: auto auto;
+        grid-template-columns: 3fr 1fr;
         grid-template-rows: auto auto;
-        // max-height: calc(min(#{$meter-width}, 100%));
-        // max-width: calc(min(#{$meter-height}, 100%));
 
         .speedtest-container {
             align-self: start;
@@ -348,6 +352,14 @@ main {
 
         .speedtest {
             grid-area: speedtest;
+        }
+    }
+
+    .info-progress-container {
+        width: 100%;
+        margin: 0;
+
+        .info-container {
         }
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable quote-props */
 /* eslint-disable guard-for-in */
 import {
     clamp,
@@ -48,6 +49,69 @@ interface IKeyframe {
 
 type IKeyframes = { [keyframePercent: number]: IKeyframe };
 
+// const keyframes = {
+//     0: {
+//         elements: [0],
+//         styles: {
+//             transform: {
+//                 translateX: {
+//                     amount: 0,
+//                     unit: "px"
+//                 }
+//             },
+//             opacity: {
+//                 amount: 0,
+//                 unit: ""
+//             },
+//             width: {
+//                 amount: 0,
+//                 unit: "%"
+//             },
+//             height: {
+//                 amount: 0,
+//                 unit: "%"
+//             },
+//             "padding-top": {
+//                 amount: 10,
+//                 unit: "px"
+//             }
+//         }
+//     },
+//     50: {
+//         elements: [0],
+//         styles: {
+//             opacity: {
+//                 amount: 0.5,
+//                 unit: ""
+//             },
+//             width: {
+//                 amount: 100,
+//                 unit: "%"
+//             },
+//             height: {
+//                 amount: 10,
+//                 unit: "rem"
+//             },
+//             "padding-top": {
+//                 amount: 100,
+//                 unit: "px"
+//             }
+//         }
+//     },
+//     100: {
+//         elements: [0],
+//         styles: {
+//             opacity: {
+//                 amount: 1,
+//                 unit: ""
+//             },
+//             "padding-top": {
+//                 amount: 200,
+//                 unit: "px"
+//             }
+//         }
+//     }
+// };
 const keyframes = {
     0: {
         elements: [0],
@@ -55,115 +119,67 @@ const keyframes = {
             transform: {
                 translateX: {
                     amount: 0,
-                    unit: "px"
+                    unit: ""
                 }
             },
             opacity: {
-                amount: 0,
+                amount: 1,
                 unit: ""
-            },
-            width: {
-                amount: 0,
-                unit: "%"
-            },
-            height: {
-                amount: 0,
-                unit: "%"
-            },
-            "padding-top": {
-                amount: 10,
-                unit: "px"
             }
         }
     },
     50: {
         elements: [0],
         styles: {
-            opacity: {
-                amount: 0.5,
-                unit: ""
-            },
-            width: {
-                amount: 100,
-                unit: "%"
-            },
-            height: {
-                amount: 10,
-                unit: "rem"
-            },
-            "padding-top": {
-                amount: 100,
-                unit: "px"
+            transform: {
+                translateX: () => {
+                    return { amount: window.innerWidth, unit: "px" };
+                }
             }
         }
     },
-    100: {
+    51: {
         elements: [0],
         styles: {
-            // transform: {
-            //     translateX: {
-            //         amount: 10,
-            //         unit: "rem"
-            //     }
-            // },
+            opacity: {
+                amount: 0,
+                unit: ""
+            }
+        }
+    },
+    52: {
+        elements: [0],
+        styles: {
+            transform: {
+                translateX: {
+                    amount: -200,
+                    unit: "px"
+                }
+            }
+        }
+    },
+    53: {
+        elements: [0],
+        styles: {
             opacity: {
                 amount: 1,
                 unit: ""
             }
         }
+    },
+
+    100: {
+        elements: [0],
+        styles: {
+            transform: {
+                translateX: {
+                    amount: 0,
+                    unit: "px"
+                }
+            }
+        }
     }
 };
-// const keyframes = {
-//     0: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: 0
-//             },
-//             opacity: 1
-//         }
-//     },
-//     50: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: () => {
-//                     return window.innerWidth;
-//                 }
-//             },
-//             opacity: 1
-//         }
-//     },
-//     51: {
-//         elements: [0],
-//         styles: {
-//             opacity: 0
-//         }
-//     },
-//     52: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: -200
-//             }
-//         }
-//     },
-//     53: {
-//         elements: [0],
-//         styles: {
-//             opacity: 1
-//         }
-//     },
-
-//     100: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: 0
-//             }
-//         }
-//     }
-// };
 
 const recurseProperties = function (obj1, obj2, predicate = (key) => true, acc = []) {
     let out: Array<IKeyframeProperty> = [];

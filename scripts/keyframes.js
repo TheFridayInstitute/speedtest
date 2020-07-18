@@ -2,6 +2,71 @@
 import { lerp, easeInOutCubic } from "./math.js";
 import { smoothAnimate } from "./animation.js";
 import { $ } from "./dollar.js";
+const keyframes = {
+    0: {
+        elements: [0],
+        styles: {
+            transform: {
+                translateX: {
+                    amount: 0,
+                    unit: "px"
+                }
+            },
+            opacity: {
+                amount: 0,
+                unit: ""
+            },
+            width: {
+                amount: 0,
+                unit: "%"
+            },
+            height: {
+                amount: 0,
+                unit: "%"
+            },
+            "padding-top": {
+                amount: 10,
+                unit: "px"
+            }
+        }
+    },
+    50: {
+        elements: [0],
+        styles: {
+            opacity: {
+                amount: 0.5,
+                unit: ""
+            },
+            width: {
+                amount: 100,
+                unit: "%"
+            },
+            height: {
+                amount: 10,
+                unit: "rem"
+            },
+            "padding-top": {
+                amount: 100,
+                unit: "px"
+            }
+        }
+    },
+    100: {
+        elements: [0],
+        styles: {
+            // transform: {
+            //     translateX: {
+            //         amount: 10,
+            //         unit: "rem"
+            //     }
+            // },
+            opacity: {
+                amount: 1,
+                unit: ""
+            }
+        }
+    }
+};
 // const keyframes = {
 //     0: {
 //         elements: [0],
@@ -9,81 +74,55 @@ import { $ } from "./dollar.js";
 //             transform: {
 //                 translateX: 0
 //             },
-//             opacity: 0
+//             opacity: 1
 //         }
 //     },
 //     50: {
 //         elements: [0],
 //         styles: {
-//             opacity: 0.5
+//             transform: {
+//                 translateX: () => {
+//                     return window.innerWidth;
+//                 }
+//             },
+//             opacity: 1
+//         }
+//     },
+//     51: {
+//         elements: [0],
+//         styles: {
+//             opacity: 0
+//         }
+//     },
+//     52: {
+//         elements: [0],
+//         styles: {
+//             transform: {
+//                 translateX: -200
+//             }
+//         }
+//     },
+//     53: {
+//         elements: [0],
+//         styles: {
+//             opacity: 1
 //         }
 //     },
 //     100: {
 //         elements: [0],
 //         styles: {
 //             transform: {
-//                 translateX: () => window.innerWidth / 2
-//             },
-//             opacity: 1
+//                 translateX: 0
+//             }
 //         }
 //     }
 // };
-const keyframes = {
-    0: {
-        elements: [0],
-        styles: {
-            transform: {
-                translateX: 0
-            },
-            opacity: 1
-        }
-    },
-    50: {
-        elements: [0],
-        styles: {
-            transform: {
-                translateX: () => {
-                    return window.innerWidth;
-                }
-            },
-            opacity: 1
-        }
-    },
-    51: {
-        elements: [0],
-        styles: {
-            opacity: 0
-        }
-    },
-    52: {
-        elements: [0],
-        styles: {
-            transform: {
-                translateX: -200
-            }
-        }
-    },
-    53: {
-        elements: [0],
-        styles: {
-            opacity: 1
-        }
-    },
-    100: {
-        elements: [0],
-        styles: {
-            transform: {
-                translateX: 0
-            }
-        }
-    }
-};
-const recurseProperties = function (obj1, obj2, acc = []) {
+const recurseProperties = function (obj1, obj2, predicate = (key) => true, acc = []) {
     let out = [];
     for (const key of Object.keys(obj1)) {
         if (obj2[key] != null) {
-            if (typeof obj1[key] === "object") {
-                out = out.concat(recurseProperties(obj1[key], obj2[key], acc.concat(key)));
+            if (typeof obj1[key] === "object" && predicate(obj1[key])) {
+                out = out.concat(recurseProperties(obj1[key], obj2[key], predicate, acc.concat(key)));
             }
             else {
                 out.push({
@@ -116,13 +155,17 @@ const createInterpCallback = function (duration, startPercent, endPercent, eleme
                         evalIfFunction(prop.value1),
                         evalIfFunction(prop.value2)
                     ];
+                    const [fromAmount, fromUnit] = [from.amount, from.unit];
+                    const [toAmount, toUnit] = [to.amount, to.unit];
                     const cssKey = keys[0];
-                    const v = lerp(t, from, to);
+                    let v = `${lerp(t, fromAmount, toAmount)}`;
+                    v += toUnit;
+                    console.log(v);
                     if (keys.length === 1) {
                         cssObject[cssKey] = v;
                     }
                     else {
-                        const subkey = `${keys[1]}(${v}px)`;
+                        const subkey = `${keys[1]}(${v})`;
                         cssObject[cssKey] = subkey;
                     }
                 });
@@ -134,6 +177,9 @@ const createInterpCallback = function (duration, startPercent, endPercent, eleme
     return interpCallback;
 };
 const animateKeyframes = async function (elements, keyframes, duration) {
+    const keyframePredicate = (key) => {
+        return key.unit == null;
+    };
     const keyframesCopy = Object.assign({}, keyframes);
     const keys = Object.keys(keyframes);
     for (let index = 0; index < keys.length; index++) {
@@ -156,7 +202,7 @@ const animateKeyframes = async function (elements, keyframes, duration) {
                 return acc;
             }, []);
             const interpCallback = createInterpCallback(duration, startPercent, endPercent, commonElements);
-            const props = recurseProperties(styles1, styles2);
+            const props = recurseProperties(styles1, styles2, keyframePredicate);
             console.log(props);
             await interpCallback(props);
             keyframesCopy[keyframeKey2].styles = {
@@ -166,4 +212,4 @@ const animateKeyframes = async function (elements, keyframes, duration) {
         }
     }
 };
-animateKeyframes([$(".box")], keyframes, 5000);
+animateKeyframes([$(".box")], keyframes, 1000);

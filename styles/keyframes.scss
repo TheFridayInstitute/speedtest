@@ -1,0 +1,78 @@
+@use "sass:math";
+@import "utils.scss";
+
+$meter-width: 32rem;
+$meter-height: 64rem;
+$meter-padding: 10rem;
+$meter-outer-radius: 30rem;
+$max-height-multiplier: 2;
+
+$screen-size-ss: 256px;
+$screen-size-xs: 320px;
+$screen-size-sm: 480px;
+$screen-size-md: 768px;
+$screen-size-lg: 992px;
+$screen-size-xl: 1200px;
+
+$row-gap: 1rem;
+
+$PI: 3.14159265358929;
+$ALPHA_0: $PI * 0.8;
+
+:root {
+    --background-color-primary: rgba(51, 51, 51, 1);
+    --background-color-primary-dark: rgb(37, 37, 37);
+    --background-color-secondary: rgb(61, 61, 61, 1);
+    --font-color-primary: #fff;
+
+    --color-primary: #fff;
+    --color-secondary: #34c83c;
+    --color-secondary-dark: #2ead34;
+    --font-family-primary: "Helvetica", sans-serif;
+    // --font-family-primary: "IBM Plex Mono";
+
+    --dl-color-0: #6728d3;
+    --dl-color-1: #d359ff;
+    --dl-color-2: #f71e6a;
+
+    --ul-color-0: #ff8800;
+    --ul-color-1: #f77300;
+    --ul-color-2: #ff0000;
+
+    --meter-background-color: rgb(0, 0, 0, 0.25);
+
+    --progress-bar-gradient: linear-gradient(
+        to right,
+        var(--dl-color-0),
+        var(--ul-color-0)
+    );
+
+    --meter-width: #{$meter-width};
+    --meter-height: #{$meter-height};
+    --meter-padding: #{$meter-padding};
+    --meter-outer-radius: #{$meter-outer-radius};
+
+    --ncsu-font: "UniversCondensed";
+    --ncsu-red: #c00;
+    --ncsu-red-dark: rgb(173, 0, 0);
+    --border-radius-primary: 0.75rem;
+
+    // --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.10);
+    --column-gap: 0.5rem;
+}
+
+html {
+    height: 100%;
+    width: 100%;
+}
+
+.box {
+    border-radius: var(--border-radius-primary);
+    background-color: var(--background-color-secondary);
+    height: 10rem;
+    width: 10rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}

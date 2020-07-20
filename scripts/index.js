@@ -449,6 +449,7 @@ const openingSlide = once(async function () {
     slideLeft([testEl, infoEl], 0, width, 500);
     openingAnimation(2000, easeInOutCubic);
 });
+// TODO: remove start animation.
 const onstart = throttle(async function () {
     const startButton = $("#start-btn");
     const progressBar = $("#progress-bar");

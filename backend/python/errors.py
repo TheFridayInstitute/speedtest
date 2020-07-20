@@ -1,18 +1,20 @@
 import glob
-import os
-import urllib.request
-import re
-from typing import *
-import json
-import pandas as pd
 import itertools
+import json
+import os
+import re
+import urllib.request
+from typing import *
 
+import pandas as pd
 
-error_log_re = re.compile(r"error\.log(\.\d+)?$")
-error_log_ip_re = re.compile(r"\[client (.*):.*\]")
-error = "bytes exceeds the limit of"
+RE_ERROR_LOG_PATH = re.compile(r"error\.log(\.\d+)?$")
+RE_ERROR_LOG_IP = re.compile(r"\[client (.*):.*\]")
+ERROR = "bytes exceeds the limit of"
 
 get_ip_info_url = lambda ip: f"https://ipinfo.io/{ip}/json?token=3230fe01b43b1b"
+
+get_from_iterable = lambda iterable, key: [d.get(key) for d in iterable]
 
 
 def call_ip_info(ip: str) -> Optional[dict]:
@@ -28,8 +30,8 @@ def find_error_ips(filename: str) -> dict:
 
     with open(filename, "r") as file:
         for n, line in enumerate(file.readlines()):
-            if line.find(error) != -1:
-                matches = re.findall(error_log_ip_re, line)
+            if line.find(ERROR) != -1:
+                matches = re.findall(RE_ERROR_LOG_IP, line)
 
                 if len(matches) > 0:
                     ip = matches[0]
@@ -40,11 +42,8 @@ def find_error_ips(filename: str) -> dict:
     return ips
 
 
-get_from_iterable = lambda iterable, key: [i[key] for i in iterable]
-
-
-def find_errors(dirpath: str):
-    files = [file for file in os.listdir(dirpath) if re.match(error_log_re, file)]
+def find_errors(dirpath: str) -> List[dict]:
+    files = [file for file in os.listdir(dirpath) if re.match(RE_ERROR_LOG_PATH, file)]
     ips = []
 
     for filename in sorted(files):
@@ -56,7 +55,7 @@ def find_errors(dirpath: str):
 
     for ip, igroup in itertools.groupby(ips, key=lambda x: x["ip"]):
         group = list(igroup)
-        
+
         filenames, line_numbers = (
             get_from_iterable(group, "filename"),
             get_from_iterable(group, "line_number"),
@@ -76,4 +75,3 @@ out_path = "errors.csv"
 errors = find_errors(dirpath)
 df = pd.DataFrame(errors)
 df.to_csv(out_path, index=False)
-

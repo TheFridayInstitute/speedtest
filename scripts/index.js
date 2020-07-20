@@ -1,1 +1,549 @@
-import{Polygon,Arc,Mesh,Canvas,roundedArc,setRoundedArcColor,roundedRectangle,generateGradient}from"./canvas.js";import{clamp,lerp,normalize,easeInOutCubic,slerpPoints}from"./math.js";import{smoothAnimate,animationLoopOuter,slideRight,sleep,slideLeft,createProgressBar,animateProgressBarWrapper,animateProgressBar,rippleButton,slideRightWrap,throttle}from"./animation.js";import{getOffset,once,getComputedVariable,emToPixels}from"./utils.js";import{Color}from"./colors.js";import{$,$$}from"./dollar.js";let eventObject,speedtestObject,speedtestData,canvasObject,meterObject={startAngle:.8*Math.PI,endAngle:1.1*(2*Math.PI),minValue:0,maxValue:100,lineWidth:2*emToPixels(getComputedVariable("font-size")),backgroundColor:getComputedVariable("--meter-background-color")},progressBarObject={color:"#fff",backgroundColor:meterObject.backgroundColor};const DOTS=`<div class="dot-container"><div class="dot-typing"></div></div>`,BLANK="&nbsp;",BORDER_RADIUS_PRIMARY=getComputedVariable("--border-radius-primary"),PROGRESS_BAR_GRADIENT=getComputedVariable("--progress-bar-gradient"),WINDOW_KEY="password",receiveMessage=function(c){const a=c.data;a.key===WINDOW_KEY?(eventObject=c,console.log(`Received event data of ${a}`),"start"===a.message&&onstart()):console.warn("Event data not accepted.")},postMessage=function(e,a){return new Promise((b,c)=>{null==e?c(new Error("The given event object was null.")):(console.log(`Posting event message of ${a.message}`),e.source.postMessage(a,e.origin),b(a))})},generateColorStops=function(f,a=.5){const b=Math.floor(1/a)+1;return Array(b).fill(0).map(function(b,c){const d=getComputedVariable(`--${f}-${c}`);return[c*a,d]})},generateInnerColorStops=function(e){const[a,b]=e,c=new Color(b);return c.opacity=.3,[a,c.colorString]},SPEEDTEST_STATES=Object.freeze({0:"not_started",1:"started",2:"download",3:"ping",4:"upload",5:"finished",6:"aborted"}),SPEEDTEST_DATA_MAPPING=Object.freeze({ping_amount:"pingStatus",download_amount:"dlStatus",upload_amount:"ulStatus",ping_progress:"pingStatus",download_progress:"dlProgress",upload_progress:"ulProgress"}),testStateObj={ping:-1,download:-1,upload:-1,prev_state:-1},updateTestState=function(i,a=!1){const j=speedtestData.testState+1,c=SPEEDTEST_STATES[j],d=i.prev_state,e=SPEEDTEST_STATES[d];if(a||"aborted"===c)for(const[a]of Object.entries(i))i[a]=-1;else{for(const[a,b]of Object.entries(i)){const f=b+1;if(a===c)1>b?i[a]=f:2===b&&j!==d&&(i[a]=0);else if(a===e&&0<b&&j!==d){i[e]=f;break}}i.prev_state=j}return i},hysteresisRecord={},hysteresis=function(h,i,b=.01,c=1/15){var d=Math.abs;const e=hysteresisRecord[i]||0,f=d(h-e);return f>b&&(h=lerp(c,e,h)),hysteresisRecord[i]=h,h},getStateAmount=function(e,a="amount"){const b=parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[e+"_"+a]]),c="amount"===a?99999:1;return Number.isNaN(b)?0:clamp(b,0,c)},getStateName=function(){const b=testStateObj.prev_state;return SPEEDTEST_STATES[b]},animateProgressBarEl=function(){animateProgressBarWrapper($("#progress-bar"),1e3,3)},openingAnimation=async function(g,a){const{dot:h,outerMeter:c,dial:d}=meterObject,b=function(e,a){canvasObject.clear(),c.mesh.draw(canvasObject,a),h.mesh.draw(canvasObject,a);const b=lerp(a,meterObject.startAngle,meterObject.startAngle+2*Math.PI);d.mesh.rotate(b,!0).scale(1).draw(canvasObject).rotate(-b,!0).scale(1),progressBarObject.mesh.draw(canvasObject,0)};await smoothAnimate(meterObject.endAngle,meterObject.startAngle,g,b,a)},closingAnimation=async function(g,a){const{dot:h,outerMeter:c,dial:d}=meterObject,b=function(e,a){canvasObject.clear(),a=clamp(1-a,1e-4,1),c.mesh.draw(canvasObject,a),h.mesh.draw(canvasObject,a);const g=lerp(a,meterObject.startAngle,4*Math.PI+meterObject.startAngle);d.mesh.rotate(g,!0).scale(a).draw(canvasObject).rotate(-g,!0).scale(1/a),progressBarObject.mesh.draw(canvasObject,a)};await smoothAnimate(meterObject.endAngle,meterObject.startAngle,g,b,a)},setUnitInfo=function(d,a){Object.keys(d).forEach(b=>{$(`.${b}`,a).innerHTML=d[b]})},getUnitAmountAndKind=function(d,a){null==a&&(a=getStateAmount(d));const e={};return"download"===d||"upload"===d?(1e3>a?e.unit="Mbps":1e3<=a&&(e.unit="Gbps",a/=1e3),e.amount=a.toPrecision(3)):"ping"===d&&(1e3>a?e.unit="ms":1e3<=a&&(e.unit="s",a/=1e3),e.amount=a.toPrecision(3)),e},drawMeter=function(l){const{dot:a,outerMeter:b,innerMeter:c,dial:d,backgroundColor:e}=meterObject;let f=e,m=e;if("download"===l?(f=b.dlColor,m=c.dlColor):"upload"==l&&(f=b.ulColor,m=c.ulColor),!l)setRoundedArcColor(b.mesh,e),b.mesh.draw(canvasObject,1),a.mesh.draw(canvasObject),d.mesh.rotate(meterObject.startAngle,!0).draw(canvasObject).rotate(-meterObject.startAngle,!0);else{const g=getStateAmount(l);let h=normalize(clamp(g,meterObject.minValue,meterObject.maxValue),meterObject.minValue,meterObject.maxValue);h=hysteresis(h,"meter");const i=lerp(h,meterObject.startAngle,meterObject.endAngle);setRoundedArcColor(b.mesh,e),b.mesh.draw(canvasObject,1),setRoundedArcColor(b.mesh,f),b.mesh.draw(canvasObject,h),b.mesh.draw(canvasObject,h),setRoundedArcColor(b.mesh,e),setRoundedArcColor(c.mesh,m),c.mesh.draw(canvasObject,h),a.mesh.draw(canvasObject),d.mesh.rotate(i,!0).draw(canvasObject).rotate(-i,!0)}},drawMeterProgressBar=function(d){if(!d)progressBarObject.mesh.draw(canvasObject,0);else{const a=getStateAmount(d,"progress");let b=clamp(a,0,1);b=hysteresis(b,"progressBar"),progressBarObject.mesh.draw(canvasObject,b)}},updateStateInfo=function(e,a){const b=$(`#${e} .unit-container`),c=a[e];if(0===c)$(".amount",b).innerHTML=DOTS;else if(1===c);else if(2===c){const c=getUnitAmountAndKind(e);animateProgressBarEl(),b.classList.remove("in-progress"),setUnitInfo(c,b),a[e]=3}},animationLoopUpdate=function(){return!1},animationLoopDraw=function(){if(null==speedtestData||3>speedtestObject.getState())return!1;const d=$(".speedtest-container .info-container"),a=getStateName();if(updateTestState(testStateObj),"ping"===a||"download"===a||"upload"===a){updateStateInfo(a,testStateObj),canvasObject.clear();let b=getUnitAmountAndKind(a);"ping"===a?b=Object.assign(b,{footer:"Pinging..."}):"download"===a?b=Object.assign(b,{kind:"\u2193",footer:"Downloading..."}):"upload"===a&&(b=Object.assign(b,{kind:"\u2191",footer:"Uploading..."})),drawMeter(a),drawMeterProgressBar(a),setUnitInfo(b,d)}},animationLoopInit=function(){const E=$("#meter"),a=E.getContext("2d"),b=getOffset(E),c=window.devicePixelRatio||1,d=meterObject.lineWidth*c;E.width=b.width*c,E.height=b.height*c;const e=E.width/2-d/2,f=e-1.25*d,g=E.width/2,h=E.height/2;canvasObject=new Canvas(E,a,[g,h]);const i=d/1.2,j=.8*f,k=i/1.8,l=[[0,0],[i,0]],m=slerpPoints(l[0],l[1]),n=[...m,[i-k,-j],[k,-j]],o=new Polygon(n,null,null,"white");o.translate(-o.centroid[0],0).rotate(90,!1);const p=roundedArc(0,0,e,meterObject.startAngle,meterObject.endAngle,meterObject.backgroundColor,d),q=roundedArc(0,0,f,meterObject.startAngle,meterObject.endAngle,meterObject.backgroundColor,d),r=new Arc(0,0,e/5,0,2*Math.PI,meterObject.backgroundColor,1);r.fillColor=meterObject.backgroundColor;const s=generateColorStops("dl-color"),t=generateColorStops("ul-color"),u=generateGradient(E,s),v=generateGradient(E,t),w=generateGradient(E,s.map(generateInnerColorStops)),x=generateGradient(E,t.map(generateInnerColorStops));meterObject=Object.assign(meterObject,{outerMeter:{mesh:p,radius:e,dlColor:u,ulColor:v},innerMeter:{mesh:q,radius:f,dlColor:w,ulColor:x},dot:{color:"black",radius:e/5,mesh:r},dial:{color:meterObject.backgroundColor,mesh:o}});const y=e,z=d/4,A=roundedRectangle(0,0,y,z,progressBarObject.color),B=roundedRectangle(0,0,y,z,progressBarObject.backgroundColor),C=new Mesh(B,A).translate(0,e/1.5-z/2);C.draw=function(c,a){return this.shapes[0].draw(c,1),this.shapes[1].draw(c,a),this},progressBarObject=Object.assign(progressBarObject,{mesh:C})},speedtestOnUpdate=function(b){speedtestData=b},speedtestOnEnd=function(b){b||onend()};async function onload(){speedtestObject=new Speedtest,speedtestObject.setParameter("getIp_ispInfo",!1),speedtestObject.setParameter("getIp_ispInfo_distance",!1),speedtestObject.onupdate=speedtestOnUpdate,speedtestObject.onend=speedtestOnEnd,createProgressBar($("#progress-bar"),[PROGRESS_BAR_GRADIENT],{styles:{"border-top-left-radius":BORDER_RADIUS_PRIMARY,"border-bottom-left-radius":BORDER_RADIUS_PRIMARY}},{styles:{"border-top-right-radius":BORDER_RADIUS_PRIMARY,"border-bottom-right-radius":BORDER_RADIUS_PRIMARY}})}const openingSlide=once(async function(){const f=$(".speedtest-container"),a=$("#info-progress-container"),b=$("#start-pane"),c=$("#complete-pane"),d=window.innerWidth;slideRight([f,a,c],d,0,1),[f,a].forEach(b=>b.classList.remove("hidden")),await slideLeft(b,-d,0,500),b.classList.add("hidden"),slideLeft([f,a],0,d,500),openingAnimation(2e3,easeInOutCubic)}),onstart=throttle(async function(){const f=$("#start-btn"),a=$("#progress-bar"),b=$(".speedtest-container .info-container"),c=async function(){f.classList.add("running"),$(".text",f).innerHTML="Stop",openingSlide(),speedtestObject.start()},d=async function(){speedtestObject.abort(),f.classList.remove("running"),$(".text",f).innerHTML="Start",updateTestState(testStateObj,!0),openingAnimation(2e3,easeInOutCubic),await sleep(500),setUnitInfo({amount:BLANK,unit:BLANK,footer:"Waiting...",kind:BLANK},b),$$(".info-progress-container .unit-container").forEach(b=>{b.classList.add("in-progress"),setUnitInfo({amount:BLANK},b)}),animateProgressBar(a,0,parseFloat(a.getAttribute("percent-complete"))||0,1e3)};3===speedtestObject.getState()?d():c()},500);async function onend(){const g=$("#start-btn"),a=$(".speedtest-container"),b=$("#complete-pane"),c=window.innerWidth,d=(speedtestData.clientIp+"").trim().split(" ")[0].trim(),e={message:"complete",key:"password",data:{dlStatus:speedtestData.dlStatus,ulStatus:speedtestData.ulStatus,pingStatus:speedtestData.pingStatus,jitterStatus:speedtestData.jitterStatus,ip:d}};postMessage(eventObject,e),g.classList.toggle("running"),await closingAnimation(2e3,easeInOutCubic),await slideLeft(a,-c,0,500),a.classList.add("hidden"),slideRight(b,0,-c,500),b.classList.remove("hidden"),await slideRightWrap(g,0,0,500,function(){$(".text",g).innerHTML="Next \u2192"}),await sleep(2e3)}window.onload=function(){onload(),animationLoopInit(),animationLoopOuter(animationLoopUpdate,animationLoopDraw)},$("#start-btn").on("click",function(d){const a=this;rippleButton(d,a,$(".ripple",a),15,0,1e3);const b=getStateName();"finished"===b?postMessage(eventObject,{message:"next",key:"password",data:{}}).catch(()=>{console.error("Cannot post to null event object. Aborting."),$(".modal").classList.toggle("visible")}):onstart()}),$(window).on("click touchend",function(c){const a=$(".modal");(c.target==a||a.contains(c.target))&&a.classList.toggle("visible")}),$(window).on("message",receiveMessage);
+import { Polygon, Arc, Mesh, Canvas, roundedArc, setRoundedArcColor, roundedRectangle, generateGradient } from "./canvas.js";
+import { clamp, lerp, normalize, easeInOutCubic, slerpPoints } from "./math.js";
+import { smoothAnimate, animationLoopOuter, slideRight, sleep, slideLeft, createProgressBar, animateProgressBarWrapper, animateProgressBar, rippleButton, slideRightWrap, throttle } from "./animation.js";
+import { getOffset, once, getComputedVariable, emToPixels } from "./utils.js";
+import { Color } from "./colors.js";
+import { $, $$ } from "./dollar.js";
+// Global speedtest and event state variables.
+let eventObject;
+let speedtestObject;
+let speedtestData;
+// Global state variables for the canvas
+let canvasObject;
+let meterObject = {
+    startAngle: Math.PI * 0.8,
+    endAngle: 2 * Math.PI * 1.1,
+    minValue: 0,
+    maxValue: 100,
+    lineWidth: 2 * emToPixels(getComputedVariable("font-size")),
+    backgroundColor: getComputedVariable("--meter-background-color")
+};
+let progressBarObject = {
+    color: "#fff",
+    backgroundColor: meterObject.backgroundColor
+};
+const DOTS = `<div class="dot-container"><div class="dot-typing"></div></div>`;
+const BLANK = "&nbsp;";
+const BORDER_RADIUS_PRIMARY = getComputedVariable("--border-radius-primary");
+const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
+const WINDOW_KEY = "password";
+const receiveMessage = function (event) {
+    const data = event.data;
+    // TODO: add secret key here?
+    if (data.key === WINDOW_KEY) {
+        eventObject = event;
+        console.log(`Received event data of ${data}`);
+        if (data.message === "start") {
+            onstart();
+        }
+    }
+    else {
+        console.warn("Event data not accepted.");
+    }
+};
+const postMessage = function (eventObject, windowMessage) {
+    return new Promise((resolve, reject) => {
+        if (eventObject != null) {
+            console.log(`Posting event message of ${windowMessage.message}`);
+            //@ts-ignore
+            eventObject.source.postMessage(windowMessage, eventObject.origin);
+            resolve(windowMessage);
+        }
+        else {
+            reject(new Error("The given event object was null."));
+        }
+    });
+};
+const generateColorStops = function (colorName, step = 0.5) {
+    const stops = Math.floor(1 / step) + 1;
+    return Array(stops)
+        .fill(0)
+        .map(function (_, index) {
+        const stop = index * step;
+        const tmpColorName = `--${colorName}-${index}`;
+        const color = getComputedVariable(tmpColorName);
+        return [stop, color];
+    });
+};
+const generateInnerColorStops = function (value) {
+    const [stop, color] = value;
+    const newColor = new Color(color);
+    newColor.opacity = 0.3;
+    return [stop, newColor.colorString];
+};
+const SPEEDTEST_STATES = Object.freeze({
+    0: "not_started",
+    1: "started",
+    2: "download",
+    3: "ping",
+    4: "upload",
+    5: "finished",
+    6: "aborted"
+});
+const SPEEDTEST_DATA_MAPPING = Object.freeze({
+    ping_amount: "pingStatus",
+    download_amount: "dlStatus",
+    upload_amount: "ulStatus",
+    ping_progress: "pingStatus",
+    download_progress: "dlProgress",
+    upload_progress: "ulProgress"
+});
+/**
+ * test state object mapping:
+ * -1: not started;
+ * 0: started;
+ * 1: active;
+ * 2: finished;
+ * 3: manually set, drawing complete.
+ */
+const testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
+const updateTestState = function (testStateObj, abort = false) {
+    // + 1 because we start at 0, not -1 (unlike librespeed).
+    const speedtestState = speedtestData.testState + 1;
+    const testKind = SPEEDTEST_STATES[speedtestState];
+    const prevState = testStateObj["prev_state"];
+    const prevKey = SPEEDTEST_STATES[prevState];
+    if (abort || testKind === "aborted") {
+        for (const [key] of Object.entries(testStateObj)) {
+            testStateObj[key] = -1;
+        }
+    }
+    else {
+        for (const [key, value] of Object.entries(testStateObj)) {
+            const state = value + 1;
+            if (key === testKind) {
+                if (value < 1) {
+                    testStateObj[key] = state;
+                }
+                else if (value === 2 && speedtestState !== prevState) {
+                    testStateObj[key] = 0;
+                }
+            }
+            else if (key === prevKey && value > 0 && speedtestState !== prevState) {
+                testStateObj[prevKey] = state;
+                break;
+            }
+        }
+        testStateObj["prev_state"] = speedtestState;
+    }
+    return testStateObj;
+};
+const hysteresisRecord = {};
+const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
+    const prevT = hysteresisRecord[key] || 0;
+    const delta = Math.abs(t - prevT);
+    if (delta > eps) {
+        // t = easeOutCubic(step, prevT, t - prevT, 1);
+        t = lerp(step, prevT, t);
+    }
+    hysteresisRecord[key] = t;
+    return t;
+};
+const getStateAmount = function (stateName, stateKind = "amount") {
+    const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]);
+    const upperBound = stateKind === "amount" ? 99999 : 1;
+    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
+};
+const getStateName = function () {
+    const prevState = testStateObj["prev_state"];
+    return SPEEDTEST_STATES[prevState];
+};
+const animateProgressBarEl = function () {
+    animateProgressBarWrapper($("#progress-bar"), 1000, 3);
+};
+const openingAnimation = async function (duration, timingFunc) {
+    const { dot, outerMeter, dial } = meterObject;
+    const transformFunc = function (v, t) {
+        canvasObject.clear();
+        // dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
+        outerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject, t);
+        const theta = lerp(t, meterObject.startAngle, meterObject.startAngle + 2 * Math.PI);
+        dial.mesh
+            .rotate(theta, true)
+            .scale(1)
+            .draw(canvasObject)
+            .rotate(-theta, true)
+            .scale(1);
+        progressBarObject.mesh.draw(canvasObject, 0);
+    };
+    await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
+};
+const closingAnimation = async function (duration, timingFunc) {
+    const { dot, outerMeter, dial } = meterObject;
+    const transformFunc = function (v, t) {
+        canvasObject.clear();
+        t = clamp(1 - t, 0.0001, 1);
+        outerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject, t);
+        const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
+        dial.mesh
+            .rotate(theta, true)
+            .scale(t)
+            .draw(canvasObject)
+            .rotate(-theta, true)
+            .scale(1 / t);
+        progressBarObject.mesh.draw(canvasObject, t);
+    };
+    await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
+};
+const setUnitInfo = function (info, unitInfoElement) {
+    Object.keys(info).forEach((key) => {
+        $(`.${key}`, unitInfoElement).innerHTML = info[key];
+    });
+};
+const getUnitAmountAndKind = function (stateName, stateAmount) {
+    if (stateAmount == null) {
+        stateAmount = getStateAmount(stateName);
+    }
+    const unitInfo = {};
+    if (stateName === "download" || stateName === "upload") {
+        if (stateAmount < 1000) {
+            unitInfo["unit"] = "Mbps";
+        }
+        else if (stateAmount >= 1000) {
+            unitInfo["unit"] = "Gbps";
+            stateAmount /= 1000;
+        }
+        unitInfo["amount"] = stateAmount.toPrecision(3);
+    }
+    else if (stateName === "ping") {
+        if (stateAmount < 1000) {
+            unitInfo["unit"] = "ms";
+        }
+        else if (stateAmount >= 1000) {
+            unitInfo["unit"] = "s";
+            stateAmount /= 1000;
+        }
+        unitInfo["amount"] = stateAmount.toPrecision(3);
+    }
+    return unitInfo;
+};
+const drawMeter = function (stateName) {
+    const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
+    let outerMeterColor = backgroundColor;
+    let innerMeterColor = backgroundColor;
+    if (stateName === "download") {
+        outerMeterColor = outerMeter.dlColor;
+        innerMeterColor = innerMeter.dlColor;
+    }
+    else if (stateName === "upload") {
+        outerMeterColor = outerMeter.ulColor;
+        innerMeterColor = innerMeter.ulColor;
+    }
+    if (!stateName) {
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        outerMeter.mesh.draw(canvasObject, 1);
+        dot.mesh.draw(canvasObject);
+        dial.mesh
+            .rotate(meterObject.startAngle, true)
+            .draw(canvasObject)
+            .rotate(-meterObject.startAngle, true);
+    }
+    else {
+        const stateAmount = getStateAmount(stateName);
+        let t = normalize(clamp(stateAmount, meterObject.minValue, meterObject.maxValue), meterObject.minValue, meterObject.maxValue);
+        t = hysteresis(t, "meter");
+        const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        outerMeter.mesh.draw(canvasObject, 1);
+        // Draw the meter twice here to avoid the weird aliasing
+        // issue around the rounded end caps thereof.
+        setRoundedArcColor(outerMeter.mesh, outerMeterColor);
+        outerMeter.mesh.draw(canvasObject, t);
+        outerMeter.mesh.draw(canvasObject, t);
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        setRoundedArcColor(innerMeter.mesh, innerMeterColor);
+        innerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject);
+        dial.mesh.rotate(theta, true).draw(canvasObject).rotate(-theta, true);
+    }
+};
+const drawMeterProgressBar = function (stateName) {
+    if (!stateName) {
+        progressBarObject.mesh.draw(canvasObject, 0);
+    }
+    else {
+        const stateAmount = getStateAmount(stateName, "progress");
+        let t = clamp(stateAmount, 0, 1);
+        t = hysteresis(t, "progressBar");
+        progressBarObject.mesh.draw(canvasObject, t);
+    }
+};
+const updateStateInfo = function (stateName, stateObj) {
+    const unitContainer = $(`#${stateName} .unit-container`);
+    const state = stateObj[stateName];
+    if (state === 0) {
+        $(".amount", unitContainer).innerHTML = DOTS;
+    }
+    else if (state === 1) {
+        //
+    }
+    else if (state === 2) {
+        const unitInfo = getUnitAmountAndKind(stateName);
+        animateProgressBarEl();
+        unitContainer.classList.remove("in-progress");
+        setUnitInfo(unitInfo, unitContainer);
+        stateObj[stateName] = 3;
+    }
+};
+const animationLoopUpdate = function () {
+    return false;
+};
+const animationLoopDraw = function () {
+    if (speedtestData == null || speedtestObject.getState() < 3) {
+        return false;
+    }
+    const meterInfoElement = $(".speedtest-container .info-container");
+    const stateName = getStateName();
+    updateTestState(testStateObj);
+    if (stateName === "ping" || stateName === "download" || stateName === "upload") {
+        updateStateInfo(stateName, testStateObj);
+        // We need to clear the canvas here,
+        // else we'll get a strange flashing
+        // due to the canvas clearing faster than
+        // we can draw.
+        canvasObject.clear();
+        let meterInfo = getUnitAmountAndKind(stateName);
+        if (stateName === "ping") {
+            meterInfo = Object.assign(meterInfo, {
+                footer: "Pinging..."
+            });
+        }
+        else if (stateName === "download") {
+            meterInfo = Object.assign(meterInfo, {
+                kind: "↓",
+                footer: "Downloading..."
+            });
+        }
+        else if (stateName === "upload") {
+            meterInfo = Object.assign(meterInfo, {
+                kind: "↑",
+                footer: "Uploading..."
+            });
+        }
+        drawMeter(stateName);
+        drawMeterProgressBar(stateName);
+        setUnitInfo(meterInfo, meterInfoElement);
+    }
+};
+const animationLoopInit = function () {
+    // Cast the generic element to a canvas element for better linting.
+    const canvas = $("#meter");
+    const ctx = canvas.getContext("2d");
+    const canvasOffset = getOffset(canvas);
+    const dpr = window.devicePixelRatio || 1;
+    const lineWidth = meterObject.lineWidth * dpr;
+    canvas.width = canvasOffset.width * dpr;
+    canvas.height = canvasOffset.height * dpr;
+    const meterGap = lineWidth * 1.25;
+    const outerRadius = canvas.width / 2 - lineWidth / 2;
+    const innerRadius = outerRadius - meterGap;
+    const originX = canvas.width / 2;
+    const originY = canvas.height / 2;
+    canvasObject = new Canvas(canvas, ctx, [originX, originY]);
+    // Creation of the meter polygons.
+    const dialBase = lineWidth / 1.2;
+    const dialHeight = innerRadius * 0.8;
+    const dialTop = dialBase / 1.8;
+    const baseCoords = [
+        [0, 0],
+        [dialBase, 0]
+    ];
+    const points = slerpPoints(baseCoords[0], baseCoords[1]);
+    const dialPoints = [
+        ...points,
+        [dialBase - dialTop, -dialHeight],
+        [dialTop, -dialHeight]
+    ];
+    const dialMesh = new Polygon(dialPoints, null, null, "white");
+    dialMesh.translate(-dialMesh.centroid[0], 0).rotate(90, false);
+    const outerMeterMesh = roundedArc(0, 0, outerRadius, meterObject.startAngle, meterObject.endAngle, meterObject.backgroundColor, lineWidth);
+    const innerMeterMesh = roundedArc(0, 0, innerRadius, meterObject.startAngle, meterObject.endAngle, meterObject.backgroundColor, lineWidth);
+    const dotMesh = new Arc(0, 0, outerRadius / 5, 0, Math.PI * 2, meterObject.backgroundColor, 1);
+    dotMesh.fillColor = meterObject.backgroundColor;
+    // Creation of the speedtest colors for the meters.
+    const dlColorStops = generateColorStops("dl-color");
+    const ulColorStops = generateColorStops("ul-color");
+    const outerDlColor = generateGradient(canvas, dlColorStops);
+    const outerUlColor = generateGradient(canvas, ulColorStops);
+    const innerDlColor = generateGradient(canvas, dlColorStops.map(generateInnerColorStops));
+    const innerUlColor = generateGradient(canvas, ulColorStops.map(generateInnerColorStops));
+    meterObject = Object.assign(meterObject, {
+        outerMeter: {
+            mesh: outerMeterMesh,
+            radius: outerRadius,
+            dlColor: outerDlColor,
+            ulColor: outerUlColor
+        },
+        innerMeter: {
+            mesh: innerMeterMesh,
+            radius: innerRadius,
+            dlColor: innerDlColor,
+            ulColor: innerUlColor
+        },
+        dot: {
+            color: "black",
+            radius: outerRadius / 5,
+            mesh: dotMesh
+        },
+        dial: {
+            color: meterObject.backgroundColor,
+            mesh: dialMesh
+        }
+    });
+    // Meter progress bar creation.Î
+    const barWidth = outerRadius;
+    const barHeight = lineWidth / 4;
+    const progressBar = roundedRectangle(0, 0, barWidth, barHeight, progressBarObject.color);
+    const progressBarBackground = roundedRectangle(0, 0, barWidth, barHeight, progressBarObject.backgroundColor);
+    const progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(0, outerRadius / 1.5 - barHeight / 2);
+    progressBarMesh.draw = function (ctx, t) {
+        this.shapes[0].draw(ctx, 1);
+        this.shapes[1].draw(ctx, t);
+        return this;
+    };
+    progressBarObject = Object.assign(progressBarObject, {
+        mesh: progressBarMesh
+    });
+};
+const speedtestOnUpdate = function (data) {
+    speedtestData = data;
+};
+const speedtestOnEnd = function (aborted) {
+    if (!aborted) {
+        onend();
+    }
+};
+async function onload() {
+    // @ts-ignore
+    speedtestObject = new Speedtest();
+    speedtestObject.setParameter("getIp_ispInfo", false);
+    speedtestObject.setParameter("getIp_ispInfo_distance", false);
+    speedtestObject.onupdate = speedtestOnUpdate;
+    speedtestObject.onend = speedtestOnEnd;
+    // Progress bar for the speedtest as a whole.
+    // The progress bar object is for an individual state.
+    createProgressBar($("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
+        styles: {
+            "border-top-left-radius": BORDER_RADIUS_PRIMARY,
+            "border-bottom-left-radius": BORDER_RADIUS_PRIMARY
+        }
+    }, {
+        styles: {
+            "border-top-right-radius": BORDER_RADIUS_PRIMARY,
+            "border-bottom-right-radius": BORDER_RADIUS_PRIMARY
+        }
+    });
+}
+const openingSlide = once(async function () {
+    const testEl = $(".speedtest-container");
+    const infoEl = $("#info-progress-container");
+    const startModal = $("#start-pane");
+    const completeModal = $("#complete-pane");
+    const width = window.innerWidth;
+    slideRight([testEl, infoEl, completeModal], width, 0, 1);
+    [testEl, infoEl].forEach((el) => el.classList.remove("hidden"));
+    await slideLeft(startModal, -width, 0, 500);
+    startModal.classList.add("hidden");
+    slideLeft([testEl, infoEl], 0, width, 500);
+    openingAnimation(2000, easeInOutCubic);
+});
+// TODO: remove start animation.
+const onstart = throttle(async function () {
+    const startButton = $("#start-btn");
+    const progressBar = $("#progress-bar");
+    const meterInfoElement = $(".speedtest-container .info-container");
+    const start = async function () {
+        startButton.classList.add("running");
+        $(".text", startButton).innerHTML = "Stop";
+        openingSlide();
+        // smoothScroll(
+        //     getOffset($("#meter")).top - window.innerHeight / 2,
+        //     window.scrollY,
+        //     1000
+        // );
+        speedtestObject.start();
+    };
+    const abort = async function () {
+        speedtestObject.abort();
+        startButton.classList.remove("running");
+        $(".text", startButton).innerHTML = "Start";
+        updateTestState(testStateObj, true);
+        openingAnimation(2000, easeInOutCubic);
+        await sleep(500);
+        setUnitInfo({ amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK }, meterInfoElement);
+        $$(".info-progress-container .unit-container").forEach((el) => {
+            el.classList.add("in-progress");
+            setUnitInfo({ amount: BLANK }, el);
+        });
+        animateProgressBar(progressBar, 0, parseFloat(progressBar.getAttribute("percent-complete")) || 0, 1000);
+    };
+    if (speedtestObject.getState() === 3) {
+        abort();
+    }
+    else {
+        start();
+    }
+}, 500);
+async function onend() {
+    const startButton = $("#start-btn");
+    const testEl = $(".speedtest-container");
+    const completeModal = $("#complete-pane");
+    const width = window.innerWidth;
+    const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
+    const windowMessage = {
+        message: "complete",
+        key: "password",
+        data: {
+            dlStatus: speedtestData.dlStatus,
+            ulStatus: speedtestData.ulStatus,
+            pingStatus: speedtestData.pingStatus,
+            jitterStatus: speedtestData.jitterStatus,
+            ip: ip
+        }
+    };
+    postMessage(eventObject, windowMessage);
+    startButton.classList.toggle("running");
+    await closingAnimation(2000, easeInOutCubic);
+    await slideLeft(testEl, -width, 0, 500);
+    testEl.classList.add("hidden");
+    slideRight(completeModal, 0, -width, 500);
+    completeModal.classList.remove("hidden");
+    await slideRightWrap(startButton, 0, 0, 500, function () {
+        $(".text", startButton).innerHTML = "Next →";
+    });
+    await sleep(2000);
+}
+window.onload = function () {
+    onload();
+    animationLoopInit();
+    animationLoopOuter(animationLoopUpdate, animationLoopDraw);
+};
+$("#start-btn").on("click", function (ev) {
+    const duration = 1000;
+    const startButton = this;
+    rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
+    const stateName = getStateName();
+    if (stateName === "finished") {
+        const windowMessage = {
+            message: "next",
+            key: "password",
+            data: {}
+        };
+        postMessage(eventObject, windowMessage).catch(() => {
+            console.error("Cannot post to null event object. Aborting.");
+            $(".modal").classList.toggle("visible");
+        });
+    }
+    else {
+        onstart();
+    }
+});
+$(window).on("click touchend", function (ev) {
+    const modal = $(".modal");
+    if (ev.target == modal || modal.contains(ev.target)) {
+        modal.classList.toggle("visible");
+    }
+});
+$(window).on("message", receiveMessage);

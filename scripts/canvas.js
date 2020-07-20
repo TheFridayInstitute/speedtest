@@ -1,1 +1,491 @@
-import{Color}from"./colors.js";import{rotate,translate,scale,rotateAboutPoint,slerpPoints,lerp}from"./math.js";class Canvas{constructor(c,d,a){this.canvasEl=c,this.ctx=d,this._origin=a}map(a){return this._origin=a(this._origin),this}translate(b,c){return this._origin=translate(this._origin,b,c),this}scale(a){return this._origin=scale(this._origin,a),this}rotate(b,c=!1){return this._origin=rotate(this._origin,b,c),this}rotateAboutPoint(d,e,a,b=!1){return this._origin=rotateAboutPoint(this._origin,d,e,a,b),this}clear(){this.ctx.clearRect(0,0,this.width,this.height)}get origin(){return this._origin}set origin(a){this._origin=a}get originX(){return this._origin[0]}set originX(a){this._origin[0]=a}get originY(){return this._origin[1]}set originY(a){this._origin[1]=a}get width(){return this.canvasEl.width}set width(a){this.canvasEl.width=a}get height(){return this.canvasEl.height}set height(a){this.canvasEl.height=a}}class Shape{constructor(f,g,a,b,c,d){this._points=f,this._color=null==g?"black":g,this._lineWidth=null==a?1:a,this._fillColor=b,this._shadowColor=c,this._shadowBlur=d}map(c){return this._points.map((d,a)=>c(d,a)),this}translate(c,d){return this._points.map(a=>translate(a,c,d)),this}scale(b){return this._points.map(c=>scale(c,b)),this}rotate(c,d=!1){return this._points.map(a=>rotate(a,c,d)),this}rotateAboutPoint(e,f,a,b=!1){return this._points.map(c=>{rotateAboutPoint(c,e,f,a,b)}),this}get points(){return this._points}set points(a){this._points=a}get centroid(){let c=0,d=0;for(let[e,a]of this._points)c+=e,d+=a;return c/=this._points.length,d/=this._points.length,[c,d]}get color(){return this._color}set color(a){this._color=a instanceof Color?a.colorString:a}get lineWidth(){return this._lineWidth}set lineWidth(a){this._lineWidth=a}get fillColor(){return this._fillColor}set fillColor(a){this._fillColor=a}get shadowColor(){return this._shadowColor}set shadowColor(a){this._shadowColor=a}get shadowBlur(){return this._shadowBlur}set shadowBlur(a){this._shadowBlur=a}}class Polygon extends Shape{constructor(d,e,a,b){super(d,e,a,b)}draw(c){let d=0,e=0;if(c instanceof Canvas){let b=c;c=b.ctx,d=b.originX,e=b.originY}c.beginPath(),c.strokeStyle=this._color,c.lineWidth=this._lineWidth,this._fillColor&&(c.fillStyle=this._fillColor),c.shadowColor=this._shadowColor?this._shadowColor:"black",c.shadowBlur=this._shadowBlur?this._shadowBlur:0;for(let[f,a]of this._points)c.lineTo(f+d,e+a);return this._fillColor?c.fill():c.stroke(),this}}class Arc extends Shape{constructor(g,h,a,b,c,d,e){super([[g,h]],d,e),this._radius=a,this._beginAngle=b,this._endAngle=c}draw(b){let c=0,d=0;if(b instanceof Canvas){let e=b;b=e.ctx,c=e.originX,d=e.originY}return b.beginPath(),b.strokeStyle=this._color,b.lineWidth=this._lineWidth,this._fillColor&&(b.fillStyle=this._fillColor),b.shadowColor=this._shadowColor?this._shadowColor:"black",b.shadowBlur=this._shadowBlur?this._shadowBlur:0,b.arc(this.points[0][0]+c,this.points[0][1]+d,this._radius,this._beginAngle,this._endAngle),this._fillColor?b.fill():b.stroke(),this}get radius(){return this._radius}set radius(a){this._radius=a}get beginAngle(){return this._beginAngle}set beginAngle(a){this._beginAngle=a}get endAngle(){return this._endAngle}set endAngle(a){this._endAngle=a}}class Rectangle extends Polygon{constructor(e,f,a,b,c){super([[e,f],[e+a,f],[e+a,f+b],[e,f+b]],void 0,void 0,c),this._width=a,this._height=b,this.leftX=e,this.leftY=f}get height(){return this._height}set height(a){this._points[2][1]=a,this._points[3][1]=a,this._height=a}get width(){return this._width}set width(a){this._points[1][0]=a,this._points[2][0]=a,this._width=a}}class Mesh{constructor(...a){this.shapes=a}add(a){return this.shapes.push(a),this}draw(c,d){for(let a of this.shapes)a.draw(c,d);return this}map(c){let d=0;for(let a of this.shapes)c(a,d++);return this}translate(c,d){for(let a of this.shapes)a.translate(c,d);return this}scale(b){for(let c of this.shapes)c.scale(b);return this}rotate(c,d=!1){for(let a of this.shapes)a.rotate(c,d);return this}rotateAboutPoint(e,f,a,b=!1){for(let c of this.shapes)c.rotateAboutPoint(e,f,a,b);return this}}function roundedArc(q,w,a,x,y,b,c){var d=Math.sin,z=Math.cos;let h=-0,i=a+c/2,e=.05,f=c,j=[[0,e],[f,e]],g=slerpPoints(j[0],j[1]),k=[...g],l=x,A=2*e/a;l+=A;let m=new Polygon(k,null,null,b),o=new Arc(q,w,a,l+-0,0,b,c),p=new Polygon(JSON.parse(JSON.stringify(k)),null,null,b);m.translate(q,w),p.translate(q,w);let r=i*z(l),s=i*d(l);m.scale(-1).rotate(l,!0).translate(r,s);let t=new Mesh(p,o,m);return t.draw=function(c,e){let a=lerp(e,x,y-2*A),j=a;a>=x-A+h?a>=y-A?(j=y-A+h,a=y-A):(j=a+A+h,a+=A):j=a;let k=i*z(j),l=i*d(j);return this.shapes[0].translate(-f,0).rotate(j,!0).translate(k,l).draw(c).translate(-k,-l).rotate(-j,!0).translate(f,0),this.shapes[1].endAngle=a,this.shapes[1].draw(c),this.shapes[2].draw(c),this},t}function setRoundedArcColor(a,c){a.map(a=>{a instanceof Arc?a.color=c:a.fillColor=c})}function roundedRectangle(c,s,t,a,b){var d=Math.abs;let u=-.3,e=d((s-a)/2),f=[[c,s],[c,s-a]],g=[[c+t,s],[c+t,s-a]];t-=2*e;let h=slerpPoints(f[0],f[1],1),i=slerpPoints(g[1],g[0],-1),j=new Polygon(h,null,null,b),k=new Rectangle(c,s,t,a,b),l=new Polygon(i,null,null,b),m=-t/2,n=a/2;j.translate(m-u,n),l.translate(m-2*e,n),k.translate(m,-n);let o=new Mesh(j,k,l),[p,q]=k.centroid;return o.draw=function(i,b){let g=b*t,[c,d]=k.centroid,e=c-p-k.width/2,f=d-q-k.height/2;k.translate(-e,-f),k.width=g,k.translate(e,f),b=-(1-b)*t+u,l.translate(b,0);for(let a of this.shapes)a.draw(i);return l.translate(-b,0),this},o}function generateGradient(c,e,a,d,f,g){a=null==a?0:a,d=null==d?0:d,f=null==f?c.width:f,g=null==g?0:g;let h=c.getContext("2d"),i=h.createLinearGradient(a,d,f,g);for(let[b,h]of e)i.addColorStop(b,h);return i}function progressBarIntervals(i,j,a,b,c){let k=[],l=0,m=a/c.length-b/c.length,n=0;for(let f of c){let c=m+b,d=roundedRectangle(i,j,c,b,f);d.translate(-a/2+c/2+l,0),k.push(d),l+=m,n+=1}let d=new Mesh(...k);return d.draw=function(c,e){let a=this.shapes.length,f=1/a,g=e,h=0;for(let a of this.shapes)if(0<g)h=0<g-f?1:g/f,a.draw(c,h),g-=f;else break;return this},d}export{Canvas,progressBarIntervals,roundedArc,roundedRectangle,setRoundedArcColor,generateGradient,Mesh,Rectangle,Arc,Polygon,Shape};
+import { Color } from "./colors.js";
+import { rotate, translate, scale, rotateAboutPoint, slerpPoints, lerp } from "./math.js";
+class Canvas {
+    constructor(canvasEl, ctx, origin) {
+        this.canvasEl = canvasEl;
+        this.ctx = ctx;
+        this._origin = origin;
+    }
+    map(func) {
+        this._origin = func(this._origin);
+        return this;
+    }
+    translate(x, y) {
+        this._origin = translate(this._origin, x, y);
+        return this;
+    }
+    scale(s) {
+        this._origin = scale(this._origin, s);
+        return this;
+    }
+    rotate(theta, rad = false) {
+        this._origin = rotate(this._origin, theta, rad);
+        return this;
+    }
+    rotateAboutPoint(x, y, theta, rad = false) {
+        this._origin = rotateAboutPoint(this._origin, x, y, theta, rad);
+        return this;
+    }
+    clear() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+    }
+    get origin() {
+        return this._origin;
+    }
+    set origin(origin) {
+        this._origin = origin;
+    }
+    get originX() {
+        return this._origin[0];
+    }
+    set originX(originX) {
+        this._origin[0] = originX;
+    }
+    get originY() {
+        return this._origin[1];
+    }
+    set originY(originY) {
+        this._origin[1] = originY;
+    }
+    get width() {
+        return this.canvasEl.width;
+    }
+    set width(width) {
+        this.canvasEl.width = width;
+    }
+    get height() {
+        return this.canvasEl.height;
+    }
+    set height(height) {
+        this.canvasEl.height = height;
+    }
+}
+class Shape {
+    constructor(points, color, lineWidth, fillColor, shadowColor, shadowBlur) {
+        this._points = points;
+        this._color = color == undefined ? "black" : color;
+        this._lineWidth = lineWidth == undefined ? 1 : lineWidth;
+        this._fillColor = fillColor;
+        this._shadowColor = shadowColor;
+        this._shadowBlur = shadowBlur;
+    }
+    map(func) {
+        this._points.map((xy, index) => func(xy, index));
+        return this;
+    }
+    translate(x, y) {
+        this._points.map((xy) => translate(xy, x, y));
+        return this;
+    }
+    scale(s) {
+        this._points.map((xy) => scale(xy, s));
+        return this;
+    }
+    rotate(theta, rad = false) {
+        this._points.map((xy) => rotate(xy, theta, rad));
+        return this;
+    }
+    rotateAboutPoint(x, y, theta, rad = false) {
+        this._points.map((xy) => {
+            rotateAboutPoint(xy, x, y, theta, rad);
+        });
+        return this;
+    }
+    get points() {
+        return this._points;
+    }
+    set points(points) {
+        this._points = points;
+    }
+    get centroid() {
+        let cX = 0;
+        let cY = 0;
+        for (let [x, y] of this._points) {
+            cX += x;
+            cY += y;
+        }
+        cX /= this._points.length;
+        cY /= this._points.length;
+        return [cX, cY];
+    }
+    get color() {
+        return this._color;
+    }
+    set color(color) {
+        if (color instanceof Color) {
+            //@ts-ignore
+            // TODO: fix.
+            this._color = color.colorString;
+        }
+        else {
+            this._color = color;
+        }
+    }
+    get lineWidth() {
+        return this._lineWidth;
+    }
+    set lineWidth(lineWidth) {
+        this._lineWidth = lineWidth;
+    }
+    get fillColor() {
+        return this._fillColor;
+    }
+    set fillColor(fillColor) {
+        this._fillColor = fillColor;
+    }
+    get shadowColor() {
+        return this._shadowColor;
+    }
+    set shadowColor(shadowColor) {
+        this._shadowColor = shadowColor;
+    }
+    get shadowBlur() {
+        return this._shadowBlur;
+    }
+    set shadowBlur(shadowBlur) {
+        this._shadowBlur = shadowBlur;
+    }
+}
+class Polygon extends Shape {
+    constructor(points, color, lineWidth, fillColor) {
+        super(points, color, lineWidth, fillColor);
+    }
+    draw(ctx, t) {
+        let originX = 0;
+        let originY = 0;
+        if (ctx instanceof Canvas) {
+            let canvas = ctx;
+            ctx = canvas.ctx;
+            originX = canvas.originX;
+            originY = canvas.originY;
+        }
+        ctx.beginPath();
+        ctx.strokeStyle = this._color;
+        ctx.lineWidth = this._lineWidth;
+        if (this._fillColor) {
+            ctx.fillStyle = this._fillColor;
+        }
+        if (this._shadowColor) {
+            ctx.shadowColor = this._shadowColor;
+        }
+        else {
+            ctx.shadowColor = "black";
+        }
+        if (this._shadowBlur) {
+            ctx.shadowBlur = this._shadowBlur;
+        }
+        else {
+            ctx.shadowBlur = 0;
+        }
+        for (let [x, y] of this._points) {
+            ctx.lineTo(x + originX, originY + y);
+        }
+        if (this._fillColor) {
+            ctx.fill();
+        }
+        else {
+            ctx.stroke();
+        }
+        return this;
+    }
+}
+class Arc extends Shape {
+    constructor(originX, originY, radius, beginAngle, endAngle, color, lineWidth) {
+        super([[originX, originY]], color, lineWidth);
+        this._radius = radius;
+        this._beginAngle = beginAngle;
+        this._endAngle = endAngle;
+    }
+    draw(ctx, t) {
+        let originX = 0;
+        let originY = 0;
+        if (ctx instanceof Canvas) {
+            let canvas = ctx;
+            ctx = canvas.ctx;
+            originX = canvas.originX;
+            originY = canvas.originY;
+        }
+        ctx.beginPath();
+        ctx.strokeStyle = this._color;
+        ctx.lineWidth = this._lineWidth;
+        if (this._fillColor) {
+            ctx.fillStyle = this._fillColor;
+        }
+        if (this._shadowColor) {
+            ctx.shadowColor = this._shadowColor;
+        }
+        else {
+            ctx.shadowColor = "black";
+        }
+        if (this._shadowBlur) {
+            ctx.shadowBlur = this._shadowBlur;
+        }
+        else {
+            ctx.shadowBlur = 0;
+        }
+        ctx.arc(this.points[0][0] + originX, this.points[0][1] + originY, this._radius, this._beginAngle, this._endAngle);
+        if (this._fillColor) {
+            ctx.fill();
+        }
+        else {
+            ctx.stroke();
+        }
+        return this;
+    }
+    get radius() {
+        return this._radius;
+    }
+    set radius(radius) {
+        this._radius = radius;
+    }
+    get beginAngle() {
+        return this._beginAngle;
+    }
+    set beginAngle(beginAngle) {
+        this._beginAngle = beginAngle;
+    }
+    get endAngle() {
+        return this._endAngle;
+    }
+    set endAngle(endAngle) {
+        this._endAngle = endAngle;
+    }
+}
+class Rectangle extends Polygon {
+    constructor(leftX, leftY, width, height, fillColor) {
+        let points = [
+            [leftX, leftY],
+            [leftX + width, leftY],
+            [leftX + width, leftY + height],
+            [leftX, leftY + height]
+        ];
+        super(points, undefined, undefined, fillColor);
+        this._width = width;
+        this._height = height;
+        this.leftX = leftX;
+        this.leftY = leftY;
+    }
+    get height() {
+        return this._height;
+    }
+    set height(height) {
+        this._points[2][1] = height;
+        this._points[3][1] = height;
+        this._height = height;
+    }
+    get width() {
+        return this._width;
+    }
+    set width(width) {
+        this._points[1][0] = width;
+        this._points[2][0] = width;
+        this._width = width;
+    }
+}
+class Mesh {
+    constructor(...shapes) {
+        this.shapes = shapes;
+    }
+    add(shape) {
+        this.shapes.push(shape);
+        return this;
+    }
+    draw(ctx, t) {
+        for (let shape of this.shapes) {
+            shape.draw(ctx, t);
+        }
+        return this;
+    }
+    map(func) {
+        let i = 0;
+        for (let shape of this.shapes) {
+            func(shape, i++);
+        }
+        return this;
+    }
+    translate(x, y) {
+        for (let shape of this.shapes) {
+            shape.translate(x, y);
+        }
+        return this;
+    }
+    scale(s) {
+        for (let shape of this.shapes) {
+            shape.scale(s);
+        }
+        return this;
+    }
+    rotate(theta, rad = false) {
+        for (let shape of this.shapes) {
+            shape.rotate(theta, rad);
+        }
+        return this;
+    }
+    rotateAboutPoint(x, y, theta, rad = false) {
+        for (let shape of this.shapes) {
+            shape.rotateAboutPoint(x, y, theta, rad);
+        }
+        return this;
+    }
+}
+function roundedArc(originX, originY, radius, beginAngle, endAngle, color, lineWidth) {
+    let slump = -0.0;
+    let outerEdge = radius + lineWidth / 2;
+    let barHeight = 0.05;
+    let barWidth = lineWidth;
+    let base = [
+        [0, barHeight],
+        [barWidth, barHeight]
+    ];
+    let slerps = slerpPoints(base[0], base[1]);
+    let points = [...slerps];
+    let theta = beginAngle;
+    let delta = (barHeight * 2) / radius;
+    theta += delta;
+    let startCap = new Polygon(points, null, null, color);
+    let arc = new Arc(originX, originY, radius, theta + slump, 0, color, lineWidth);
+    let endCap = new Polygon(
+    // Hack to return a copy of the original array.
+    JSON.parse(JSON.stringify(points)), null, null, color);
+    startCap.translate(originX, originY);
+    endCap.translate(originX, originY);
+    let x = outerEdge * Math.cos(theta);
+    let y = outerEdge * Math.sin(theta);
+    startCap.scale(-1).rotate(theta, true).translate(x, y);
+    let roundedArcMesh = new Mesh(endCap, arc, startCap);
+    roundedArcMesh.draw = function (ctx, t) {
+        let theta = lerp(t, beginAngle, endAngle - 2 * delta);
+        let theta2 = theta;
+        if (theta >= beginAngle - delta + slump) {
+            if (theta >= endAngle - delta) {
+                theta2 = endAngle - delta + slump;
+                theta = endAngle - delta;
+            }
+            else {
+                theta2 = theta + delta + slump;
+                theta += delta;
+            }
+        }
+        else {
+            theta2 = theta;
+        }
+        let x = outerEdge * Math.cos(theta2);
+        let y = outerEdge * Math.sin(theta2);
+        this.shapes[0]
+            .translate(-barWidth, 0)
+            .rotate(theta2, true)
+            .translate(x, y)
+            .draw(ctx)
+            .translate(-x, -y)
+            .rotate(-theta2, true)
+            .translate(barWidth, 0);
+        this.shapes[1].endAngle = theta;
+        this.shapes[1].draw(ctx);
+        this.shapes[2].draw(ctx);
+        return this;
+    };
+    return roundedArcMesh;
+}
+function setRoundedArcColor(roundedArc, color) {
+    roundedArc.map((shape) => {
+        if (shape instanceof Arc) {
+            shape.color = color;
+        }
+        else {
+            shape.fillColor = color;
+        }
+    });
+}
+function roundedRectangle(leftX, leftY, width, height, fillColor) {
+    let slump = -0.3;
+    let r = Math.abs((leftY - height) / 2);
+    let leftSide = [
+        [leftX, leftY],
+        [leftX, leftY - height]
+    ];
+    let rightSide = [
+        [leftX + width, leftY],
+        [leftX + width, leftY - height]
+    ];
+    width -= 2 * r;
+    let slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
+    let slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
+    let startCap = new Polygon(slerpsLeft, null, null, fillColor);
+    let bar = new Rectangle(leftX, leftY, width, height, fillColor);
+    let endCap = new Polygon(slerpsRight, null, null, fillColor);
+    let shiftX = -width / 2;
+    let shiftY = height / 2;
+    startCap.translate(shiftX - slump, shiftY);
+    endCap.translate(shiftX - 2 * r, shiftY);
+    bar.translate(shiftX, -shiftY);
+    let roundedBarMesh = new Mesh(startCap, bar, endCap);
+    let [cX, cY] = bar.centroid;
+    roundedBarMesh.draw = function (ctx, t) {
+        let w = t * width;
+        let [tcX, tcY] = bar.centroid;
+        let sX = tcX - cX - bar.width / 2;
+        let sY = tcY - cY - bar.height / 2;
+        bar.translate(-sX, -sY);
+        bar.width = w;
+        bar.translate(sX, sY);
+        t = -(1 - t) * width + slump;
+        endCap.translate(t, 0);
+        for (let shape of this.shapes) {
+            shape.draw(ctx);
+        }
+        endCap.translate(-t, 0);
+        return this;
+    };
+    return roundedBarMesh;
+}
+function generateGradient(canvas, colorStops, x0, y0, x1, y1) {
+    x0 = x0 == null ? 0 : x0;
+    y0 = y0 == null ? 0 : y0;
+    x1 = x1 == null ? canvas.width : x1;
+    y1 = y1 == null ? 0 : y1;
+    let ctx = canvas.getContext("2d");
+    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+    for (let [stop, color] of colorStops) {
+        gradient.addColorStop(stop, color);
+    }
+    return gradient;
+}
+function progressBarIntervals(leftX, leftY, width, height, colors) {
+    let shapes = [];
+    let step = 0;
+    let w = width / colors.length - height / colors.length;
+    let i = 0;
+    for (let color of colors) {
+        let tw = w + height;
+        let rRect = roundedRectangle(leftX, leftY, tw, height, color);
+        rRect.translate(-width / 2 + tw / 2 + step, 0);
+        shapes.push(rRect);
+        step += w;
+        i += 1;
+    }
+    let intervalMesh = new Mesh(...shapes);
+    intervalMesh.draw = function (ctx, t) {
+        let n = this.shapes.length;
+        let step = 1 / n;
+        let s = t;
+        let v = 0;
+        for (let shape of this.shapes) {
+            if (s > 0) {
+                if (s - step > 0) {
+                    v = 1;
+                }
+                else {
+                    v = s / step;
+                }
+                shape.draw(ctx, v);
+                s -= step;
+            }
+            else {
+                break;
+            }
+        }
+        return this;
+    };
+    return intervalMesh;
+}
+export { Canvas, progressBarIntervals, roundedArc, roundedRectangle, setRoundedArcColor, generateGradient, Mesh, Rectangle, Arc, Polygon, Shape };

@@ -1,1 +1,204 @@
-export function translate(c,d,a){return c[0]+=d,c[1]+=a,c}export function scale(b,c){return b[0]*=c,b[1]*=c,b}export function rotate(b,h,i=!1){var j=Math.sin,c=Math.cos,d=Math.PI;i||(h*=d/180);let e=b[0],f=b[1];return b[0]=e*c(h)-f*j(h),b[1]=e*j(h)+f*c(h),b}export function rotateAboutPoint(a,e,g,b,c=!1){return a=translate(a,-e,-g),a=rotate(a,b,c),a=translate(a,e,g),a}export function distance(c,d,a){var f=Math.sqrt,g=Math.pow;return void 0===a&&(a=function(a,d){let e=0;return a.forEach(function(b,c){e+=g(b-d[c],2)}),f(e)}),a(c,d)}export function dot(a,d){let e=0;return a.forEach(function(b,c){e+=b*d[c]}),e}export function mag(d){var e=Math.sqrt,a=Math.pow;let b=0;return d.forEach(c=>{b+=a(c,2)}),e(b)}export function angle(e,d){let a=mag(e)*mag(d),b=dot(e,d);return Math.acos(b/a)}export function slerpPoints(h,o,a=1){var b=Math.abs,c=Math.min,p=Math.sin,q=Math.cos;let d,f=c(h[0],o[0]),g=c(h[1],o[1]),i=[b(o[0]-h[0])/2+f,b(o[1]-h[1])/2+g],j=distance(i,o);d=h[1]>o[1]?[-1,0]:[1,0];let k=[h[0]-i[0],h[1]-i[1]],l=[o[0]-i[0],o[1]-i[1]],m=2*Math.PI-angle(d,k),r=angle(d,l);if(1===a){let a=m;m=r,r=a}let s=[];for(let b,c=0;1>=c;c+=.1)b=lerp(c,m,r),s.push([a*j*q(b)+i[0],j*p(b)+i[1]]);return s}export function clamp(c,d,a){return c<d?d:c>a?a:c}export function normalize(c,d,a){return(c-d)/(a-d)}export function DeCasteljau(b,d){const g=new Map,i=function(c,d,a,b,e){let j=`${e}${a}${b}`;if(g.has(j))return g.get(j);let k,l;1==e?(k=d[a],l=d[b]):(e--,k=i(c,d,a,b,e),l=i(c,d,b,b+1,e));let m=(1-c)*k+c*l;return g.set(j,m),m};return i(b,d,0,1,d.length-1)}export function cubicBezier(e,f,a,b,c){return[DeCasteljau(e,[0,f,b,1]),DeCasteljau(e,[0,a,c,1])]}export function easeInBounce(a,d,f,b){return a=cubicBezier(a/b,.09,.91,.5,1.5)[1],f*a+d}export function bounceInEase(a,d,f,b){return a=cubicBezier(a/b,.19,-.53,.83,.67)[1],f*a+d}export function easeInQuad(a,d,f,b){return f*(a/=b)*a+d}export function easeOutQuad(a,d,f,b){return-f*(a/=b)*(a-2)+d}export function easeInOutQuad(a,d,f,b){return 1>(a/=b/2)?f/2*a*a+d:-f/2*(--a*(a-2)-1)+d}export function easeInCubic(a,d,f,b){return f*(a/=b)*a*a+d}export function easeOutCubic(a,d,f,b){return f*((a=a/b-1)*a*a+1)+d}export function easeInOutCubic(a,d,f,b){return 1>(a/=b/2)?f/2*a*a*a+d:f/2*((a-=2)*a*a+2)+d}export function smoothStep3(a,e,g,b){var c=Math.pow;return a/=b,g*c(a,2)*(3-2*a)+e}export function lerpIn(a,d,f,b){return f*(a/=b)+d}export function lerp(c,d,a){return(1-c)*d+c*a}export function logerp(b,d,e){d=0===d?1e-9:d;let f=d*Math.pow(e/d,b);return f}export function interpBezier(d,e){let a=e.map(a=>a[0]),b=e.map(a=>a[1]);return[DeCasteljau(d,a),DeCasteljau(d,b)]}export function bounceInEaseHalf(a,d,f,b){return a=interpBezier(a/b,[[0,0],[.026,1.746],[.633,1.06],[1,0]])[1],f*a+d}export function round(i,j,a=0){var b=Math.floor,c=Math.ceil,d=Math.round,e=Math.pow;let f=e(10,j),g=0;return 0===a?g=d(i*f):1===a?g=c(i*f):2===a&&(g=b(i*f)),g/f}
+export function translate(xy, tX, tY) {
+    xy[0] += tX;
+    xy[1] += tY;
+    return xy;
+}
+export function scale(xy, s) {
+    xy[0] *= s;
+    xy[1] *= s;
+    return xy;
+}
+export function rotate(xy, theta, rad = false) {
+    if (!rad) {
+        theta *= Math.PI / 180;
+    }
+    let x = xy[0];
+    let y = xy[1];
+    xy[0] = x * Math.cos(theta) - y * Math.sin(theta);
+    xy[1] = x * Math.sin(theta) + y * Math.cos(theta);
+    return xy;
+}
+export function rotateAboutPoint(xy, originX, originY, theta, rad = false) {
+    xy = translate(xy, -originX, -originY);
+    xy = rotate(xy, theta, rad);
+    xy = translate(xy, originX, originY);
+    return xy;
+}
+export function distance(xy1, xy2, metric) {
+    if (metric === undefined) {
+        metric = function (xy1, xy2) {
+            let s = 0;
+            xy1.forEach(function (value, index) {
+                s += Math.pow(value - xy2[index], 2);
+            });
+            return Math.sqrt(s);
+        };
+    }
+    return metric(xy1, xy2);
+}
+export function dot(xy1, xy2) {
+    let s = 0;
+    xy1.forEach(function (value, index) {
+        s += value * xy2[index];
+    });
+    return s;
+}
+export function mag(xy1) {
+    let s = 0;
+    xy1.forEach((value) => {
+        s += Math.pow(value, 2);
+    });
+    return Math.sqrt(s);
+}
+export function angle(xy1, xy2) {
+    let m = mag(xy1) * mag(xy2);
+    let d = dot(xy1, xy2);
+    return Math.acos(d / m);
+}
+export function slerpPoints(xy1, xy2, neg = 1) {
+    let minX = Math.min(xy1[0], xy2[0]);
+    let minY = Math.min(xy1[1], xy2[1]);
+    let midpoint = [
+        Math.abs(xy2[0] - xy1[0]) / 2 + minX,
+        Math.abs(xy2[1] - xy1[1]) / 2 + minY
+    ];
+    let r = distance(midpoint, xy2);
+    let unit;
+    if (xy1[1] > xy2[1]) {
+        unit = [-1, 0];
+    }
+    else {
+        unit = [1, 0];
+    }
+    let v1 = [xy1[0] - midpoint[0], xy1[1] - midpoint[1]];
+    let v2 = [xy2[0] - midpoint[0], xy2[1] - midpoint[1]];
+    let alpha0 = 2 * Math.PI - angle(unit, v1);
+    let alpha1 = angle(unit, v2);
+    if (neg === 1) {
+        let t = alpha0;
+        alpha0 = alpha1;
+        alpha1 = t;
+    }
+    let delta = 0.1;
+    let points = [];
+    for (let t = 0; t <= 1; t += delta) {
+        let v = lerp(t, alpha0, alpha1);
+        points.push([
+            neg * r * Math.cos(v) + midpoint[0],
+            r * Math.sin(v) + midpoint[1]
+        ]);
+    }
+    return points;
+}
+export function clamp(x, lowerLimit, upperLimit) {
+    if (x < lowerLimit) {
+        return lowerLimit;
+    }
+    else if (x > upperLimit) {
+        return upperLimit;
+    }
+    return x;
+}
+export function normalize(x0, min, max) {
+    return (x0 - min) / (max - min);
+}
+export function DeCasteljau(t, points) {
+    const dp = new Map();
+    const inner = function (t, points, ix1, ix2, n) {
+        let k = `${n}${ix1}${ix2}`;
+        if (dp.has(k)) {
+            return dp.get(k);
+        }
+        let b0, b1;
+        if (n == 1) {
+            b0 = points[ix1];
+            b1 = points[ix2];
+        }
+        else {
+            n--;
+            b0 = inner(t, points, ix1, ix2, n);
+            b1 = inner(t, points, ix2, ix2 + 1, n);
+        }
+        let v = (1 - t) * b0 + t * b1;
+        dp.set(k, v);
+        return v;
+    };
+    return inner(t, points, 0, 1, points.length - 1);
+}
+export function cubicBezier(t, x1, y1, x2, y2) {
+    return [DeCasteljau(t, [0, x1, x2, 1]), DeCasteljau(t, [0, y1, y2, 1])];
+}
+export function easeInBounce(t, from, distance, duration) {
+    t = cubicBezier(t / duration, 0.09, 0.91, 0.5, 1.5)[1];
+    return distance * t + from;
+}
+export function bounceInEase(t, from, distance, duration) {
+    t = cubicBezier(t / duration, 0.19, -0.53, 0.83, 0.67)[1];
+    return distance * t + from;
+}
+export function easeInQuad(t, from, distance, duration) {
+    return distance * (t /= duration) * t + from;
+}
+export function easeOutQuad(t, from, distance, duration) {
+    return -distance * (t /= duration) * (t - 2) + from;
+}
+export function easeInOutQuad(t, from, distance, duration) {
+    if ((t /= duration / 2) < 1)
+        return (distance / 2) * t * t + from;
+    return (-distance / 2) * (--t * (t - 2) - 1) + from;
+}
+export function easeInCubic(t, from, distance, duration) {
+    return distance * (t /= duration) * t * t + from;
+}
+export function easeOutCubic(t, from, distance, duration) {
+    return distance * ((t = t / duration - 1) * t * t + 1) + from;
+}
+export function easeInOutCubic(t, from, distance, duration) {
+    if ((t /= duration / 2) < 1)
+        return (distance / 2) * t * t * t + from;
+    return (distance / 2) * ((t -= 2) * t * t + 2) + from;
+}
+export function smoothStep3(t, from, distance, duration) {
+    t /= duration;
+    return distance * Math.pow(t, 2) * (3 - 2 * t) + from;
+}
+export function lerpIn(t, from, distance, duration) {
+    return distance * (t /= duration) + from;
+}
+export function lerp(t, from, to) {
+    return (1 - t) * from + t * to;
+}
+export function logerp(t, from, to) {
+    from = from === 0 ? 1e-9 : from;
+    let tt = from * Math.pow(to / from, t);
+    return tt;
+}
+export function interpBezier(t, points) {
+    let x = points.map((xy) => xy[0]);
+    let y = points.map((xy) => xy[1]);
+    return [DeCasteljau(t, x), DeCasteljau(t, y)];
+}
+export function bounceInEaseHalf(t, from, distance, duration) {
+    let points = [
+        [0, 0],
+        [0.026, 1.746],
+        [0.633, 1.06],
+        [1, 0]
+    ];
+    t = interpBezier(t / duration, points)[1];
+    return distance * t + from;
+}
+export function round(n, d, mode = 0) {
+    let ten = Math.pow(10, d);
+    let v = 0;
+    if (mode === 0) {
+        v = Math.round(n * ten);
+    }
+    else if (mode === 1) {
+        v = Math.ceil(n * ten);
+    }
+    else if (mode === 2) {
+        v = Math.floor(n * ten);
+    }
+    return v / ten;
+}

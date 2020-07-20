@@ -1,1 +1,86 @@
-const on=function(a,d,e){return a.split(" ").forEach(a=>{e.addEventListener(a,d)}),e},off=function(a,d,e){return a.split(" ").forEach(a=>{e.removeEventListener(a,d)}),e},setAttributes=function(c,d){for(const[e,a]of Object.entries(c))if(("styles"===e||"style"===e)&&"object"==typeof a)for(const b in a)d.style.setProperty(b,a[b]);else"html"===e?d.innerHTML=a:null===a?d.removeAttribute(e):d.setAttribute(e,a);return d},dollarFunctions={on:function(b,c){return on(b,c,this)},off:function(b,c){return off(b,c,this)},setattr:function(a){return setAttributes(a,this)},css:function(a){return setAttributes({styles:a},this)}},foldFunctions=function(a){const b={};return Object.keys(a).forEach(c=>{b[c]=function(...d){return this.forEach(a=>{a[c](...d)})}}),b},dollarFoldedFunctions=foldFunctions(dollarFunctions);function $$(c,d=document){const a=c instanceof NodeList||Array.isArray(c)?c:"string"==typeof c?d.querySelectorAll(c):[c];if(null==a)return;else{const b=Array.from(a).map(a=>Object.assign(a,dollarFunctions));return Object.assign(b,dollarFoldedFunctions)}}function $(c,d=document){const a="string"==typeof c?d.querySelector(c):c;return null==a?void 0:Object.assign(a,dollarFunctions)}export{$,$$};
+const on = function (names, func, context) {
+    names.split(" ").forEach((event) => {
+        context.addEventListener(event, func);
+    });
+    return context;
+};
+const off = function (names, func, context) {
+    names.split(" ").forEach((event) => {
+        context.removeEventListener(event, func);
+    });
+    return context;
+};
+const setAttributes = function (attrs, context) {
+    for (const [key, value] of Object.entries(attrs)) {
+        if ((key === "styles" || key === "style") && typeof value === "object") {
+            // eslint-disable-next-line guard-for-in
+            for (const prop in value) {
+                context.style.setProperty(prop, value[prop]);
+            }
+        }
+        else if (key === "html") {
+            context.innerHTML = value;
+        }
+        else {
+            if (value === null) {
+                context.removeAttribute(key);
+            }
+            else {
+                context.setAttribute(key, value);
+            }
+        }
+    }
+    return context;
+};
+const dollarFunctions = {
+    on: function (name, func) {
+        return on(name, func, this);
+    },
+    off: function (name, func) {
+        return off(name, func, this);
+    },
+    setattr: function (attrs) {
+        return setAttributes(attrs, this);
+    },
+    css: function (attrs) {
+        return setAttributes({
+            styles: attrs
+        }, this);
+    }
+};
+const foldFunctions = function (funcs) {
+    const folded = {};
+    Object.keys(funcs).forEach((key) => {
+        folded[key] = function (...args) {
+            return this.forEach((el) => {
+                el[key](...args);
+            });
+        };
+    });
+    return folded;
+};
+const dollarFoldedFunctions = foldFunctions(dollarFunctions);
+function $$(query, context = document) {
+    const nodes = query instanceof NodeList || Array.isArray(query)
+        ? query
+        : typeof query === "string"
+            ? context.querySelectorAll(query)
+            : [query];
+    if (nodes == null) {
+        return undefined;
+    }
+    else {
+        const arr = Array.from(nodes).map((el) => Object.assign(el, dollarFunctions));
+        return Object.assign(arr, dollarFoldedFunctions);
+    }
+}
+function $(query, context = document) {
+    const node = typeof query === "string" ? context.querySelector(query) : query;
+    if (node == null) {
+        return undefined;
+    }
+    else {
+        return Object.assign(node, dollarFunctions);
+    }
+}
+export { $, $$ };

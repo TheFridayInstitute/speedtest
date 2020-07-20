@@ -1,6 +1,13 @@
 import { Color } from "./colors.js";
 
-import { rotate, translate, scale, rotateAboutPoint, slerpPoints, lerp } from "./math.js";
+import {
+    rotate,
+    translate,
+    scale,
+    rotateAboutPoint,
+    slerpPoints,
+    lerp
+} from "./math.js";
 
 type CanvasColor = string | CanvasGradient | CanvasPattern;
 

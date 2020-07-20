@@ -81,11 +81,6 @@ body {
     min-width: 100%;
 }
 
-@mixin cell-styling($gap) {
-    background-color: var(--background-color-primary);
-    border-radius: var(--border-radius-primary);
-}
-
 main {
     display: grid;
     padding: $row-gap/2;

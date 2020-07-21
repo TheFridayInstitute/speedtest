@@ -526,8 +526,6 @@ const animationLoopInit = function () {
     const dpr = window.devicePixelRatio || 1;
     const lineWidth = meterObject.lineWidth * dpr;
 
-    const side = window.innerHeight / 2;
-
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
     const meterGap = lineWidth * 1.25;
@@ -635,9 +633,9 @@ const animationLoopInit = function () {
         }
     });
 
-    // Meter progress bar creation.Î
+    // Meter progress bar creation.
     const barWidth = outerRadius;
-    const barHeight = lineWidth / 4;
+    const barHeight = lineWidth / 2;
 
     const progressBar = roundedRectangle(
         0,

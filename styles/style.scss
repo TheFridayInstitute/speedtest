@@ -173,7 +173,7 @@ main {
     row-gap: var(--column-gap);
 
     .info-container {
-        --font-size: 3.5rem;
+        --font-size: 3rem;
         display: grid;
         column-gap: var(--column-gap);
         grid-area: info;
@@ -191,9 +191,7 @@ main {
             .unit-container {
                 --font-size-lg: var(--font-size);
                 align-items: baseline;
-
                 flex-direction: row;
-
                 font-weight: bold;
             }
 
@@ -284,14 +282,13 @@ main {
 .unit-container {
     --font-size-lg: 2rem;
     --font-size-sm: calc(var(--font-size-lg) * 0.5);
-    --height: calc(var(--font-size-lg) + var(--font-size-sm));
 
     display: flex;
     position: relative;
     margin: 0;
     box-sizing: border-box;
     flex-direction: column;
-    min-height: var(--height);
+
     text-align: center;
     justify-items: center;
 
@@ -302,11 +299,12 @@ main {
     }
 
     .amount {
-        height: var(--height);
+        height: var(--font-size-lg);
         font-size: var(--font-size-lg);
     }
 
     .unit {
+        margin-top: calc(var(--font-size-sm) / 4);
         font-size: var(--font-size-sm);
     }
 }
@@ -331,7 +329,7 @@ main {
             align-self: start;
         }
 
-        .start-btn-container {
+        .start-btn {
             width: 100%;
         }
     }
@@ -339,7 +337,7 @@ main {
     .speedtest-container {
         column-gap: var(--column-gap);
         grid-template-areas: "speedtest info";
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 3fr 1fr;
         grid-template-rows: 1fr;
 
         .info-container {
@@ -350,9 +348,12 @@ main {
 
             .info {
                 display: flex;
-                align-items: baseline;
                 flex-direction: column;
                 justify-content: center;
+
+                .unit-container {
+                    flex-direction: inherit;
+                }
             }
         }
 
@@ -364,8 +365,5 @@ main {
     .info-progress-container {
         width: 100%;
         margin: 0;
-
-        .info-container {
-        }
     }
 }

@@ -283,7 +283,7 @@ main {
 
 .unit-container {
     --font-size-lg: 2rem;
-    --font-size-sm: calc(var(--font-size-lg) / 4);
+    --font-size-sm: calc(var(--font-size-lg) * 0.5);
     --height: calc(var(--font-size-lg) + var(--font-size-sm));
 
     display: flex;

@@ -526,6 +526,8 @@ const animationLoopInit = function () {
     const dpr = window.devicePixelRatio || 1;
     const lineWidth = meterObject.lineWidth * dpr;
 
+    const side = window.innerHeight / 2;
+
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
     const meterGap = lineWidth * 1.25;
@@ -705,23 +707,23 @@ async function onload() {
     );
 }
 
-const toggleHidden = async function (el: IDollarElement & Element) {
-    const duration = 500;
-
-    const transformFunc = function (v: number, t: number) {
-        el.css({ height: `${v}px` });
-    };
-
+const toggleHidden = async function (el: IDollarElement & Element, duration = 1000) {
+    const hidden = el.classList.contains("hidden");
     const height = el.clientHeight;
 
-    if (!el.classList.contains("hidden")) {
+    const transformFunc = function (v: number, t: number) {
+        t = hidden ? t : 0;
+        el.css({ height: `${v}px`, opacity: t });
+    };
+
+    if (!hidden) {
         el.setAttribute("toggle-height", String(height));
 
-        el.classList.add("hidden");
         const to = 0;
         const from = height;
 
-        smoothAnimate(to, from, duration, transformFunc, easeInCubic);
+        await smoothAnimate(to, from, duration, transformFunc, easeInCubic);
+        el.classList.add("hidden");
     } else {
         el.classList.remove("hidden");
         const to = el.getAttribute("toggle-height") ?? getOffset(el).height;
@@ -731,7 +733,7 @@ const toggleHidden = async function (el: IDollarElement & Element) {
     }
 };
 
-const openingSlide = async function () {
+const openingSlide = once(async function () {
     const testEl = $(".speedtest-container");
     const infoEl = $("#info-progress-container");
 
@@ -740,15 +742,12 @@ const openingSlide = async function () {
 
     const width = window.innerWidth;
 
-    slideRight([testEl, infoEl, completeModal], width, 0, 1);
-    [testEl, infoEl].forEach((el) => toggleHidden(el));
-
-    await slideLeft(startModal, -width, 0, 500);
     toggleHidden(startModal);
-    slideLeft([testEl, infoEl], 0, width, 500);
+
+    [testEl, infoEl].forEach((el) => toggleHidden(el, 1500));
 
     openingAnimation(2000, easeInOutCubic);
-};
+});
 
 // TODO: remove start animation.
 const onstart = throttle(async function () {
@@ -811,35 +810,29 @@ async function onend() {
     const completeModal = $("#complete-pane");
     const width = window.innerWidth;
 
-    // const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
+    const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
-    // const windowMessage: IWindowMessage = {
-    //     message: "complete",
-    //     key: "password",
-    //     data: {
-    //         dlStatus: speedtestData.dlStatus,
-    //         ulStatus: speedtestData.ulStatus,
-    //         pingStatus: speedtestData.pingStatus,
-    //         jitterStatus: speedtestData.jitterStatus,
-    //         ip: ip
-    //     }
-    // };
-    // postMessage(eventObject, windowMessage);
+    const windowMessage: IWindowMessage = {
+        message: "complete",
+        key: "password",
+        data: {
+            dlStatus: speedtestData.dlStatus,
+            ulStatus: speedtestData.ulStatus,
+            pingStatus: speedtestData.pingStatus,
+            jitterStatus: speedtestData.jitterStatus,
+            ip: ip
+        }
+    };
+    postMessage(eventObject, windowMessage);
 
     startButton.classList.toggle("running");
 
     await closingAnimation(2000, easeInOutCubic);
 
-    await slideLeft(testEl, -width, 0, 500);
-    toggleHidden(testEl);
+    await toggleHidden(testEl);
 
-    await slideRight(completeModal, 0, -width, 500);
     toggleHidden(completeModal);
     $(".text", startButton).innerHTML = "Next →";
-
-    // slideRightWrap(startButton, 0, 0, 500, function () {
-    //     $(".text", startButton).innerHTML = "Next →";
-    // });
 }
 
 window.onload = function () {
@@ -856,24 +849,20 @@ $("#start-btn").on("click", async function (ev) {
 
     const stateName = getStateName();
 
-    await openingSlide();
+    if (stateName !== "finished") {
+        onstart();
+    } else {
+        const windowMessage: IWindowMessage = {
+            message: "next",
+            key: "password",
+            data: {}
+        };
 
-    await onend();
-
-    // if (stateName !== "finished") {
-    //     onstart();
-    // } else {
-    //     const windowMessage: IWindowMessage = {
-    //         message: "next",
-    //         key: "password",
-    //         data: {}
-    //     };
-
-    //     postMessage(eventObject, windowMessage).catch(() => {
-    //         console.error("Cannot post to null event object. Aborting.");
-    //         $(".modal").classList.toggle("visible");
-    //     });
-    // }
+        postMessage(eventObject, windowMessage).catch(() => {
+            console.error("Cannot post to null event object. Aborting.");
+            $(".modal").classList.toggle("visible");
+        });
+    }
 });
 
 $(window).on("click touchend", function (ev) {

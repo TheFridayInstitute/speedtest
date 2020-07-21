@@ -86,7 +86,7 @@ main {
     padding: $row-gap/2;
 
     // height: 100%;
-    width: 100%;
+    // width: 100%;
     box-sizing: border-box;
 
     grid-template-areas:
@@ -97,30 +97,29 @@ main {
     grid-template-rows: repeat(auto, 3);
     max-height: calc(min(#{$meter-height}, 100%));
     max-width: calc(min(#{$meter-width}, 100%));
-    overflow-x: hidden;
+    overflow: hidden;
 
-    // row-gap: calc(1 * var(--column-gap));
+    row-gap: calc(1 * var(--column-gap));
 
     .speedtest-container {
+        overflow: hidden;
         align-self: end;
         grid-area: test;
     }
 
     .info-progress-container {
+        overflow: hidden;
         grid-area: info;
     }
 
     .start-btn {
+        overflow: hidden;
         height: 3rem;
         width: 66%;
 
         grid-area: button;
         justify-self: center;
     }
-}
-
-* {
-    overflow: hidden;
 }
 
 .pane-container {
@@ -167,7 +166,10 @@ main {
     grid-template-areas:
         "speedtest"
         "info";
-    grid-template-rows: auto auto;
+
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(auto, 2);
+
     row-gap: var(--column-gap);
 
     .info-container {

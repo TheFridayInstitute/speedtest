@@ -307,19 +307,19 @@ const animationLoopDraw = function () {
         let meterInfo = getUnitAmountAndKind(stateName);
         if (stateName === "ping") {
             meterInfo = Object.assign(meterInfo, {
-                footer: "Pinging..."
+                footer: "Latency"
             });
         }
         else if (stateName === "download") {
             meterInfo = Object.assign(meterInfo, {
                 kind: "↓",
-                footer: "Downloading..."
+                footer: "Download"
             });
         }
         else if (stateName === "upload") {
             meterInfo = Object.assign(meterInfo, {
                 kind: "↑",
-                footer: "Uploading..."
+                footer: "Upload"
             });
         }
         drawMeter(stateName);
@@ -455,7 +455,8 @@ const toggleHidden = async function (el, duration = 1000) {
         el.classList.remove("hidden");
         const to = el.getAttribute("toggle-height") ?? getOffset(el).height;
         const from = 0;
-        smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
+        await smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
+        el.css({ height: "auto" });
     }
 };
 const openingSlide = once(async function () {
@@ -465,7 +466,7 @@ const openingSlide = once(async function () {
     const completeModal = $("#complete-pane");
     const width = window.innerWidth;
     toggleHidden(startModal);
-    [testEl, infoEl].forEach((el) => toggleHidden(el, 1500));
+    [testEl, infoEl].forEach((el) => toggleHidden(el, 500));
     openingAnimation(2000, easeInOutCubic);
 });
 // TODO: remove start animation.

@@ -334,7 +334,6 @@ const animationLoopInit = function () {
     const canvasOffset = getOffset(canvas);
     const dpr = window.devicePixelRatio || 1;
     const lineWidth = meterObject.lineWidth * dpr;
-    const side = window.innerHeight / 2;
     canvas.width = canvasOffset.width * dpr;
     canvas.height = canvasOffset.height * dpr;
     const meterGap = lineWidth * 1.25;
@@ -393,9 +392,9 @@ const animationLoopInit = function () {
             mesh: dialMesh
         }
     });
-    // Meter progress bar creation.Î
+    // Meter progress bar creation.
     const barWidth = outerRadius;
-    const barHeight = lineWidth / 4;
+    const barHeight = lineWidth / 2;
     const progressBar = roundedRectangle(0, 0, barWidth, barHeight, progressBarObject.color);
     const progressBarBackground = roundedRectangle(0, 0, barWidth, barHeight, progressBarObject.backgroundColor);
     const progressBarMesh = new Mesh(progressBarBackground, progressBar).translate(0, outerRadius / 1.5 - barHeight / 2);

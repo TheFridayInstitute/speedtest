@@ -16,7 +16,9 @@ import {
     normalize,
     easeInOutCubic,
     slerpPoints,
-    bounceInEase
+    bounceInEase,
+    easeOutCubic,
+    easeInCubic
 } from "./math.js";
 
 import {
@@ -703,7 +705,33 @@ async function onload() {
     );
 }
 
-const openingSlide = once(async function () {
+const toggleHidden = async function (el: IDollarElement & Element) {
+    const duration = 500;
+
+    const transformFunc = function (v: number, t: number) {
+        el.css({ height: `${v}px` });
+    };
+
+    const height = el.clientHeight;
+
+    if (!el.classList.contains("hidden")) {
+        el.setAttribute("toggle-height", String(height));
+
+        el.classList.add("hidden");
+        const to = 0;
+        const from = height;
+
+        smoothAnimate(to, from, duration, transformFunc, easeInCubic);
+    } else {
+        el.classList.remove("hidden");
+        const to = el.getAttribute("toggle-height") ?? getOffset(el).height;
+        const from = 0;
+
+        smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
+    }
+};
+
+const openingSlide = async function () {
     const testEl = $(".speedtest-container");
     const infoEl = $("#info-progress-container");
 
@@ -713,14 +741,14 @@ const openingSlide = once(async function () {
     const width = window.innerWidth;
 
     slideRight([testEl, infoEl, completeModal], width, 0, 1);
-    [testEl, infoEl].forEach((el) => el.classList.remove("hidden"));
+    [testEl, infoEl].forEach((el) => toggleHidden(el));
 
     await slideLeft(startModal, -width, 0, 500);
-    startModal.classList.add("hidden");
+    toggleHidden(startModal);
     slideLeft([testEl, infoEl], 0, width, 500);
 
     openingAnimation(2000, easeInOutCubic);
-});
+};
 
 // TODO: remove start animation.
 const onstart = throttle(async function () {
@@ -783,35 +811,35 @@ async function onend() {
     const completeModal = $("#complete-pane");
     const width = window.innerWidth;
 
-    const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
+    // const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
-    const windowMessage: IWindowMessage = {
-        message: "complete",
-        key: "password",
-        data: {
-            dlStatus: speedtestData.dlStatus,
-            ulStatus: speedtestData.ulStatus,
-            pingStatus: speedtestData.pingStatus,
-            jitterStatus: speedtestData.jitterStatus,
-            ip: ip
-        }
-    };
-    postMessage(eventObject, windowMessage);
+    // const windowMessage: IWindowMessage = {
+    //     message: "complete",
+    //     key: "password",
+    //     data: {
+    //         dlStatus: speedtestData.dlStatus,
+    //         ulStatus: speedtestData.ulStatus,
+    //         pingStatus: speedtestData.pingStatus,
+    //         jitterStatus: speedtestData.jitterStatus,
+    //         ip: ip
+    //     }
+    // };
+    // postMessage(eventObject, windowMessage);
 
     startButton.classList.toggle("running");
 
     await closingAnimation(2000, easeInOutCubic);
 
     await slideLeft(testEl, -width, 0, 500);
-    testEl.classList.add("hidden");
-    slideRight(completeModal, 0, -width, 500);
-    completeModal.classList.remove("hidden");
+    toggleHidden(testEl);
 
-    await slideRightWrap(startButton, 0, 0, 500, function () {
-        $(".text", startButton).innerHTML = "Next →";
-    });
+    await slideRight(completeModal, 0, -width, 500);
+    toggleHidden(completeModal);
+    $(".text", startButton).innerHTML = "Next →";
 
-    await sleep(2000);
+    // slideRightWrap(startButton, 0, 0, 500, function () {
+    //     $(".text", startButton).innerHTML = "Next →";
+    // });
 }
 
 window.onload = function () {
@@ -820,7 +848,7 @@ window.onload = function () {
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
 
-$("#start-btn").on("click", function (ev) {
+$("#start-btn").on("click", async function (ev) {
     const duration = 1000;
     const startButton = <HTMLElement>this;
 
@@ -828,20 +856,24 @@ $("#start-btn").on("click", function (ev) {
 
     const stateName = getStateName();
 
-    if (stateName === "finished") {
-        const windowMessage: IWindowMessage = {
-            message: "next",
-            key: "password",
-            data: {}
-        };
+    await openingSlide();
 
-        postMessage(eventObject, windowMessage).catch(() => {
-            console.error("Cannot post to null event object. Aborting.");
-            $(".modal").classList.toggle("visible");
-        });
-    } else {
-        onstart();
-    }
+    await onend();
+
+    // if (stateName !== "finished") {
+    //     onstart();
+    // } else {
+    //     const windowMessage: IWindowMessage = {
+    //         message: "next",
+    //         key: "password",
+    //         data: {}
+    //     };
+
+    //     postMessage(eventObject, windowMessage).catch(() => {
+    //         console.error("Cannot post to null event object. Aborting.");
+    //         $(".modal").classList.toggle("visible");
+    //     });
+    // }
 });
 
 $(window).on("click touchend", function (ev) {

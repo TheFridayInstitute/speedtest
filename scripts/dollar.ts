@@ -76,11 +76,11 @@ const foldFunctions = function (funcs) {
 
 const dollarFoldedFunctions = foldFunctions(dollarFunctions);
 
-interface IDollarElement {
+interface IDollarElement extends Element {
     on: (name: string, func: (event: Event) => void) => EventTarget;
     off: (name: string, func: (event: Event) => void) => EventTarget;
-    setattr: (attrs: Object) => HTMLElement;
-    css: (attrs: Object) => HTMLElement;
+    setattr: (attrs: object) => HTMLElement;
+    css: (attrs: object) => HTMLElement;
 }
 
 type DomElement = HTMLElement | SVGAElement | Element;

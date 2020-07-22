@@ -66,7 +66,7 @@ html {
     width: 100%;
 }
 
-.box {
+.box-container {
     border-radius: var(--border-radius-primary);
     background-color: var(--background-color-secondary);
     height: 10rem;
@@ -75,4 +75,15 @@ html {
     justify-content: center;
     align-items: center;
     color: white;
+
+    .box {
+        border-radius: inherit;
+        height: 100%;
+        width: 100%;
+        background-color: rgb(161, 35, 35);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
 }

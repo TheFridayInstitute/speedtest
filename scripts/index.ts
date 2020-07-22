@@ -147,7 +147,7 @@ const postMessage = function (
     return new Promise((resolve, reject) => {
         if (eventObject != null) {
             console.log(`Posting event message of ${windowMessage.message}`);
-            //@ts-ignore
+            // @ts-ignore
             eventObject.source.postMessage(windowMessage, eventObject.origin);
             resolve(windowMessage);
         } else {
@@ -277,8 +277,6 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
 
     const transformFunc = function (v: number, t: number) {
         canvasObject.clear();
-
-        // dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
 
         outerMeter.mesh.draw(canvasObject, t);
         dot.mesh.draw(canvasObject, t);

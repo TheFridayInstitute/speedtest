@@ -7,7 +7,8 @@ import {
     easeInOutCubic,
     slerpPoints,
     bounceInEase,
-    round
+    round,
+    easeInBounce
 } from "./math.js";
 
 import {
@@ -182,29 +183,71 @@ type IKeyframes = { [keyframePercent: number]: IKeyframe };
 // };
 const keyframes = {
     0: {
-        elements: [0],
+        elements: [0, 1],
         styles: {
-            height: {
-                amount: 100,
-                unit: "%"
+            transform: {
+                translateX: {
+                    amount: 0,
+                    unit: "px"
+                },
+                translateY: {
+                    amount: 0,
+                    unit: "px"
+                },
+                rotateZ: {
+                    amount: 0,
+                    unit: "deg"
+                },
+                scale: {
+                    amount: 100,
+                    unit: "%"
+                }
             }
         }
     },
-    50: {
-        elements: [0],
+    25: {
+        elements: [0, 1],
         styles: {
-            height: {
-                amount: 0,
-                unit: "%"
+            transform: {
+                translateX: {
+                    amount: 500,
+                    unit: "px"
+                },
+                translateY: {
+                    amount: 100,
+                    unit: "px"
+                },
+                rotateZ: {
+                    amount: 270,
+                    unit: "deg"
+                },
+                scale: {
+                    amount: 150,
+                    unit: "%"
+                }
             }
         }
     },
     100: {
-        elements: [0],
+        elements: [0, 1],
         styles: {
-            height: {
-                amount: 100,
-                unit: "%"
+            transform: {
+                translateX: {
+                    amount: 0,
+                    unit: "px"
+                },
+                translateY: {
+                    amount: 0,
+                    unit: "px"
+                },
+                rotateZ: {
+                    amount: 0,
+                    unit: "deg"
+                },
+                scale: {
+                    amount: 100,
+                    unit: "%"
+                }
             }
         }
     }
@@ -243,7 +286,8 @@ const createInterpCallback = function (
     duration: number,
     startPercent: number,
     endPercent: number,
-    elements: IDollarElement[]
+    elements: IDollarElement[],
+    timingFunc: (t: number, from: number, distance: number, duration: number) => number
 ) {
     const interpCallback = async function (props: Array<IKeyframeProperty>) {
         const subDuration = ((endPercent - startPercent) / 100) * duration;
@@ -262,24 +306,24 @@ const createInterpCallback = function (
                     const [toAmount, toUnit] = [to.amount, to.unit];
                     const cssKey = keys[0];
 
-                    let v = `${lerp(t, fromAmount, toAmount)}`;
-
-                    v += toUnit;
-                    console.log(v);
+                    const v = `${lerp(t, fromAmount, toAmount)}${toUnit}`;
 
                     if (keys.length === 1) {
                         cssObject[cssKey] = v;
                     } else {
                         const subkey = `${keys[1]}(${v})`;
-                        cssObject[cssKey] = subkey;
+                        if (cssObject[cssKey] != null) {
+                            cssObject[cssKey] += " " + subkey;
+                        } else {
+                            cssObject[cssKey] = subkey;
+                        }
                     }
                 });
-
                 element.css(cssObject);
             });
         };
 
-        await smoothAnimate(subDuration, 0, subDuration, transformFunc, easeInOutCubic);
+        await smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);
     };
     return interpCallback;
 };
@@ -287,7 +331,8 @@ const createInterpCallback = function (
 const animateKeyframes = async function (
     elements: IDollarElement[],
     keyframes: IKeyframes,
-    duration: number
+    duration: number,
+    timingFunc = easeInOutCubic
 ) {
     const keyframePredicate = (key) => {
         return key.unit == null;
@@ -326,11 +371,12 @@ const animateKeyframes = async function (
                 duration,
                 startPercent,
                 endPercent,
-                commonElements
+                commonElements,
+                timingFunc
             );
 
             const props = recurseProperties(styles1, styles2, keyframePredicate);
-            console.log(props);
+
             await interpCallback(props);
 
             keyframesCopy[keyframeKey2].styles = {
@@ -341,4 +387,12 @@ const animateKeyframes = async function (
     }
 };
 
-animateKeyframes([$(".box")], keyframes, 2000);
+async function main() {
+    const duration = 4000;
+    while (true) {
+        animateKeyframes([$("#box1"), $("#box2")], keyframes, duration, easeInBounce);
+        await sleep(duration);
+    }
+}
+
+main();

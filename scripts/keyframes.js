@@ -1,7 +1,7 @@
 /* eslint-disable quote-props */
 /* eslint-disable guard-for-in */
-import { lerp, easeInOutCubic } from "./math.js";
-import { smoothAnimate } from "./animation.js";
+import { lerp, easeInOutCubic, easeInBounce } from "./math.js";
+import { smoothAnimate, sleep } from "./animation.js";
 import { $ } from "./dollar.js";
 // const keyframes = {
 //     0: {
@@ -135,29 +135,71 @@ import { $ } from "./dollar.js";
 // };
 const keyframes = {
     0: {
-        elements: [0],
+        elements: [0, 1],
         styles: {
-            height: {
-                amount: 100,
-                unit: "%"
+            transform: {
+                translateX: {
+                    amount: 0,
+                    unit: "px"
+                },
+                translateY: {
+                    amount: 0,
+                    unit: "px"
+                },
+                rotateZ: {
+                    amount: 0,
+                    unit: "deg"
+                },
+                scale: {
+                    amount: 100,
+                    unit: "%"
+                }
             }
         }
     },
-    50: {
-        elements: [0],
+    25: {
+        elements: [0, 1],
         styles: {
-            height: {
-                amount: 0,
-                unit: "%"
+            transform: {
+                translateX: {
+                    amount: 500,
+                    unit: "px"
+                },
+                translateY: {
+                    amount: 100,
+                    unit: "px"
+                },
+                rotateZ: {
+                    amount: 270,
+                    unit: "deg"
+                },
+                scale: {
+                    amount: 150,
+                    unit: "%"
+                }
             }
         }
     },
     100: {
-        elements: [0],
+        elements: [0, 1],
         styles: {
-            height: {
-                amount: 100,
-                unit: "%"
+            transform: {
+                translateX: {
+                    amount: 0,
+                    unit: "px"
+                },
+                translateY: {
+                    amount: 0,
+                    unit: "px"
+                },
+                rotateZ: {
+                    amount: 0,
+                    unit: "deg"
+                },
+                scale: {
+                    amount: 100,
+                    unit: "%"
+                }
             }
         }
     }
@@ -188,7 +230,7 @@ const evalIfFunction = function (f, element) {
         return f;
     }
 };
-const createInterpCallback = function (duration, startPercent, endPercent, elements) {
+const createInterpCallback = function (duration, startPercent, endPercent, elements, timingFunc) {
     const interpCallback = async function (props) {
         const subDuration = ((endPercent - startPercent) / 100) * duration;
         const transformFunc = function (_, t) {
@@ -203,25 +245,28 @@ const createInterpCallback = function (duration, startPercent, endPercent, eleme
                     const [fromAmount, fromUnit] = [from.amount, from.unit];
                     const [toAmount, toUnit] = [to.amount, to.unit];
                     const cssKey = keys[0];
-                    let v = `${lerp(t, fromAmount, toAmount)}`;
-                    v += toUnit;
-                    console.log(v);
+                    const v = `${lerp(t, fromAmount, toAmount)}${toUnit}`;
                     if (keys.length === 1) {
                         cssObject[cssKey] = v;
                     }
                     else {
                         const subkey = `${keys[1]}(${v})`;
-                        cssObject[cssKey] = subkey;
+                        if (cssObject[cssKey] != null) {
+                            cssObject[cssKey] += " " + subkey;
+                        }
+                        else {
+                            cssObject[cssKey] = subkey;
+                        }
                     }
                 });
                 element.css(cssObject);
             });
         };
-        await smoothAnimate(subDuration, 0, subDuration, transformFunc, easeInOutCubic);
+        await smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);
     };
     return interpCallback;
 };
-const animateKeyframes = async function (elements, keyframes, duration) {
+const animateKeyframes = async function (elements, keyframes, duration, timingFunc = easeInOutCubic) {
     const keyframePredicate = (key) => {
         return key.unit == null;
     };
@@ -246,9 +291,8 @@ const animateKeyframes = async function (elements, keyframes, duration) {
                 }
                 return acc;
             }, []);
-            const interpCallback = createInterpCallback(duration, startPercent, endPercent, commonElements);
+            const interpCallback = createInterpCallback(duration, startPercent, endPercent, commonElements, timingFunc);
             const props = recurseProperties(styles1, styles2, keyframePredicate);
-            console.log(props);
             await interpCallback(props);
             keyframesCopy[keyframeKey2].styles = {
                 ...keyframesCopy[keyframeKey1].styles,
@@ -257,4 +301,11 @@ const animateKeyframes = async function (elements, keyframes, duration) {
         }
     }
 };
-animateKeyframes([$(".box")], keyframes, 2000);
+async function main() {
+    const duration = 4000;
+    while (true) {
+        animateKeyframes([$("#box1"), $("#box2")], keyframes, duration, easeInBounce);
+        await sleep(duration);
+    }
+}
+main();

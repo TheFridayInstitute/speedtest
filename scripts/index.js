@@ -45,7 +45,7 @@ const postMessage = function (eventObject, windowMessage) {
     return new Promise((resolve, reject) => {
         if (eventObject != null) {
             console.log(`Posting event message of ${windowMessage.message}`);
-            //@ts-ignore
+            // @ts-ignore
             eventObject.source.postMessage(windowMessage, eventObject.origin);
             resolve(windowMessage);
         }
@@ -155,7 +155,6 @@ const openingAnimation = async function (duration, timingFunc) {
     const { dot, outerMeter, dial } = meterObject;
     const transformFunc = function (v, t) {
         canvasObject.clear();
-        // dot.mesh.radius = (1 - t) * outerMeter.radius + dot.radius * t;
         outerMeter.mesh.draw(canvasObject, t);
         dot.mesh.draw(canvasObject, t);
         const theta = lerp(t, meterObject.startAngle, meterObject.startAngle + 2 * Math.PI);

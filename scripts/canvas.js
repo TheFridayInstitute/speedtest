@@ -100,7 +100,7 @@ class Shape {
     get centroid() {
         let cX = 0;
         let cY = 0;
-        for (let [x, y] of this._points) {
+        for (const [x, y] of this._points) {
             cX += x;
             cY += y;
         }
@@ -154,7 +154,7 @@ class Polygon extends Shape {
         let originX = 0;
         let originY = 0;
         if (ctx instanceof Canvas) {
-            let canvas = ctx;
+            const canvas = ctx;
             ctx = canvas.ctx;
             originX = canvas.originX;
             originY = canvas.originY;
@@ -177,7 +177,7 @@ class Polygon extends Shape {
         else {
             ctx.shadowBlur = 0;
         }
-        for (let [x, y] of this._points) {
+        for (const [x, y] of this._points) {
             ctx.lineTo(x + originX, originY + y);
         }
         if (this._fillColor) {
@@ -200,7 +200,7 @@ class Arc extends Shape {
         let originX = 0;
         let originY = 0;
         if (ctx instanceof Canvas) {
-            let canvas = ctx;
+            const canvas = ctx;
             ctx = canvas.ctx;
             originX = canvas.originX;
             originY = canvas.originY;
@@ -253,7 +253,7 @@ class Arc extends Shape {
 }
 class Rectangle extends Polygon {
     constructor(leftX, leftY, width, height, fillColor) {
-        let points = [
+        const points = [
             [leftX, leftY],
             [leftX + width, leftY],
             [leftX + width, leftY + height],
@@ -291,68 +291,68 @@ class Mesh {
         return this;
     }
     draw(ctx, t) {
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             shape.draw(ctx, t);
         }
         return this;
     }
     map(func) {
         let i = 0;
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             func(shape, i++);
         }
         return this;
     }
     translate(x, y) {
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             shape.translate(x, y);
         }
         return this;
     }
     scale(s) {
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             shape.scale(s);
         }
         return this;
     }
     rotate(theta, rad = false) {
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             shape.rotate(theta, rad);
         }
         return this;
     }
     rotateAboutPoint(x, y, theta, rad = false) {
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             shape.rotateAboutPoint(x, y, theta, rad);
         }
         return this;
     }
 }
 function roundedArc(originX, originY, radius, beginAngle, endAngle, color, lineWidth) {
-    let slump = -0.0;
-    let outerEdge = radius + lineWidth / 2;
-    let barHeight = 0.05;
-    let barWidth = lineWidth;
-    let base = [
+    const slump = -0.0;
+    const outerEdge = radius + lineWidth / 2;
+    const barHeight = 0.05;
+    const barWidth = lineWidth;
+    const base = [
         [0, barHeight],
         [barWidth, barHeight]
     ];
-    let slerps = slerpPoints(base[0], base[1]);
-    let points = [...slerps];
+    const slerps = slerpPoints(base[0], base[1]);
+    const points = [...slerps];
     let theta = beginAngle;
-    let delta = (barHeight * 2) / radius;
+    const delta = (barHeight * 2) / radius;
     theta += delta;
-    let startCap = new Polygon(points, null, null, color);
-    let arc = new Arc(originX, originY, radius, theta + slump, 0, color, lineWidth);
-    let endCap = new Polygon(
+    const startCap = new Polygon(points, null, null, color);
+    const arc = new Arc(originX, originY, radius, theta + slump, 0, color, lineWidth);
+    const endCap = new Polygon(
     // Hack to return a copy of the original array.
     JSON.parse(JSON.stringify(points)), null, null, color);
     startCap.translate(originX, originY);
     endCap.translate(originX, originY);
-    let x = outerEdge * Math.cos(theta);
-    let y = outerEdge * Math.sin(theta);
+    const x = outerEdge * Math.cos(theta);
+    const y = outerEdge * Math.sin(theta);
     startCap.scale(-1).rotate(theta, true).translate(x, y);
-    let roundedArcMesh = new Mesh(endCap, arc, startCap);
+    const roundedArcMesh = new Mesh(endCap, arc, startCap);
     roundedArcMesh.draw = function (ctx, t) {
         let theta = lerp(t, beginAngle, endAngle - 2 * delta);
         let theta2 = theta;
@@ -369,8 +369,8 @@ function roundedArc(originX, originY, radius, beginAngle, endAngle, color, lineW
         else {
             theta2 = theta;
         }
-        let x = outerEdge * Math.cos(theta2);
-        let y = outerEdge * Math.sin(theta2);
+        const x = outerEdge * Math.cos(theta2);
+        const y = outerEdge * Math.sin(theta2);
         this.shapes[0]
             .translate(-barWidth, 0)
             .rotate(theta2, true)
@@ -397,40 +397,40 @@ function setRoundedArcColor(roundedArc, color) {
     });
 }
 function roundedRectangle(leftX, leftY, width, height, fillColor) {
-    let slump = -0.3;
-    let r = Math.abs((leftY - height) / 2);
-    let leftSide = [
+    const slump = -0.3;
+    const r = Math.abs((leftY - height) / 2);
+    const leftSide = [
         [leftX, leftY],
         [leftX, leftY - height]
     ];
-    let rightSide = [
+    const rightSide = [
         [leftX + width, leftY],
         [leftX + width, leftY - height]
     ];
     width -= 2 * r;
-    let slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
-    let slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
-    let startCap = new Polygon(slerpsLeft, null, null, fillColor);
-    let bar = new Rectangle(leftX, leftY, width, height, fillColor);
-    let endCap = new Polygon(slerpsRight, null, null, fillColor);
-    let shiftX = -width / 2;
-    let shiftY = height / 2;
+    const slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
+    const slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
+    const startCap = new Polygon(slerpsLeft, null, null, fillColor);
+    const bar = new Rectangle(leftX, leftY, width, height, fillColor);
+    const endCap = new Polygon(slerpsRight, null, null, fillColor);
+    const shiftX = -width / 2;
+    const shiftY = height / 2;
     startCap.translate(shiftX - slump, shiftY);
     endCap.translate(shiftX - 2 * r, shiftY);
     bar.translate(shiftX, -shiftY);
-    let roundedBarMesh = new Mesh(startCap, bar, endCap);
-    let [cX, cY] = bar.centroid;
+    const roundedBarMesh = new Mesh(startCap, bar, endCap);
+    const [cX, cY] = bar.centroid;
     roundedBarMesh.draw = function (ctx, t) {
-        let w = t * width;
-        let [tcX, tcY] = bar.centroid;
-        let sX = tcX - cX - bar.width / 2;
-        let sY = tcY - cY - bar.height / 2;
+        const w = t * width;
+        const [tcX, tcY] = bar.centroid;
+        const sX = tcX - cX - bar.width / 2;
+        const sY = tcY - cY - bar.height / 2;
         bar.translate(-sX, -sY);
         bar.width = w;
         bar.translate(sX, sY);
         t = -(1 - t) * width + slump;
         endCap.translate(t, 0);
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             shape.draw(ctx);
         }
         endCap.translate(-t, 0);
@@ -443,33 +443,33 @@ function generateGradient(canvas, colorStops, x0, y0, x1, y1) {
     y0 = y0 == null ? 0 : y0;
     x1 = x1 == null ? canvas.width : x1;
     y1 = y1 == null ? 0 : y1;
-    let ctx = canvas.getContext("2d");
-    let gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-    for (let [stop, color] of colorStops) {
+    const ctx = canvas.getContext("2d");
+    const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+    for (const [stop, color] of colorStops) {
         gradient.addColorStop(stop, color);
     }
     return gradient;
 }
 function progressBarIntervals(leftX, leftY, width, height, colors) {
-    let shapes = [];
+    const shapes = [];
     let step = 0;
-    let w = width / colors.length - height / colors.length;
+    const w = width / colors.length - height / colors.length;
     let i = 0;
-    for (let color of colors) {
-        let tw = w + height;
-        let rRect = roundedRectangle(leftX, leftY, tw, height, color);
+    for (const color of colors) {
+        const tw = w + height;
+        const rRect = roundedRectangle(leftX, leftY, tw, height, color);
         rRect.translate(-width / 2 + tw / 2 + step, 0);
         shapes.push(rRect);
         step += w;
         i += 1;
     }
-    let intervalMesh = new Mesh(...shapes);
+    const intervalMesh = new Mesh(...shapes);
     intervalMesh.draw = function (ctx, t) {
-        let n = this.shapes.length;
-        let step = 1 / n;
+        const n = this.shapes.length;
+        const step = 1 / n;
         let s = t;
         let v = 0;
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             if (s > 0) {
                 if (s - step > 0) {
                     v = 1;

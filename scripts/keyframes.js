@@ -1,206 +1,63 @@
 /* eslint-disable quote-props */
 /* eslint-disable guard-for-in */
 import { lerp, easeInOutCubic, easeInBounce } from "./math.js";
-import { smoothAnimate, sleep } from "./animation.js";
+import { smoothAnimate } from "./animation.js";
 import { $ } from "./dollar.js";
-// const keyframes = {
-//     0: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: {
-//                     amount: 0,
-//                     unit: "px"
-//                 }
-//             },
-//             opacity: {
-//                 amount: 0,
-//                 unit: ""
-//             },
-//             width: {
-//                 amount: 0,
-//                 unit: "%"
-//             },
-//             height: {
-//                 amount: 0,
-//                 unit: "%"
-//             },
-//             "padding-top": {
-//                 amount: 10,
-//                 unit: "px"
-//             }
-//         }
-//     },
-//     50: {
-//         elements: [0],
-//         styles: {
-//             opacity: {
-//                 amount: 0.5,
-//                 unit: ""
-//             },
-//             width: {
-//                 amount: 100,
-//                 unit: "%"
-//             },
-//             height: {
-//                 amount: 10,
-//                 unit: "rem"
-//             },
-//             "padding-top": {
-//                 amount: 100,
-//                 unit: "px"
-//             }
-//         }
-//     },
-//     100: {
-//         elements: [0],
-//         styles: {
-//             opacity: {
-//                 amount: 1,
-//                 unit: ""
-//             },
-//             "padding-top": {
-//                 amount: 200,
-//                 unit: "px"
-//             }
-//         }
-//     }
-// };
-// const keyframes = {
-//     0: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: {
-//                     amount: 0,
-//                     unit: ""
-//                 }
-//             },
-//             opacity: {
-//                 amount: 1,
-//                 unit: ""
-//             }
-//         }
-//     },
-//     50: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: () => {
-//                     return { amount: window.innerWidth, unit: "px" };
-//                 }
-//             }
-//         }
-//     },
-//     51: {
-//         elements: [0],
-//         styles: {
-//             opacity: {
-//                 amount: 0,
-//                 unit: ""
-//             }
-//         }
-//     },
-//     52: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: {
-//                     amount: -200,
-//                     unit: "px"
-//                 }
-//             }
-//         }
-//     },
-//     53: {
-//         elements: [0],
-//         styles: {
-//             opacity: {
-//                 amount: 1,
-//                 unit: ""
-//             }
-//         }
-//     },
-//     100: {
-//         elements: [0],
-//         styles: {
-//             transform: {
-//                 translateX: {
-//                     amount: 0,
-//                     unit: "px"
-//                 }
-//             }
-//         }
-//     }
-// };
 const keyframes = {
     0: {
-        elements: [0, 1],
-        styles: {
-            transform: {
-                translateX: {
-                    amount: 0,
-                    unit: "px"
-                },
-                translateY: {
-                    amount: 0,
-                    unit: "px"
-                },
-                rotateZ: {
-                    amount: 0,
-                    unit: "deg"
-                },
-                scale: {
-                    amount: 100,
-                    unit: "%"
+        elements: [0],
+        properties: {
+            styles: {
+                transform: {
+                    translateX: {
+                        amount: 0,
+                        unit: "px"
+                    },
+                    scale: {
+                        amount: 100,
+                        unit: "%"
+                    }
                 }
+            },
+            tmp: () => {
+                return 0;
             }
         }
     },
-    25: {
-        elements: [0, 1],
-        styles: {
-            transform: {
-                translateX: {
-                    amount: 500,
-                    unit: "px"
-                },
-                translateY: {
-                    amount: 100,
-                    unit: "px"
-                },
-                rotateZ: {
-                    amount: 270,
-                    unit: "deg"
-                },
-                scale: {
-                    amount: 150,
-                    unit: "%"
+    50: {
+        elements: [0],
+        properties: {
+            styles: {
+                transform: {
+                    translateX: {
+                        amount: 200,
+                        unit: "px"
+                    },
+                    scale: {
+                        amount: 150,
+                        unit: "%"
+                    }
                 }
-            }
+            },
+            tmp: () => window.innerWidth
         }
     },
     100: {
-        elements: [0, 1],
-        styles: {
-            transform: {
-                translateX: {
-                    amount: 0,
-                    unit: "px"
-                },
-                translateY: {
-                    amount: 0,
-                    unit: "px"
-                },
-                rotateZ: {
-                    amount: 0,
-                    unit: "deg"
-                },
-                scale: {
-                    amount: 100,
-                    unit: "%"
+        elements: [0],
+        properties: {
+            styles: {
+                transform: {
+                    translateX: {
+                        amount: 0,
+                        unit: "px"
+                    },
+                    scale: {
+                        amount: 100,
+                        unit: "%"
+                    }
                 }
-            }
+            },
+            tmp: 0
         }
     }
 };
@@ -208,6 +65,7 @@ const recurseProperties = function (obj1, obj2, predicate = (key) => true, acc =
     let out = [];
     for (const key of Object.keys(obj1)) {
         if (obj2[key] != null) {
+            console.log(key, obj1[key]);
             if (typeof obj1[key] === "object" && predicate(obj1[key])) {
                 out = out.concat(recurseProperties(obj1[key], obj2[key], predicate, acc.concat(key)));
             }
@@ -230,36 +88,57 @@ const evalIfFunction = function (f, element) {
         return f;
     }
 };
+const mutateCSSObject = function (CSSObject, v, keys) {
+    const CSSKeys = keys.slice(1);
+    const key = CSSKeys[0];
+    if (CSSKeys.length === 1) {
+        CSSObject[key] = v;
+    }
+    else {
+        const subkey = `${CSSKeys[1]}(${v})`;
+        if (CSSObject[key] != null) {
+            CSSObject[key] += " " + subkey;
+        }
+        else {
+            CSSObject[key] = subkey;
+        }
+    }
+    return CSSObject;
+};
+const isCSSValue = function (val) {
+    return val.unit != null && val.amount != null;
+};
+const lerpValues = function (t, from, to) {
+    if (isCSSValue(from) && isCSSValue(to)) {
+        const [fromAmount, fromUnit] = [from.amount, from.unit];
+        const [toAmount, toUnit] = [to.amount, to.unit];
+        return `${lerp(t, fromAmount, toAmount)}${toUnit}`;
+    }
+    else {
+        return `${lerp(t, from, to)}`;
+    }
+};
 const createInterpCallback = function (duration, startPercent, endPercent, elements, timingFunc) {
     const interpCallback = async function (props) {
         const subDuration = ((endPercent - startPercent) / 100) * duration;
         const transformFunc = function (_, t) {
             elements.forEach((element) => {
-                const cssObject = {};
+                const elementAttributes = { styles: {} };
                 props.forEach((prop) => {
-                    const [keys, from, to] = [
-                        prop.keys,
-                        evalIfFunction(prop.value1, element),
-                        evalIfFunction(prop.value2, element)
-                    ];
-                    const [fromAmount, fromUnit] = [from.amount, from.unit];
-                    const [toAmount, toUnit] = [to.amount, to.unit];
-                    const cssKey = keys[0];
-                    const v = `${lerp(t, fromAmount, toAmount)}${toUnit}`;
-                    if (keys.length === 1) {
-                        cssObject[cssKey] = v;
+                    const { keys, value1, value2 } = prop;
+                    const from = evalIfFunction(value1, element);
+                    const to = evalIfFunction(value2, element);
+                    const v = lerpValues(t, from, to);
+                    if (keys[0] === "styles") {
+                        elementAttributes["styles"] = mutateCSSObject(elementAttributes.styles, v, keys);
                     }
                     else {
-                        const subkey = `${keys[1]}(${v})`;
-                        if (cssObject[cssKey] != null) {
-                            cssObject[cssKey] += " " + subkey;
-                        }
-                        else {
-                            cssObject[cssKey] = subkey;
-                        }
+                        const key = keys.join(" ");
+                        elementAttributes[key] = v;
                     }
                 });
-                element.css(cssObject);
+                console.log(elementAttributes);
+                element.setattr(elementAttributes);
             });
         };
         await smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);
@@ -283,8 +162,8 @@ const animateKeyframes = async function (elements, keyframes, duration, timingFu
                 keyframesCopy[keyframeKey1],
                 keyframesCopy[keyframeKey2]
             ];
-            const [styles1, elements1] = [keyframe1.styles, keyframe1.elements];
-            const [styles2, elements2] = [keyframe2.styles, keyframe2.elements];
+            const [props1, elements1] = [keyframe1.properties, keyframe1.elements];
+            const [props2, elements2] = [keyframe2.properties, keyframe2.elements];
             const commonElements = elements1.reduce((acc, elementIndex) => {
                 if (elements2.indexOf(elementIndex) !== -1) {
                     acc.push(elements[elementIndex]);
@@ -292,7 +171,7 @@ const animateKeyframes = async function (elements, keyframes, duration, timingFu
                 return acc;
             }, []);
             const interpCallback = createInterpCallback(duration, startPercent, endPercent, commonElements, timingFunc);
-            const props = recurseProperties(styles1, styles2, keyframePredicate);
+            const props = recurseProperties(props1, props2, keyframePredicate);
             await interpCallback(props);
             keyframesCopy[keyframeKey2].styles = {
                 ...keyframesCopy[keyframeKey1].styles,
@@ -301,11 +180,5 @@ const animateKeyframes = async function (elements, keyframes, duration, timingFu
         }
     }
 };
-async function main() {
-    const duration = 4000;
-    while (true) {
-        animateKeyframes([$("#box1"), $("#box2")], keyframes, duration, easeInBounce);
-        await sleep(duration);
-    }
-}
-main();
+const duration = 2000;
+animateKeyframes([$("#box1"), $("#box2")], keyframes, duration, easeInBounce);

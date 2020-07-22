@@ -33,7 +33,7 @@ interface IKeyframeValue {
     unit: string;
 }
 
-type KeyframeValue = IKeyframeValue | (() => IKeyframeValue);
+type KeyframeValue = IKeyframeValue | ((element?: Element) => IKeyframeValue);
 interface IKeyframeProperty {
     keys: string[];
     value1: KeyframeValue;
@@ -112,75 +112,103 @@ type IKeyframes = { [keyframePercent: number]: IKeyframe };
 //         }
 //     }
 // };
+// const keyframes = {
+//     0: {
+//         elements: [0],
+//         styles: {
+//             transform: {
+//                 translateX: {
+//                     amount: 0,
+//                     unit: ""
+//                 }
+//             },
+//             opacity: {
+//                 amount: 1,
+//                 unit: ""
+//             }
+//         }
+//     },
+//     50: {
+//         elements: [0],
+//         styles: {
+//             transform: {
+//                 translateX: () => {
+//                     return { amount: window.innerWidth, unit: "px" };
+//                 }
+//             }
+//         }
+//     },
+//     51: {
+//         elements: [0],
+//         styles: {
+//             opacity: {
+//                 amount: 0,
+//                 unit: ""
+//             }
+//         }
+//     },
+//     52: {
+//         elements: [0],
+//         styles: {
+//             transform: {
+//                 translateX: {
+//                     amount: -200,
+//                     unit: "px"
+//                 }
+//             }
+//         }
+//     },
+//     53: {
+//         elements: [0],
+//         styles: {
+//             opacity: {
+//                 amount: 1,
+//                 unit: ""
+//             }
+//         }
+//     },
+
+//     100: {
+//         elements: [0],
+//         styles: {
+//             transform: {
+//                 translateX: {
+//                     amount: 0,
+//                     unit: "px"
+//                 }
+//             }
+//         }
+//     }
+// };
 const keyframes = {
     0: {
         elements: [0],
         styles: {
-            transform: {
-                translateX: {
-                    amount: 0,
-                    unit: ""
-                }
-            },
-            opacity: {
-                amount: 1,
-                unit: ""
+            height: {
+                amount: 100,
+                unit: "%"
             }
         }
     },
     50: {
         elements: [0],
         styles: {
-            transform: {
-                translateX: () => {
-                    return { amount: window.innerWidth, unit: "px" };
-                }
-            }
-        }
-    },
-    51: {
-        elements: [0],
-        styles: {
-            opacity: {
+            height: {
                 amount: 0,
-                unit: ""
+                unit: "%"
             }
         }
     },
-    52: {
-        elements: [0],
-        styles: {
-            transform: {
-                translateX: {
-                    amount: -200,
-                    unit: "px"
-                }
-            }
-        }
-    },
-    53: {
-        elements: [0],
-        styles: {
-            opacity: {
-                amount: 1,
-                unit: ""
-            }
-        }
-    },
-
     100: {
         elements: [0],
         styles: {
-            transform: {
-                translateX: {
-                    amount: 0,
-                    unit: "px"
-                }
+            height: {
+                amount: 100,
+                unit: "%"
             }
         }
     }
 };
-
 const recurseProperties = function (obj1, obj2, predicate = (key) => true, acc = []) {
     let out: Array<IKeyframeProperty> = [];
 
@@ -203,9 +231,9 @@ const recurseProperties = function (obj1, obj2, predicate = (key) => true, acc =
     return out;
 };
 
-const evalIfFunction = function (f: KeyframeValue) {
+const evalIfFunction = function (f: KeyframeValue, element?: Element) {
     if (typeof f === "function") {
-        return f();
+        return f(element);
     } else {
         return f;
     }
@@ -227,8 +255,8 @@ const createInterpCallback = function (
                 props.forEach((prop) => {
                     const [keys, from, to] = [
                         prop.keys,
-                        evalIfFunction(prop.value1),
-                        evalIfFunction(prop.value2)
+                        evalIfFunction(prop.value1, element),
+                        evalIfFunction(prop.value2, element)
                     ];
                     const [fromAmount, fromUnit] = [from.amount, from.unit];
                     const [toAmount, toUnit] = [to.amount, to.unit];
@@ -313,4 +341,4 @@ const animateKeyframes = async function (
     }
 };
 
-animateKeyframes([$(".box")], keyframes, 1000);
+animateKeyframes([$(".box")], keyframes, 2000);

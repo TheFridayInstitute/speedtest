@@ -3,6 +3,45 @@
 import { lerp, easeInOutCubic, easeInBounce } from "./math.js";
 import { smoothAnimate } from "./animation.js";
 import { $ } from "./dollar.js";
+const tmp = {
+    0: {
+        "style transform translateX": {
+            amount: 0,
+            unit: "px"
+        },
+        "style opacity": {
+            amount: 1,
+            unit: ""
+        },
+        "style color": {
+            amount: "rgba(0, 1, 1)",
+            unit: "color"
+        },
+        funk: 0
+    },
+    50: {
+        "style transform translateX": {
+            amount: 100,
+            unit: "px"
+        },
+        "style opacity": {
+            amount: 0,
+            unit: ""
+        },
+        funk: 100
+    },
+    100: {
+        "style transform translateX": {
+            amount: 0,
+            unit: "px"
+        },
+        "style opacity": {
+            amount: 1,
+            unit: ""
+        },
+        funk: 0
+    }
+};
 const keyframes = {
     0: {
         elements: [0],

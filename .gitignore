@@ -1,6 +1,9 @@
-/backend/config.php
+backend/config.php
 .prettierrc
-/assets/
-/.vscode
+assets/
+.vscode/
 .DS_Store
 node_modules
+my_venv/
+.env
+auth/

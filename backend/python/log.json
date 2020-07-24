@@ -1,0 +1,19 @@
+{
+    "host": "75.177.182.116",
+    "ip_address": "75.177.182.116",
+    "identd": "-",
+    "user": "-",
+    "time": "[23/Jul/2020:21:43:01 +0000]",
+    "final_status": "200",
+    "size": "0",
+    "time_taken_to_serve": "0",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0",
+    "referer": "https://mbabb.fi.ncsu.edu/speedtest/scripts/librespeed/speedtest_worker.js?r=0.8024886412939982",
+    "request": {
+        "method": "GET",
+        "path": "/speedtest/scripts/librespeed/backend/empty.php",
+        "query_string": "?r=0.9690013999673469",
+        "protocol": "HTTP/1.1"
+    },
+    "connection_status": "+"
+}

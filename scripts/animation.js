@@ -80,8 +80,6 @@ export async function smoothAnimate(to, from, duration, transformFunc, timingFun
     const clock = new Clock();
     let handle = null;
 
-    function update() {}
-
     function draw() {
         const c = clamp(clock.elapsedTicks, 0, duration);
         const v = timingFunc(c, from, distance, duration);
@@ -101,7 +99,6 @@ export async function smoothAnimate(to, from, duration, transformFunc, timingFun
             delta -= clock.timeStep;
             clock.tick();
 
-            update();
             if (updateSteps++ >= clock.timeOut || force) {
                 break;
             }
@@ -113,11 +110,13 @@ export async function smoothAnimate(to, from, duration, transformFunc, timingFun
             return true;
         } else {
             handle = requestAnimationFrame(animationLoop);
+            return false;
         }
     }
     clock.start();
     handle = requestAnimationFrame(animationLoop);
     await sleep(duration);
+
     return handle;
 }
 
@@ -129,6 +128,8 @@ export function animationLoopOuter(
 ) {
     const clock = new Clock(true, timeStep, timeOut);
     let handle = null;
+    let force = false;
+    let intervalId = null;
 
     function update() {
         return updateFunc(clock.elapsedTicks) ?? false;
@@ -143,7 +144,6 @@ export function animationLoopOuter(
 
         let delta = clock.delta;
         let updateSteps = 0;
-        let force = false;
 
         while (delta >= clock.timeStep) {
             delta -= clock.timeStep;
@@ -154,22 +154,27 @@ export function animationLoopOuter(
             }
         }
 
-        force = draw();
+        force |= draw();
 
         if (force) {
             return true;
         } else {
             handle = requestAnimationFrame(animationLoop);
+            return false;
         }
     }
-    setInterval(() => {
-        if (update()) {
-            return;
+
+    intervalId = setInterval(() => {
+        force |= update();
+        if (force) {
+            clearInterval(intervalId);
+            cancelAnimationFrame(handle);
         }
-    }, timeStep);
+    }, clock.timeStep);
 
     clock.start();
     handle = requestAnimationFrame(animationLoop);
+
     return handle;
 }
 

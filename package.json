@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/TheFridayInstitute/speedtest#readme",
   "dependencies": {
+    "prettier": "^2.0.5",
     "typescript-eslint": "0.0.1-alpha.0"
   },
   "devDependencies": {

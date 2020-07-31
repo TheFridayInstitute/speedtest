@@ -87,8 +87,7 @@ export async function smoothAnimate(to, from, duration, transformFunc, timingFun
         const v = timingFunc(c, from, distance, duration);
         const t = timingFunc(c, 0, 1, duration);
 
-        const b = transformFunc(v, t) || false;
-        return b;
+        return transformFunc(v, t) ?? false;
     }
 
     function animationLoop() {
@@ -122,16 +121,21 @@ export async function smoothAnimate(to, from, duration, transformFunc, timingFun
     return handle;
 }
 
-export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
+export function animationLoopOuter(
+    updateFunc,
+    drawFunc,
+    timeStep = 1000 / 60,
+    timeOut = 120
+) {
     const clock = new Clock(true, timeStep, timeOut);
     let handle = null;
 
     function update() {
-        return updateFunc(clock.elapsedTicks) || false;
+        return updateFunc(clock.elapsedTicks) ?? false;
     }
 
     function draw() {
-        return drawFunc(clock.elapsedTicks) || false;
+        return drawFunc(clock.elapsedTicks) ?? false;
     }
 
     function animationLoop() {
@@ -144,8 +148,6 @@ export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
         while (delta >= clock.timeStep) {
             delta -= clock.timeStep;
             clock.tick();
-
-            force = update();
 
             if (updateSteps++ >= clock.timeOut || force) {
                 break;
@@ -160,6 +162,11 @@ export function animationLoopOuter(updateFunc, drawFunc, timeStep, timeOut) {
             handle = requestAnimationFrame(animationLoop);
         }
     }
+    setInterval(() => {
+        if (update()) {
+            return;
+        }
+    }, timeStep);
 
     clock.start();
     handle = requestAnimationFrame(animationLoop);

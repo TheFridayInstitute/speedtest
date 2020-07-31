@@ -299,6 +299,7 @@ main {
     }
 
     .amount {
+        font-weight: bold;
         height: var(--font-size-lg);
         font-size: var(--font-size-lg);
     }
@@ -337,7 +338,7 @@ main {
     .speedtest-container {
         column-gap: var(--column-gap);
         grid-template-areas: "speedtest info";
-        grid-template-columns: 3fr 1fr;
+        grid-template-columns: 2fr 1fr;
         grid-template-rows: 1fr;
 
         .info-container {

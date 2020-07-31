@@ -147,7 +147,7 @@ const postMessage = function (
     return new Promise((resolve, reject) => {
         if (eventObject != null) {
             console.log(`Posting event message of ${windowMessage.message}`);
-            // @ts-ignore
+            // @ts-expect-error
             eventObject.source.postMessage(windowMessage, eventObject.origin);
             resolve(windowMessage);
         } else {
@@ -459,6 +459,7 @@ const updateStateInfo = function (
     } else if (state === 1) {
         //
     } else if (state === 2) {
+        console.log(stateName);
         const unitInfo = getUnitAmountAndKind(stateName);
 
         animateProgressBarEl();
@@ -471,6 +472,34 @@ const updateStateInfo = function (
 };
 
 const animationLoopUpdate = function () {
+    if (speedtestData == null || speedtestObject.getState() < 3) {
+        return false;
+    }
+
+    const stateName = getStateName();
+    updateTestState(testStateObj);
+    const meterInfoElement = $(".speedtest-container .info-container");
+
+    let meterInfo = getUnitAmountAndKind(stateName);
+
+    if (stateName === "ping") {
+        meterInfo = Object.assign(meterInfo, {
+            footer: "Latency"
+        });
+    } else if (stateName === "download") {
+        meterInfo = Object.assign(meterInfo, {
+            kind: "↓",
+            footer: "Download"
+        });
+    } else if (stateName === "upload") {
+        meterInfo = Object.assign(meterInfo, {
+            kind: "↑",
+            footer: "Upload"
+        });
+    }
+    setUnitInfo(meterInfo, meterInfoElement);
+    updateStateInfo(stateName, testStateObj);
+
     return false;
 };
 
@@ -479,40 +508,20 @@ const animationLoopDraw = function () {
         return false;
     }
 
-    const meterInfoElement = $(".speedtest-container .info-container");
     const stateName = getStateName();
 
-    updateTestState(testStateObj);
-
     if (stateName === "ping" || stateName === "download" || stateName === "upload") {
-        updateStateInfo(stateName, testStateObj);
         // We need to clear the canvas here,
         // else we'll get a strange flashing
         // due to the canvas clearing faster than
         // we can draw.
         canvasObject.clear();
 
-        let meterInfo = getUnitAmountAndKind(stateName);
-
-        if (stateName === "ping") {
-            meterInfo = Object.assign(meterInfo, {
-                footer: "Latency"
-            });
-        } else if (stateName === "download") {
-            meterInfo = Object.assign(meterInfo, {
-                kind: "↓",
-                footer: "Download"
-            });
-        } else if (stateName === "upload") {
-            meterInfo = Object.assign(meterInfo, {
-                kind: "↑",
-                footer: "Upload"
-            });
-        }
         drawMeter(stateName);
         drawMeterProgressBar(stateName);
-        setUnitInfo(meterInfo, meterInfoElement);
     }
+
+    return false;
 };
 
 const animationLoopInit = function () {
@@ -757,11 +766,6 @@ const onstart = throttle(async function () {
         $(".text", startButton).innerHTML = "Stop";
 
         openingSlide();
-        // smoothScroll(
-        //     getOffset($("#meter")).top - window.innerHeight / 2,
-        //     window.scrollY,
-        //     1000
-        // );
 
         speedtestObject.start();
     };
@@ -834,13 +838,14 @@ async function onend() {
 
 window.onload = function () {
     onload();
+
     animationLoopInit();
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
 
 $("#start-btn").on("click", async function (ev) {
     const duration = 1000;
-    const startButton = <HTMLElement>this;
+    const startButton = <HTMLElement> this;
 
     rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
 

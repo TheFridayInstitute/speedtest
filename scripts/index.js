@@ -279,7 +279,6 @@ const updateStateInfo = function (stateName, stateObj) {
         //
     }
     else if (state === 2) {
-        console.log(stateName);
         const unitInfo = getUnitAmountAndKind(stateName);
         animateProgressBarEl();
         unitContainer.classList.remove("in-progress");
@@ -314,7 +313,7 @@ const animationLoopUpdate = function () {
     }
     setUnitInfo(meterInfo, meterInfoElement);
     updateStateInfo(stateName, testStateObj);
-    return false;
+    return stateName === "finished";
 };
 const animationLoopDraw = function () {
     if (speedtestData == null || speedtestObject.getState() < 3) {
@@ -467,8 +466,6 @@ const openingSlide = once(async function () {
     const testEl = $(".speedtest-container");
     const infoEl = $("#info-progress-container");
     const startModal = $("#start-pane");
-    const completeModal = $("#complete-pane");
-    const width = window.innerWidth;
     toggleHidden(startModal);
     [testEl, infoEl].forEach((el) => toggleHidden(el, 500));
     openingAnimation(2000, easeInOutCubic);
@@ -509,7 +506,6 @@ async function onend() {
     const startButton = $("#start-btn");
     const testEl = $(".speedtest-container");
     const completeModal = $("#complete-pane");
-    const width = window.innerWidth;
     const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
     const windowMessage = {
         message: "complete",
@@ -524,11 +520,17 @@ async function onend() {
     };
     postMessage(eventObject, windowMessage);
     startButton.classList.toggle("running");
+    await awaitHidden();
     await closingAnimation(2000, easeInOutCubic);
     await toggleHidden(testEl);
     toggleHidden(completeModal);
     $(".text", startButton).innerHTML = "Next →";
 }
+const awaitHidden = async function () {
+    while (document.hidden) {
+        await sleep(10);
+    }
+};
 window.onload = function () {
     onload();
     animationLoopInit();

@@ -419,10 +419,8 @@ const getSpeedtestStateName = function () {
     }
 };
 
-const getUnitAmountAndKind = function (stateName?: string, stateAmount?: number) {
-    if (stateAmount == null) {
-        stateAmount = getSpeedtestStateAmount(stateName);
-    }
+const getStateUnitInfo = function (stateName?: string, stateAmount?: number) {
+    stateAmount = stateAmount ?? getSpeedtestStateAmount(stateName);
 
     const unitInfo: IUnitInfo = {};
 
@@ -447,7 +445,7 @@ const getUnitAmountAndKind = function (stateName?: string, stateAmount?: number)
     return unitInfo;
 };
 
-const setUnitInfo = function (info: IUnitInfo, unitInfoElement: DomElement) {
+const setUnitElementInfo = function (info: IUnitInfo, unitInfoElement: DomElement) {
     Object.keys(info).forEach((key) => {
         $(`.${key}`, unitInfoElement).innerHTML = info[key];
     });
@@ -463,32 +461,32 @@ const updateTestStateInfo = function (stateName: string) {
     if (testState === TestState.started) {
         $(".amount", unitContainerElement).innerHTML = DOTS;
     } else if (testState === TestState.active) {
-        const unitInfoElement = $(".speedtest-container .info-container");
-        let unitInfo = getUnitAmountAndKind(stateName);
+        const meterUnitInfoElement = $(".speedtest-container .info-container");
+        let unitInfo = getStateUnitInfo(stateName);
 
         if (stateName === "ping") {
             unitInfo = { ...unitInfo, footer: "Latency" };
-            setUnitInfo(unitInfo, unitInfoElement);
+            setUnitElementInfo(unitInfo, meterUnitInfoElement);
         } else if (stateName === "download") {
             unitInfo = { ...unitInfo, kind: "↓", footer: "Download" };
-            setUnitInfo(unitInfo, unitInfoElement);
+            setUnitElementInfo(unitInfo, meterUnitInfoElement);
         } else if (stateName === "upload") {
             unitInfo = { ...unitInfo, kind: "↑", footer: "Upload" };
-            setUnitInfo(unitInfo, unitInfoElement);
+            setUnitElementInfo(unitInfo, meterUnitInfoElement);
         }
     } else if (testState === TestState.finished) {
-        const unitInfo = getUnitAmountAndKind(stateName);
+        const unitInfo = getStateUnitInfo(stateName);
 
         animateProgressBarEl();
 
         unitContainerElement.classList.remove("in-progress");
-        setUnitInfo(unitInfo, unitContainerElement);
+        setUnitElementInfo(unitInfo, unitContainerElement);
 
         testStateObject[stateName] = TestState.drawFinished;
     }
 };
 
-const updateTestState = function (testStateObject: ITestStateObject, abort = false) {
+const updateTestState = function (abort = false) {
     const testState: SpeedtestState = speedtestData.testState + 1;
     const testStateName = SPEEDTEST_STATE_MAP[testState];
     const prevTestStateName = SPEEDTEST_STATE_MAP[testStateObject.prevState];
@@ -513,14 +511,14 @@ const updateTestState = function (testStateObject: ITestStateObject, abort = fal
     }
 };
 
-const animationLoopUpdate = function () {
+const animationLoopOnupdate = function () {
     if (speedtestData == null || speedtestObject.getState() < 3) {
         return false;
     }
-    updateTestState(testStateObject);
+    updateTestState();
 };
 
-const animationLoopDraw = function () {
+const animationLoopOndraw = function () {
     if (speedtestData == null || speedtestObject.getState() < 3) {
         return false;
     }
@@ -541,7 +539,7 @@ const animationLoopDraw = function () {
     return false;
 };
 
-const animationLoopInit = function () {
+const animationLoopOnload = function () {
     // Cast the generic element to a canvas element for better linting.
     const canvas = <HTMLCanvasElement & IDollarElement>$("#meter");
     const ctx = canvas.getContext("2d");
@@ -771,8 +769,8 @@ const openingSlide = once(async function () {
 
 const onstart = throttle(async function () {
     const startButton = $("#start-btn");
-    const progressBar = $("#progress-bar");
-    const unitInfoElement = $(".speedtest-container .info-container");
+    const progressBarElement = $("#progress-bar");
+    const meterUnitInfoElement = $(".speedtest-container .info-container");
 
     const start = async function () {
         startButton.classList.add("running");
@@ -789,24 +787,24 @@ const onstart = throttle(async function () {
         startButton.classList.remove("running");
         $(".text", startButton).innerHTML = "Start";
 
-        updateTestState(testStateObject, true);
+        updateTestState(true);
         openingAnimation(2000, easeInOutCubic);
 
         await sleep(500);
 
-        setUnitInfo(
+        setUnitElementInfo(
             { amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK },
-            unitInfoElement
+            meterUnitInfoElement
         );
 
         $$(".info-progress-container .unit-container").forEach((el) => {
             el.classList.add("in-progress");
-            setUnitInfo({ amount: BLANK }, el);
+            setUnitElementInfo({ amount: BLANK }, el);
         });
         animateProgressBar(
-            progressBar,
+            progressBarElement,
             0,
-            parseFloat(progressBar.getAttribute("percent-complete")) || 0,
+            parseFloat(progressBarElement.getAttribute("percent-complete")) || 0,
             1000
         );
     };
@@ -851,8 +849,8 @@ const onend = async function () {
 
 window.onload = function () {
     onload();
-    animationLoopInit();
-    animationLoopOuter(animationLoopUpdate, animationLoopDraw);
+    animationLoopOnload();
+    animationLoopOuter(animationLoopOnupdate, animationLoopOndraw);
 };
 
 $("#start-btn").on("click", async function (ev) {

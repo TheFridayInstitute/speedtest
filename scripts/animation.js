@@ -166,6 +166,7 @@ export function animationLoopOuter(
 
     intervalId = setInterval(() => {
         force |= update();
+
         if (force) {
             clearInterval(intervalId);
             cancelAnimationFrame(handle);

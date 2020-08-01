@@ -10,6 +10,47 @@ let speedtestObject;
 let speedtestData;
 // Global state variables for the canvas
 let canvasObject;
+var TestState;
+(function (TestState) {
+    TestState[TestState["notStarted"] = 0] = "notStarted";
+    TestState[TestState["started"] = 1] = "started";
+    TestState[TestState["active"] = 2] = "active";
+    TestState[TestState["finished"] = 3] = "finished";
+    TestState[TestState["drawFinished"] = 4] = "drawFinished";
+})(TestState || (TestState = {}));
+var SpeedtestState;
+(function (SpeedtestState) {
+    SpeedtestState[SpeedtestState["notStarted"] = 0] = "notStarted";
+    SpeedtestState[SpeedtestState["started"] = 1] = "started";
+    SpeedtestState[SpeedtestState["download"] = 2] = "download";
+    SpeedtestState[SpeedtestState["ping"] = 3] = "ping";
+    SpeedtestState[SpeedtestState["upload"] = 4] = "upload";
+    SpeedtestState[SpeedtestState["finished"] = 5] = "finished";
+    SpeedtestState[SpeedtestState["aborted"] = 6] = "aborted";
+})(SpeedtestState || (SpeedtestState = {}));
+const SPEEDTEST_STATE_MAP = Object.freeze({
+    0: "notStarted",
+    1: "started",
+    2: "download",
+    3: "ping",
+    4: "upload",
+    5: "finished",
+    6: "aborted"
+});
+const SPEEDTEST_DATA_MAP = Object.freeze({
+    pingAmount: "pingStatus",
+    downloadAmount: "dlStatus",
+    uploadAmount: "ulStatus",
+    pingProgress: "pingProgress",
+    downloadProgress: "dlProgress",
+    uploadProgress: "ulProgress"
+});
+const testStateObject = {
+    ping: TestState.notStarted,
+    download: TestState.notStarted,
+    upload: TestState.notStarted,
+    prevState: SpeedtestState.notStarted
+};
 let meterObject = {
     startAngle: Math.PI * 0.8,
     endAngle: 2 * Math.PI * 1.1,
@@ -54,6 +95,11 @@ const postMessage = function (eventObject, windowMessage) {
         }
     });
 };
+const awaitHidden = async function () {
+    while (document.hidden) {
+        await sleep(10);
+    }
+};
 const generateColorStops = function (colorName, step = 0.5) {
     const stops = Math.floor(1 / step) + 1;
     return Array(stops)
@@ -71,82 +117,15 @@ const generateInnerColorStops = function (value) {
     newColor.opacity = 0.3;
     return [stop, newColor.colorString];
 };
-const SPEEDTEST_STATES = Object.freeze({
-    0: "not_started",
-    1: "started",
-    2: "download",
-    3: "ping",
-    4: "upload",
-    5: "finished",
-    6: "aborted"
-});
-const SPEEDTEST_DATA_MAPPING = Object.freeze({
-    ping_amount: "pingStatus",
-    download_amount: "dlStatus",
-    upload_amount: "ulStatus",
-    ping_progress: "pingStatus",
-    download_progress: "dlProgress",
-    upload_progress: "ulProgress"
-});
-/**
- * test state object mapping:
- * -1: not started;
- * 0: started;
- * 1: active;
- * 2: finished;
- * 3: manually set, drawing complete.
- */
-const testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
-const updateTestState = function (testStateObj, abort = false) {
-    // + 1 because we start at 0, not -1 (unlike librespeed).
-    const speedtestState = speedtestData.testState + 1;
-    const testKind = SPEEDTEST_STATES[speedtestState];
-    const prevState = testStateObj["prev_state"];
-    const prevKey = SPEEDTEST_STATES[prevState];
-    if (abort || testKind === "aborted") {
-        for (const [key] of Object.entries(testStateObj)) {
-            testStateObj[key] = -1;
-        }
-    }
-    else {
-        for (const [key, value] of Object.entries(testStateObj)) {
-            const state = value + 1;
-            if (key === testKind) {
-                if (value < 1) {
-                    testStateObj[key] = state;
-                }
-                else if (value === 2 && speedtestState !== prevState) {
-                    testStateObj[key] = 0;
-                }
-            }
-            else if (key === prevKey && value > 0 && speedtestState !== prevState) {
-                testStateObj[prevKey] = state;
-                break;
-            }
-        }
-        testStateObj["prev_state"] = speedtestState;
-    }
-    return testStateObj;
-};
 const hysteresisRecord = {};
 const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     const prevT = hysteresisRecord[key] || 0;
     const delta = Math.abs(t - prevT);
     if (delta > eps) {
-        // t = easeOutCubic(step, prevT, t - prevT, 1);
         t = lerp(step, prevT, t);
     }
     hysteresisRecord[key] = t;
     return t;
-};
-const getStateAmount = function (stateName, stateKind = "amount") {
-    const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]);
-    const upperBound = stateKind === "amount" ? 99999 : 1;
-    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
-};
-const getStateName = function () {
-    const prevState = testStateObj["prev_state"];
-    return SPEEDTEST_STATES[prevState];
 };
 const animateProgressBarEl = function () {
     animateProgressBarWrapper($("#progress-bar"), 1000, 3);
@@ -186,14 +165,79 @@ const closingAnimation = async function (duration, timingFunc) {
     };
     await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
 };
-const setUnitInfo = function (info, unitInfoElement) {
-    Object.keys(info).forEach((key) => {
-        $(`.${key}`, unitInfoElement).innerHTML = info[key];
-    });
+const drawMeter = function (stateName) {
+    const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
+    let outerMeterColor = backgroundColor;
+    let innerMeterColor = backgroundColor;
+    if (stateName === "download") {
+        outerMeterColor = outerMeter.dlColor;
+        innerMeterColor = innerMeter.dlColor;
+    }
+    else if (stateName === "upload") {
+        outerMeterColor = outerMeter.ulColor;
+        innerMeterColor = innerMeter.ulColor;
+    }
+    if (!stateName) {
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        outerMeter.mesh.draw(canvasObject, 1);
+        dot.mesh.draw(canvasObject);
+        dial.mesh
+            .rotate(meterObject.startAngle, true)
+            .draw(canvasObject)
+            .rotate(-meterObject.startAngle, true);
+    }
+    else {
+        const stateAmount = getSpeedtestStateAmount(stateName);
+        let t = normalize(clamp(stateAmount, meterObject.minValue, meterObject.maxValue), meterObject.minValue, meterObject.maxValue);
+        t = hysteresis(t, "meter");
+        const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        outerMeter.mesh.draw(canvasObject, 1);
+        // Draw the meter twice here to avoid the weird aliasing
+        // issue around the rounded end caps thereof.
+        setRoundedArcColor(outerMeter.mesh, outerMeterColor);
+        outerMeter.mesh.draw(canvasObject, t);
+        outerMeter.mesh.draw(canvasObject, t);
+        setRoundedArcColor(outerMeter.mesh, backgroundColor);
+        setRoundedArcColor(innerMeter.mesh, innerMeterColor);
+        innerMeter.mesh.draw(canvasObject, t);
+        dot.mesh.draw(canvasObject);
+        dial.mesh.rotate(theta, true).draw(canvasObject).rotate(-theta, true);
+    }
+};
+const drawMeterProgressBar = function (stateName) {
+    if (stateName == null) {
+        progressBarObject.mesh.draw(canvasObject, 0);
+    }
+    else {
+        const stateAmount = getSpeedtestStateAmount(stateName, "Progress");
+        let t = clamp(stateAmount, 0, 1);
+        t = hysteresis(t, "progressBar");
+        progressBarObject.mesh.draw(canvasObject, t);
+    }
+};
+const getSpeedtestStateAmount = function (stateName, stateKind = "Amount") {
+    if (speedtestData == null) {
+        return undefined;
+    }
+    else {
+        const key = stateName + stateKind;
+        const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAP[key]]);
+        const upperBound = stateKind === "Amount" ? 99999 : 1;
+        return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
+    }
+};
+const getSpeedtestStateName = function () {
+    if (speedtestData == null) {
+        return undefined;
+    }
+    else {
+        return SPEEDTEST_STATE_MAP[speedtestData.testState + 1];
+    }
 };
 const getUnitAmountAndKind = function (stateName, stateAmount) {
     if (stateAmount == null) {
-        stateAmount = getStateAmount(stateName);
+        stateAmount = getSpeedtestStateAmount(stateName);
     }
     const unitInfo = {};
     if (stateName === "download" || stateName === "upload") {
@@ -218,108 +262,78 @@ const getUnitAmountAndKind = function (stateName, stateAmount) {
     }
     return unitInfo;
 };
-const drawMeter = function (stateName) {
-    const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
-    let outerMeterColor = backgroundColor;
-    let innerMeterColor = backgroundColor;
-    if (stateName === "download") {
-        outerMeterColor = outerMeter.dlColor;
-        innerMeterColor = innerMeter.dlColor;
-    }
-    else if (stateName === "upload") {
-        outerMeterColor = outerMeter.ulColor;
-        innerMeterColor = innerMeter.ulColor;
-    }
-    if (!stateName) {
-        setRoundedArcColor(outerMeter.mesh, backgroundColor);
-        outerMeter.mesh.draw(canvasObject, 1);
-        dot.mesh.draw(canvasObject);
-        dial.mesh
-            .rotate(meterObject.startAngle, true)
-            .draw(canvasObject)
-            .rotate(-meterObject.startAngle, true);
-    }
-    else {
-        const stateAmount = getStateAmount(stateName);
-        let t = normalize(clamp(stateAmount, meterObject.minValue, meterObject.maxValue), meterObject.minValue, meterObject.maxValue);
-        t = hysteresis(t, "meter");
-        const theta = lerp(t, meterObject.startAngle, meterObject.endAngle);
-        setRoundedArcColor(outerMeter.mesh, backgroundColor);
-        outerMeter.mesh.draw(canvasObject, 1);
-        // Draw the meter twice here to avoid the weird aliasing
-        // issue around the rounded end caps thereof.
-        setRoundedArcColor(outerMeter.mesh, outerMeterColor);
-        outerMeter.mesh.draw(canvasObject, t);
-        outerMeter.mesh.draw(canvasObject, t);
-        setRoundedArcColor(outerMeter.mesh, backgroundColor);
-        setRoundedArcColor(innerMeter.mesh, innerMeterColor);
-        innerMeter.mesh.draw(canvasObject, t);
-        dot.mesh.draw(canvasObject);
-        dial.mesh.rotate(theta, true).draw(canvasObject).rotate(-theta, true);
-    }
+const setUnitInfo = function (info, unitInfoElement) {
+    Object.keys(info).forEach((key) => {
+        $(`.${key}`, unitInfoElement).innerHTML = info[key];
+    });
 };
-const drawMeterProgressBar = function (stateName) {
-    if (!stateName) {
-        progressBarObject.mesh.draw(canvasObject, 0);
+const updateTestStateInfo = function (stateName) {
+    if (["ping", "download", "upload"].indexOf(stateName) === -1) {
+        return;
     }
-    else {
-        const stateAmount = getStateAmount(stateName, "progress");
-        let t = clamp(stateAmount, 0, 1);
-        t = hysteresis(t, "progressBar");
-        progressBarObject.mesh.draw(canvasObject, t);
+    const unitContainerElement = $(`#${stateName} .unit-container`);
+    const testState = testStateObject[stateName];
+    if (testState === TestState.started) {
+        $(".amount", unitContainerElement).innerHTML = DOTS;
     }
-};
-const updateStateInfo = function (stateName, stateObj) {
-    const unitContainer = $(`#${stateName} .unit-container`);
-    const state = stateObj[stateName];
-    if (state === 0) {
-        $(".amount", unitContainer).innerHTML = DOTS;
+    else if (testState === TestState.active) {
+        const unitInfoElement = $(".speedtest-container .info-container");
+        let unitInfo = getUnitAmountAndKind(stateName);
+        if (stateName === "ping") {
+            unitInfo = { ...unitInfo, footer: "Latency" };
+            setUnitInfo(unitInfo, unitInfoElement);
+        }
+        else if (stateName === "download") {
+            unitInfo = { ...unitInfo, kind: "↓", footer: "Download" };
+            setUnitInfo(unitInfo, unitInfoElement);
+        }
+        else if (stateName === "upload") {
+            unitInfo = { ...unitInfo, kind: "↑", footer: "Upload" };
+            setUnitInfo(unitInfo, unitInfoElement);
+        }
     }
-    else if (state === 1) {
-        //
-    }
-    else if (state === 2) {
+    else if (testState === TestState.finished) {
         const unitInfo = getUnitAmountAndKind(stateName);
         animateProgressBarEl();
-        unitContainer.classList.remove("in-progress");
-        setUnitInfo(unitInfo, unitContainer);
-        stateObj[stateName] = 3;
+        unitContainerElement.classList.remove("in-progress");
+        setUnitInfo(unitInfo, unitContainerElement);
+        testStateObject[stateName] = TestState.drawFinished;
+    }
+};
+const updateTestState = function (testStateObject, abort = false) {
+    const testState = speedtestData.testState + 1;
+    const testStateName = SPEEDTEST_STATE_MAP[testState];
+    const prevTestStateName = SPEEDTEST_STATE_MAP[testStateObject.prevState];
+    if (abort) {
+        Object.keys(testStateObject).forEach((key) => {
+            testStateObject[key] = TestState.notStarted;
+        });
+    }
+    else {
+        if (testStateObject.prevState != SpeedtestState.notStarted &&
+            testState !== testStateObject.prevState) {
+            testStateObject[testStateName] = TestState.started;
+            testStateObject[prevTestStateName] = TestState.finished;
+            updateTestStateInfo(prevTestStateName);
+        }
+        else {
+            testStateObject[testStateName] = TestState.active;
+        }
+        testStateObject.prevState = testState;
+        updateTestStateInfo(testStateName);
     }
 };
 const animationLoopUpdate = function () {
     if (speedtestData == null || speedtestObject.getState() < 3) {
         return false;
     }
-    const stateName = getStateName();
-    updateTestState(testStateObj);
-    const meterInfoElement = $(".speedtest-container .info-container");
-    let meterInfo = getUnitAmountAndKind(stateName);
-    if (stateName === "ping") {
-        meterInfo = Object.assign(meterInfo, {
-            footer: "Latency"
-        });
-    }
-    else if (stateName === "download") {
-        meterInfo = Object.assign(meterInfo, {
-            kind: "↓",
-            footer: "Download"
-        });
-    }
-    else if (stateName === "upload") {
-        meterInfo = Object.assign(meterInfo, {
-            kind: "↑",
-            footer: "Upload"
-        });
-    }
-    setUnitInfo(meterInfo, meterInfoElement);
-    updateStateInfo(stateName, testStateObj);
-    return stateName === "finished";
+    updateTestState(testStateObject);
 };
 const animationLoopDraw = function () {
     if (speedtestData == null || speedtestObject.getState() < 3) {
         return false;
     }
-    const stateName = getStateName();
+    const stateName = getSpeedtestStateName();
     if (stateName === "ping" || stateName === "download" || stateName === "upload") {
         // We need to clear the canvas here,
         // else we'll get a strange flashing
@@ -470,11 +484,10 @@ const openingSlide = once(async function () {
     [testEl, infoEl].forEach((el) => toggleHidden(el, 500));
     openingAnimation(2000, easeInOutCubic);
 });
-// TODO: remove start animation.
 const onstart = throttle(async function () {
     const startButton = $("#start-btn");
     const progressBar = $("#progress-bar");
-    const meterInfoElement = $(".speedtest-container .info-container");
+    const unitInfoElement = $(".speedtest-container .info-container");
     const start = async function () {
         startButton.classList.add("running");
         $(".text", startButton).innerHTML = "Stop";
@@ -485,10 +498,10 @@ const onstart = throttle(async function () {
         speedtestObject.abort();
         startButton.classList.remove("running");
         $(".text", startButton).innerHTML = "Start";
-        updateTestState(testStateObj, true);
+        updateTestState(testStateObject, true);
         openingAnimation(2000, easeInOutCubic);
         await sleep(500);
-        setUnitInfo({ amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK }, meterInfoElement);
+        setUnitInfo({ amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK }, unitInfoElement);
         $$(".info-progress-container .unit-container").forEach((el) => {
             el.classList.add("in-progress");
             setUnitInfo({ amount: BLANK }, el);
@@ -502,7 +515,7 @@ const onstart = throttle(async function () {
         start();
     }
 }, 500);
-async function onend() {
+const onend = async function () {
     const startButton = $("#start-btn");
     const testEl = $(".speedtest-container");
     const completeModal = $("#complete-pane");
@@ -525,11 +538,6 @@ async function onend() {
     await toggleHidden(testEl);
     toggleHidden(completeModal);
     $(".text", startButton).innerHTML = "Next →";
-}
-const awaitHidden = async function () {
-    while (document.hidden) {
-        await sleep(10);
-    }
 };
 window.onload = function () {
     onload();
@@ -540,7 +548,7 @@ $("#start-btn").on("click", async function (ev) {
     const duration = 1000;
     const startButton = this;
     rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
-    const stateName = getStateName();
+    const stateName = getSpeedtestStateName();
     if (stateName !== "finished") {
         onstart();
     }

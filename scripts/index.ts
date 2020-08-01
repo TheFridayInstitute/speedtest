@@ -101,6 +101,68 @@ interface IWindowMessage {
     data: { [arg: string]: string };
 }
 
+enum TestState {
+    notStarted = 0,
+    started = 1,
+    active = 2,
+    finished = 3,
+    drawFinished = 4
+}
+
+enum SpeedtestState {
+    notStarted = 0,
+    started = 1,
+    download = 2,
+    ping = 3,
+    upload = 4,
+    finished = 5,
+    aborted = 6
+}
+
+const SPEEDTEST_STATE_MAP = Object.freeze({
+    0: "notStarted",
+    1: "started",
+    2: "download",
+    3: "ping",
+    4: "upload",
+    5: "finished",
+    6: "aborted"
+});
+
+const SPEEDTEST_DATA_MAP = Object.freeze({
+    pingAmount: "pingStatus",
+    downloadAmount: "dlStatus",
+    uploadAmount: "ulStatus",
+    pingProgress: "pingProgress",
+    downloadProgress: "dlProgress",
+    uploadProgress: "ulProgress"
+});
+
+interface ITestStateObject {
+    ping: TestState;
+    download: TestState;
+    upload: TestState;
+
+    prevState: SpeedtestState;
+}
+
+interface IUnitInfo {
+    amount?: string;
+    unit?: string;
+    kind?: string;
+
+    header?: string;
+    footer?: string;
+}
+
+const testStateObject: ITestStateObject = {
+    ping: TestState.notStarted,
+    download: TestState.notStarted,
+    upload: TestState.notStarted,
+
+    prevState: SpeedtestState.notStarted
+};
+
 let meterObject: IMeterObject = {
     startAngle: Math.PI * 0.8,
     endAngle: 2 * Math.PI * 1.1,
@@ -156,6 +218,12 @@ const postMessage = function (
     });
 };
 
+const awaitHidden = async function () {
+    while (document.hidden) {
+        await sleep(10);
+    }
+};
+
 const generateColorStops = function (
     colorName: string,
     step = 0.5
@@ -180,92 +248,15 @@ const generateInnerColorStops = function (value: [number, string]): [number, str
     return [stop, newColor.colorString];
 };
 
-const SPEEDTEST_STATES = Object.freeze({
-    0: "not_started",
-    1: "started",
-    2: "download",
-    3: "ping",
-    4: "upload",
-    5: "finished",
-    6: "aborted"
-});
-
-const SPEEDTEST_DATA_MAPPING = Object.freeze({
-    ping_amount: "pingStatus",
-    download_amount: "dlStatus",
-    upload_amount: "ulStatus",
-    ping_progress: "pingStatus",
-    download_progress: "dlProgress",
-    upload_progress: "ulProgress"
-});
-
-/**
- * test state object mapping:
- * -1: not started;
- * 0: started;
- * 1: active;
- * 2: finished;
- * 3: manually set, drawing complete.
- */
-const testStateObj = { ping: -1, download: -1, upload: -1, prev_state: -1 };
-
-const updateTestState = function (
-    testStateObj: { [s: string]: number },
-    abort = false
-) {
-    // + 1 because we start at 0, not -1 (unlike librespeed).
-    const speedtestState = speedtestData.testState + 1;
-    const testKind = SPEEDTEST_STATES[speedtestState];
-    const prevState = testStateObj["prev_state"];
-    const prevKey = SPEEDTEST_STATES[prevState];
-
-    if (abort || testKind === "aborted") {
-        for (const [key] of Object.entries(testStateObj)) {
-            testStateObj[key] = -1;
-        }
-    } else {
-        for (const [key, value] of Object.entries(testStateObj)) {
-            const state = value + 1;
-
-            if (key === testKind) {
-                if (value < 1) {
-                    testStateObj[key] = state;
-                } else if (value === 2 && speedtestState !== prevState) {
-                    testStateObj[key] = 0;
-                }
-            } else if (key === prevKey && value > 0 && speedtestState !== prevState) {
-                testStateObj[prevKey] = state;
-                break;
-            }
-        }
-        testStateObj["prev_state"] = speedtestState;
-    }
-    return testStateObj;
-};
-
 const hysteresisRecord = {};
 const hysteresis = function (t: number, key: string, eps = 0.01, step = 1 / 15) {
     const prevT = hysteresisRecord[key] || 0;
     const delta = Math.abs(t - prevT);
     if (delta > eps) {
-        // t = easeOutCubic(step, prevT, t - prevT, 1);
         t = lerp(step, prevT, t);
     }
     hysteresisRecord[key] = t;
     return t;
-};
-
-const getStateAmount = function (stateName: string, stateKind = "amount") {
-    const stateAmount = parseFloat(
-        speedtestData[SPEEDTEST_DATA_MAPPING[stateName + "_" + stateKind]]
-    );
-    const upperBound = stateKind === "amount" ? 99999 : 1;
-    return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
-};
-
-const getStateName = function () {
-    const prevState = testStateObj["prev_state"];
-    return SPEEDTEST_STATES[prevState];
 };
 
 const animateProgressBarEl = function () {
@@ -343,43 +334,6 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
     );
 };
 
-const setUnitInfo = function (
-    info: { [arg: string]: string },
-    unitInfoElement: DomElement
-) {
-    Object.keys(info).forEach((key) => {
-        $(`.${key}`, unitInfoElement).innerHTML = info[key];
-    });
-};
-
-const getUnitAmountAndKind = function (stateName: string, stateAmount?: number) {
-    if (stateAmount == null) {
-        stateAmount = getStateAmount(stateName);
-    }
-
-    const unitInfo: { [arg: string]: string } = {};
-
-    if (stateName === "download" || stateName === "upload") {
-        if (stateAmount < 1000) {
-            unitInfo["unit"] = "Mbps";
-        } else if (stateAmount >= 1000) {
-            unitInfo["unit"] = "Gbps";
-            stateAmount /= 1000;
-        }
-        unitInfo["amount"] = stateAmount.toPrecision(3);
-    } else if (stateName === "ping") {
-        if (stateAmount < 1000) {
-            unitInfo["unit"] = "ms";
-        } else if (stateAmount >= 1000) {
-            unitInfo["unit"] = "s";
-            stateAmount /= 1000;
-        }
-        unitInfo["amount"] = stateAmount.toPrecision(3);
-    }
-
-    return unitInfo;
-};
-
 const drawMeter = function (stateName: string) {
     const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
 
@@ -404,7 +358,7 @@ const drawMeter = function (stateName: string) {
             .draw(canvasObject)
             .rotate(-meterObject.startAngle, true);
     } else {
-        const stateAmount = getStateAmount(stateName);
+        const stateAmount = getSpeedtestStateAmount(stateName);
         let t = normalize(
             clamp(stateAmount, meterObject.minValue, meterObject.maxValue),
             meterObject.minValue,
@@ -433,11 +387,11 @@ const drawMeter = function (stateName: string) {
     }
 };
 
-const drawMeterProgressBar = function (stateName: string) {
-    if (!stateName) {
+const drawMeterProgressBar = function (stateName?: string) {
+    if (stateName == null) {
         progressBarObject.mesh.draw(canvasObject, 0);
     } else {
-        const stateAmount = getStateAmount(stateName, "progress");
+        const stateAmount = getSpeedtestStateAmount(stateName, "Progress");
 
         let t = clamp(stateAmount, 0, 1);
         t = hysteresis(t, "progressBar");
@@ -445,28 +399,117 @@ const drawMeterProgressBar = function (stateName: string) {
     }
 };
 
-const updateStateInfo = function (
-    stateName: string,
-    stateObj: {
-        [x: string]: number;
-    }
-) {
-    const unitContainer = $(`#${stateName} .unit-container`);
-    const state = stateObj[stateName];
+const getSpeedtestStateAmount = function (stateName: string, stateKind = "Amount") {
+    if (speedtestData == null) {
+        return undefined;
+    } else {
+        const key = stateName + stateKind;
+        const stateAmount = parseFloat(speedtestData[SPEEDTEST_DATA_MAP[key]]);
+        const upperBound = stateKind === "Amount" ? 99999 : 1;
 
-    if (state === 0) {
-        $(".amount", unitContainer).innerHTML = DOTS;
-    } else if (state === 1) {
-        //
-    } else if (state === 2) {
+        return Number.isNaN(stateAmount) ? 0 : clamp(stateAmount, 0, upperBound);
+    }
+};
+
+const getSpeedtestStateName = function () {
+    if (speedtestData == null) {
+        return undefined;
+    } else {
+        return SPEEDTEST_STATE_MAP[speedtestData.testState + 1];
+    }
+};
+
+const getUnitAmountAndKind = function (stateName?: string, stateAmount?: number) {
+    if (stateAmount == null) {
+        stateAmount = getSpeedtestStateAmount(stateName);
+    }
+
+    const unitInfo: IUnitInfo = {};
+
+    if (stateName === "download" || stateName === "upload") {
+        if (stateAmount < 1000) {
+            unitInfo["unit"] = "Mbps";
+        } else if (stateAmount >= 1000) {
+            unitInfo["unit"] = "Gbps";
+            stateAmount /= 1000;
+        }
+        unitInfo["amount"] = stateAmount.toPrecision(3);
+    } else if (stateName === "ping") {
+        if (stateAmount < 1000) {
+            unitInfo["unit"] = "ms";
+        } else if (stateAmount >= 1000) {
+            unitInfo["unit"] = "s";
+            stateAmount /= 1000;
+        }
+        unitInfo["amount"] = stateAmount.toPrecision(3);
+    }
+
+    return unitInfo;
+};
+
+const setUnitInfo = function (info: IUnitInfo, unitInfoElement: DomElement) {
+    Object.keys(info).forEach((key) => {
+        $(`.${key}`, unitInfoElement).innerHTML = info[key];
+    });
+};
+
+const updateTestStateInfo = function (stateName: string) {
+    if (["ping", "download", "upload"].indexOf(stateName) === -1) {
+        return;
+    }
+    const unitContainerElement = $(`#${stateName} .unit-container`);
+    const testState = testStateObject[stateName];
+
+    if (testState === TestState.started) {
+        $(".amount", unitContainerElement).innerHTML = DOTS;
+    } else if (testState === TestState.active) {
+        const unitInfoElement = $(".speedtest-container .info-container");
+        let unitInfo = getUnitAmountAndKind(stateName);
+
+        if (stateName === "ping") {
+            unitInfo = { ...unitInfo, footer: "Latency" };
+            setUnitInfo(unitInfo, unitInfoElement);
+        } else if (stateName === "download") {
+            unitInfo = { ...unitInfo, kind: "↓", footer: "Download" };
+            setUnitInfo(unitInfo, unitInfoElement);
+        } else if (stateName === "upload") {
+            unitInfo = { ...unitInfo, kind: "↑", footer: "Upload" };
+            setUnitInfo(unitInfo, unitInfoElement);
+        }
+    } else if (testState === TestState.finished) {
         const unitInfo = getUnitAmountAndKind(stateName);
 
         animateProgressBarEl();
 
-        unitContainer.classList.remove("in-progress");
-        setUnitInfo(unitInfo, unitContainer);
+        unitContainerElement.classList.remove("in-progress");
+        setUnitInfo(unitInfo, unitContainerElement);
 
-        stateObj[stateName] = 3;
+        testStateObject[stateName] = TestState.drawFinished;
+    }
+};
+
+const updateTestState = function (testStateObject: ITestStateObject, abort = false) {
+    const testState: SpeedtestState = speedtestData.testState + 1;
+    const testStateName = SPEEDTEST_STATE_MAP[testState];
+    const prevTestStateName = SPEEDTEST_STATE_MAP[testStateObject.prevState];
+
+    if (abort) {
+        Object.keys(testStateObject).forEach((key) => {
+            testStateObject[key] = TestState.notStarted;
+        });
+    } else {
+        if (
+            testStateObject.prevState != SpeedtestState.notStarted &&
+            testState !== testStateObject.prevState
+        ) {
+            testStateObject[testStateName] = TestState.started;
+            testStateObject[prevTestStateName] = TestState.finished;
+            updateTestStateInfo(prevTestStateName);
+        } else {
+            testStateObject[testStateName] = TestState.active;
+        }
+        testStateObject.prevState = testState;
+        updateTestStateInfo(testStateName);
     }
 };
 
@@ -474,32 +517,7 @@ const animationLoopUpdate = function () {
     if (speedtestData == null || speedtestObject.getState() < 3) {
         return false;
     }
-
-    const stateName = getStateName();
-    updateTestState(testStateObj);
-    const meterInfoElement = $(".speedtest-container .info-container");
-
-    let meterInfo = getUnitAmountAndKind(stateName);
-
-    if (stateName === "ping") {
-        meterInfo = Object.assign(meterInfo, {
-            footer: "Latency"
-        });
-    } else if (stateName === "download") {
-        meterInfo = Object.assign(meterInfo, {
-            kind: "↓",
-            footer: "Download"
-        });
-    } else if (stateName === "upload") {
-        meterInfo = Object.assign(meterInfo, {
-            kind: "↑",
-            footer: "Upload"
-        });
-    }
-    setUnitInfo(meterInfo, meterInfoElement);
-    updateStateInfo(stateName, testStateObj);
-
-    return stateName === "finished";
+    updateTestState(testStateObject);
 };
 
 const animationLoopDraw = function () {
@@ -507,7 +525,7 @@ const animationLoopDraw = function () {
         return false;
     }
 
-    const stateName = getStateName();
+    const stateName = getSpeedtestStateName();
 
     if (stateName === "ping" || stateName === "download" || stateName === "upload") {
         // We need to clear the canvas here,
@@ -751,11 +769,10 @@ const openingSlide = once(async function () {
     openingAnimation(2000, easeInOutCubic);
 });
 
-// TODO: remove start animation.
 const onstart = throttle(async function () {
     const startButton = $("#start-btn");
     const progressBar = $("#progress-bar");
-    const meterInfoElement = $(".speedtest-container .info-container");
+    const unitInfoElement = $(".speedtest-container .info-container");
 
     const start = async function () {
         startButton.classList.add("running");
@@ -772,14 +789,14 @@ const onstart = throttle(async function () {
         startButton.classList.remove("running");
         $(".text", startButton).innerHTML = "Start";
 
-        updateTestState(testStateObj, true);
+        updateTestState(testStateObject, true);
         openingAnimation(2000, easeInOutCubic);
 
         await sleep(500);
 
         setUnitInfo(
             { amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK },
-            meterInfoElement
+            unitInfoElement
         );
 
         $$(".info-progress-container .unit-container").forEach((el) => {
@@ -801,7 +818,7 @@ const onstart = throttle(async function () {
     }
 }, 500);
 
-async function onend() {
+const onend = async function () {
     const startButton = $("#start-btn");
     const testEl = $(".speedtest-container");
     const completeModal = $("#complete-pane");
@@ -830,17 +847,10 @@ async function onend() {
 
     toggleHidden(completeModal);
     $(".text", startButton).innerHTML = "Next →";
-}
-
-const awaitHidden = async function () {
-    while (document.hidden) {
-        await sleep(10);
-    }
 };
 
 window.onload = function () {
     onload();
-
     animationLoopInit();
     animationLoopOuter(animationLoopUpdate, animationLoopDraw);
 };
@@ -851,7 +861,7 @@ $("#start-btn").on("click", async function (ev) {
 
     rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
 
-    const stateName = getStateName();
+    const stateName = getSpeedtestStateName();
 
     if (stateName !== "finished") {
         onstart();

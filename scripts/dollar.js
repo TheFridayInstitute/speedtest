@@ -83,4 +83,4 @@ function $(query, context = document) {
         return Object.assign(node, dollarFunctions);
     }
 }
-export { $, $$ };
+export { $$, $ };

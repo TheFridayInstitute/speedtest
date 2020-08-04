@@ -158,6 +158,7 @@
         var(--box-shadow-sr) var(--box-shadow-color);
     outline: 0;
     transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 500ms;
+    cursor: pointer;
 
     &:hover {
         --box-shadow-vl: 7px;

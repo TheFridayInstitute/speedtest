@@ -835,11 +835,10 @@ const onend = async function () {
     $(".text", startButton).innerHTML = "Next →";
 };
 
-$("#start-btn").on("click", async function (ev) {
+$(document.getElementById("start-btn")).on("click", function (ev) {
     const duration = 1000;
-    const startButton = <HTMLElement>this;
 
-    rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
+    rippleButton(ev, this, $(".ripple", this), 15, 0, duration);
 
     const stateName = getSpeedtestStateName();
 

@@ -563,27 +563,24 @@ const onend = function () {
         $(".text", startButton).innerHTML = "Next →";
     });
 };
-$("#start-btn").on("click", function (ev) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const duration = 1000;
-        const startButton = this;
-        rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
-        const stateName = getSpeedtestStateName();
-        if (stateName !== "finished") {
-            onstart();
-        }
-        else {
-            const windowMessage = {
-                message: "next",
-                key: "password",
-                data: {}
-            };
-            postMessage(eventObject, windowMessage).catch(() => {
-                console.error("Cannot post to null event object. Aborting.");
-                $(".modal").classList.toggle("visible");
-            });
-        }
-    });
+$(document.getElementById("start-btn")).on("click", function (ev) {
+    const duration = 1000;
+    rippleButton(ev, this, $(".ripple", this), 15, 0, duration);
+    const stateName = getSpeedtestStateName();
+    if (stateName !== "finished") {
+        onstart();
+    }
+    else {
+        const windowMessage = {
+            message: "next",
+            key: "password",
+            data: {}
+        };
+        postMessage(eventObject, windowMessage).catch(() => {
+            console.error("Cannot post to null event object. Aborting.");
+            $(".modal").classList.toggle("visible");
+        });
+    }
 });
 $(window).on("load", function () {
     onload();

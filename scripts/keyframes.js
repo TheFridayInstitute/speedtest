@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 /* eslint-disable quote-props */
 /* eslint-disable guard-for-in */
 import { lerp, easeInOutCubic, easeInBounce } from "./math.js";
@@ -158,66 +167,67 @@ const lerpValues = function (t, from, to) {
     }
 };
 const createInterpCallback = function (duration, startPercent, endPercent, elements, timingFunc) {
-    const interpCallback = async function (props) {
-        const subDuration = ((endPercent - startPercent) / 100) * duration;
-        const transformFunc = function (_, t) {
-            elements.forEach((element) => {
-                const elementAttributes = { styles: {} };
-                props.forEach((prop) => {
-                    const { keys, value1, value2 } = prop;
-                    const from = evalIfFunction(value1, element);
-                    const to = evalIfFunction(value2, element);
-                    const v = lerpValues(t, from, to);
-                    if (keys[0] === "styles") {
-                        elementAttributes["styles"] = mutateCSSObject(elementAttributes.styles, v, keys);
-                    }
-                    else {
-                        const key = keys.join(" ");
-                        elementAttributes[key] = v;
-                    }
+    const interpCallback = function (props) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const subDuration = ((endPercent - startPercent) / 100) * duration;
+            const transformFunc = function (_, t) {
+                elements.forEach((element) => {
+                    const elementAttributes = { styles: {} };
+                    props.forEach((prop) => {
+                        const { keys, value1, value2 } = prop;
+                        const from = evalIfFunction(value1, element);
+                        const to = evalIfFunction(value2, element);
+                        const v = lerpValues(t, from, to);
+                        if (keys[0] === "styles") {
+                            elementAttributes["styles"] = mutateCSSObject(elementAttributes.styles, v, keys);
+                        }
+                        else {
+                            const key = keys.join(" ");
+                            elementAttributes[key] = v;
+                        }
+                    });
+                    console.log(elementAttributes);
+                    element.setattr(elementAttributes);
                 });
-                console.log(elementAttributes);
-                element.setattr(elementAttributes);
-            });
-        };
-        await smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);
+            };
+            yield smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);
+        });
     };
     return interpCallback;
 };
-const animateKeyframes = async function (elements, keyframes, duration, timingFunc = easeInOutCubic) {
-    const keyframePredicate = (key) => {
-        return key.unit == null;
-    };
-    const keyframesCopy = Object.assign({}, keyframes);
-    const keys = Object.keys(keyframes);
-    for (let index = 0; index < keys.length; index++) {
-        if (index < keys.length - 1) {
-            const [keyframeKey1, keyframeKey2] = [keys[index], keys[index + 1]];
-            const [startPercent, endPercent] = [
-                parseFloat(keyframeKey1),
-                parseFloat(keyframeKey2)
-            ];
-            const [keyframe1, keyframe2] = [
-                keyframesCopy[keyframeKey1],
-                keyframesCopy[keyframeKey2]
-            ];
-            const [props1, elements1] = [keyframe1.properties, keyframe1.elements];
-            const [props2, elements2] = [keyframe2.properties, keyframe2.elements];
-            const commonElements = elements1.reduce((acc, elementIndex) => {
-                if (elements2.indexOf(elementIndex) !== -1) {
-                    acc.push(elements[elementIndex]);
-                }
-                return acc;
-            }, []);
-            const interpCallback = createInterpCallback(duration, startPercent, endPercent, commonElements, timingFunc);
-            const props = recurseProperties(props1, props2, keyframePredicate);
-            await interpCallback(props);
-            keyframesCopy[keyframeKey2].styles = {
-                ...keyframesCopy[keyframeKey1].styles,
-                ...keyframesCopy[keyframeKey2].styles
-            };
+const animateKeyframes = function (elements, keyframes, duration, timingFunc = easeInOutCubic) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const keyframePredicate = (key) => {
+            return key.unit == null;
+        };
+        const keyframesCopy = Object.assign({}, keyframes);
+        const keys = Object.keys(keyframes);
+        for (let index = 0; index < keys.length; index++) {
+            if (index < keys.length - 1) {
+                const [keyframeKey1, keyframeKey2] = [keys[index], keys[index + 1]];
+                const [startPercent, endPercent] = [
+                    parseFloat(keyframeKey1),
+                    parseFloat(keyframeKey2)
+                ];
+                const [keyframe1, keyframe2] = [
+                    keyframesCopy[keyframeKey1],
+                    keyframesCopy[keyframeKey2]
+                ];
+                const [props1, elements1] = [keyframe1.properties, keyframe1.elements];
+                const [props2, elements2] = [keyframe2.properties, keyframe2.elements];
+                const commonElements = elements1.reduce((acc, elementIndex) => {
+                    if (elements2.indexOf(elementIndex) !== -1) {
+                        acc.push(elements[elementIndex]);
+                    }
+                    return acc;
+                }, []);
+                const interpCallback = createInterpCallback(duration, startPercent, endPercent, commonElements, timingFunc);
+                const props = recurseProperties(props1, props2, keyframePredicate);
+                yield interpCallback(props);
+                keyframesCopy[keyframeKey2].styles = Object.assign(Object.assign({}, keyframesCopy[keyframeKey1].styles), keyframesCopy[keyframeKey2].styles);
+            }
         }
-    }
+    });
 };
 const duration = 2000;
 animateKeyframes([$("#box1"), $("#box2")], keyframes, duration, easeInBounce);

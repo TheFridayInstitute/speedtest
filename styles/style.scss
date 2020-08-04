@@ -2,7 +2,7 @@
 @import "utils.scss";
 
 $meter-width: 32rem;
-$meter-height: 64rem;
+$meter-height: 32rem;
 $meter-padding: 10rem;
 $meter-outer-radius: 30rem;
 $max-height-multiplier: 2;
@@ -97,9 +97,9 @@ main {
     grid-template-rows: repeat(auto, 3);
     max-height: calc(min(#{$meter-height}, 100%));
     max-width: calc(min(#{$meter-width}, 100%));
-    overflow: hidden;
 
     row-gap: calc(1 * var(--column-gap));
+    overflow: hidden;
 
     .speedtest-container {
         overflow: hidden;
@@ -313,6 +313,7 @@ main {
 .hidden {
     height: 0;
     visibility: hidden;
+    pointer-events: none;
 }
 
 @media all and (orientation: landscape) and (max-height: $screen-size-lg) {

@@ -16,7 +16,6 @@ import {
     normalize,
     easeInOutCubic,
     slerpPoints,
-    bounceInEase,
     easeOutCubic,
     easeInCubic
 } from "./math.js";
@@ -24,16 +23,11 @@ import {
 import {
     smoothAnimate,
     animationLoopOuter,
-    slideRight,
     sleep,
-    slideLeft,
     createProgressBar,
     animateProgressBarWrapper,
     animateProgressBar,
     rippleButton,
-    slideRightWrap,
-    animateElements,
-    smoothScroll,
     throttle
 } from "./animation.js";
 
@@ -52,7 +46,7 @@ let speedtestData;
 // Global state variables for the canvas
 let canvasObject: Canvas;
 
-interface IMeterObject {
+interface MeterObject {
     startAngle: number;
     endAngle: number;
 
@@ -89,13 +83,13 @@ interface IMeterObject {
     };
 }
 
-interface IProgressBarObject {
+interface ProgressBarObject {
     mesh?: Mesh;
     color: CanvasColor;
     backgroundColor: CanvasColor;
 }
 
-interface IWindowMessage {
+interface WindowMessage {
     message: string;
     key: string;
     data: { [arg: string]: string };
@@ -138,7 +132,7 @@ const SPEEDTEST_DATA_MAP = Object.freeze({
     uploadProgress: "ulProgress"
 });
 
-interface ITestStateObject {
+interface TestStateObject {
     ping: TestState;
     download: TestState;
     upload: TestState;
@@ -146,7 +140,7 @@ interface ITestStateObject {
     prevState: SpeedtestState;
 }
 
-interface IUnitInfo {
+interface UnitInfo {
     amount?: string;
     unit?: string;
     kind?: string;
@@ -155,7 +149,7 @@ interface IUnitInfo {
     footer?: string;
 }
 
-const testStateObject: ITestStateObject = {
+const testStateObject: TestStateObject = {
     ping: TestState.notStarted,
     download: TestState.notStarted,
     upload: TestState.notStarted,
@@ -163,7 +157,7 @@ const testStateObject: ITestStateObject = {
     prevState: SpeedtestState.notStarted
 };
 
-let meterObject: IMeterObject = {
+let meterObject: MeterObject = {
     startAngle: Math.PI * 0.8,
     endAngle: 2 * Math.PI * 1.1,
 
@@ -175,7 +169,7 @@ let meterObject: IMeterObject = {
     backgroundColor: getComputedVariable("--meter-background-color")
 };
 
-let progressBarObject: IProgressBarObject = {
+let progressBarObject: ProgressBarObject = {
     color: "#fff",
     backgroundColor: meterObject.backgroundColor
 };
@@ -189,7 +183,6 @@ const WINDOW_KEY = "password";
 
 const receiveMessage = function (event: MessageEvent) {
     const data = event.data;
-    // TODO: add secret key here?
     if (data.key === WINDOW_KEY) {
         eventObject = event;
         console.log(`Received event data of ${data}`);
@@ -202,10 +195,7 @@ const receiveMessage = function (event: MessageEvent) {
     }
 };
 
-const postMessage = function (
-    eventObject: MessageEvent,
-    windowMessage: IWindowMessage
-) {
+const postMessage = function (eventObject: MessageEvent, windowMessage: WindowMessage) {
     return new Promise((resolve, reject) => {
         if (eventObject != null) {
             console.log(`Posting event message of ${windowMessage.message}`);
@@ -422,7 +412,7 @@ const getSpeedtestStateName = function () {
 const getStateUnitInfo = function (stateName?: string, stateAmount?: number) {
     stateAmount = stateAmount ?? getSpeedtestStateAmount(stateName);
 
-    const unitInfo: IUnitInfo = {};
+    const unitInfo: UnitInfo = {};
 
     if (stateName === "download" || stateName === "upload") {
         if (stateAmount < 1000) {
@@ -445,7 +435,7 @@ const getStateUnitInfo = function (stateName?: string, stateAmount?: number) {
     return unitInfo;
 };
 
-const setUnitElementInfo = function (info: IUnitInfo, unitInfoElement: DomElement) {
+const setUnitElementInfo = function (info: UnitInfo, unitInfoElement: DomElement) {
     Object.keys(info).forEach((key) => {
         $(`.${key}`, unitInfoElement).innerHTML = info[key];
     });
@@ -755,14 +745,11 @@ const toggleHidden = async function (el: IDollarElement & Element, duration = 10
 };
 
 const openingSlide = once(async function () {
-    const testEl = $(".speedtest-container");
-    const infoEl = $("#info-progress-container");
+    toggleHidden($("#start-pane"));
 
-    const startModal = $("#start-pane");
-
-    toggleHidden(startModal);
-
-    [testEl, infoEl].forEach((el) => toggleHidden(el, 500));
+    [$(".speedtest-container"), $("#info-progress-container")].forEach((el) =>
+        toggleHidden(el, 500)
+    );
 
     openingAnimation(2000, easeInOutCubic);
 });
@@ -801,6 +788,7 @@ const onstart = throttle(async function () {
             el.classList.add("in-progress");
             setUnitElementInfo({ amount: BLANK }, el);
         });
+
         animateProgressBar(
             progressBarElement,
             0,
@@ -814,16 +802,16 @@ const onstart = throttle(async function () {
     } else {
         start();
     }
-}, 500);
+}, 750);
 
 const onend = async function () {
     const startButton = $("#start-btn");
-    const testEl = $(".speedtest-container");
-    const completeModal = $("#complete-pane");
+    const speedtestContainer = $(".speedtest-container");
+    const completePane = $("#complete-pane");
 
     const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
 
-    const windowMessage: IWindowMessage = {
+    const windowMessage: WindowMessage = {
         message: "complete",
         key: "password",
         data: {
@@ -841,21 +829,15 @@ const onend = async function () {
     await awaitHidden();
 
     await closingAnimation(2000, easeInOutCubic);
-    await toggleHidden(testEl);
+    await toggleHidden(speedtestContainer);
 
-    toggleHidden(completeModal);
+    toggleHidden(completePane);
     $(".text", startButton).innerHTML = "Next →";
-};
-
-window.onload = function () {
-    onload();
-    animationLoopOnload();
-    animationLoopOuter(animationLoopOnupdate, animationLoopOndraw);
 };
 
 $("#start-btn").on("click", async function (ev) {
     const duration = 1000;
-    const startButton = <HTMLElement> this;
+    const startButton = <HTMLElement>this;
 
     rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
 
@@ -864,7 +846,7 @@ $("#start-btn").on("click", async function (ev) {
     if (stateName !== "finished") {
         onstart();
     } else {
-        const windowMessage: IWindowMessage = {
+        const windowMessage: WindowMessage = {
             message: "next",
             key: "password",
             data: {}
@@ -875,6 +857,12 @@ $("#start-btn").on("click", async function (ev) {
             $(".modal").classList.toggle("visible");
         });
     }
+});
+
+$(window).on("load", function () {
+    onload();
+    animationLoopOnload();
+    animationLoopOuter(animationLoopOnupdate, animationLoopOndraw);
 });
 
 $(window).on("click touchend", function (ev) {

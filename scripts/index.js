@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { Polygon, Arc, Mesh, Canvas, roundedArc, setRoundedArcColor, roundedRectangle, generateGradient } from "./canvas.js";
 import { clamp, lerp, normalize, easeInOutCubic, slerpPoints, easeOutCubic, easeInCubic } from "./math.js";
 import { smoothAnimate, animationLoopOuter, sleep, createProgressBar, animateProgressBarWrapper, animateProgressBar, rippleButton, throttle } from "./animation.js";
@@ -70,7 +79,6 @@ const PROGRESS_BAR_GRADIENT = getComputedVariable("--progress-bar-gradient");
 const WINDOW_KEY = "password";
 const receiveMessage = function (event) {
     const data = event.data;
-    // TODO: add secret key here?
     if (data.key === WINDOW_KEY) {
         eventObject = event;
         console.log(`Received event data of ${data}`);
@@ -95,10 +103,12 @@ const postMessage = function (eventObject, windowMessage) {
         }
     });
 };
-const awaitHidden = async function () {
-    while (document.hidden) {
-        await sleep(10);
-    }
+const awaitHidden = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        while (document.hidden) {
+            yield sleep(10);
+        }
+    });
 };
 const generateColorStops = function (colorName, step = 0.5) {
     const stops = Math.floor(1 / step) + 1;
@@ -130,40 +140,44 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
 const animateProgressBarEl = function () {
     animateProgressBarWrapper($("#progress-bar"), 1000, 3);
 };
-const openingAnimation = async function (duration, timingFunc) {
-    const { dot, outerMeter, dial } = meterObject;
-    const transformFunc = function (v, t) {
-        canvasObject.clear();
-        outerMeter.mesh.draw(canvasObject, t);
-        dot.mesh.draw(canvasObject, t);
-        const theta = lerp(t, meterObject.startAngle, meterObject.startAngle + 2 * Math.PI);
-        dial.mesh
-            .rotate(theta, true)
-            .scale(1)
-            .draw(canvasObject)
-            .rotate(-theta, true)
-            .scale(1);
-        progressBarObject.mesh.draw(canvasObject, 0);
-    };
-    await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
+const openingAnimation = function (duration, timingFunc) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { dot, outerMeter, dial } = meterObject;
+        const transformFunc = function (v, t) {
+            canvasObject.clear();
+            outerMeter.mesh.draw(canvasObject, t);
+            dot.mesh.draw(canvasObject, t);
+            const theta = lerp(t, meterObject.startAngle, meterObject.startAngle + 2 * Math.PI);
+            dial.mesh
+                .rotate(theta, true)
+                .scale(1)
+                .draw(canvasObject)
+                .rotate(-theta, true)
+                .scale(1);
+            progressBarObject.mesh.draw(canvasObject, 0);
+        };
+        yield smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
+    });
 };
-const closingAnimation = async function (duration, timingFunc) {
-    const { dot, outerMeter, dial } = meterObject;
-    const transformFunc = function (v, t) {
-        canvasObject.clear();
-        t = clamp(1 - t, 0.0001, 1);
-        outerMeter.mesh.draw(canvasObject, t);
-        dot.mesh.draw(canvasObject, t);
-        const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
-        dial.mesh
-            .rotate(theta, true)
-            .scale(t)
-            .draw(canvasObject)
-            .rotate(-theta, true)
-            .scale(1 / t);
-        progressBarObject.mesh.draw(canvasObject, t);
-    };
-    await smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
+const closingAnimation = function (duration, timingFunc) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { dot, outerMeter, dial } = meterObject;
+        const transformFunc = function (v, t) {
+            canvasObject.clear();
+            t = clamp(1 - t, 0.0001, 1);
+            outerMeter.mesh.draw(canvasObject, t);
+            dot.mesh.draw(canvasObject, t);
+            const theta = lerp(t, meterObject.startAngle, 4 * Math.PI + meterObject.startAngle);
+            dial.mesh
+                .rotate(theta, true)
+                .scale(t)
+                .draw(canvasObject)
+                .rotate(-theta, true)
+                .scale(1 / t);
+            progressBarObject.mesh.draw(canvasObject, t);
+        };
+        yield smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
+    });
 };
 const drawMeter = function (stateName) {
     const { dot, outerMeter, innerMeter, dial, backgroundColor } = meterObject;
@@ -236,7 +250,7 @@ const getSpeedtestStateName = function () {
     }
 };
 const getStateUnitInfo = function (stateName, stateAmount) {
-    stateAmount = stateAmount ?? getSpeedtestStateAmount(stateName);
+    stateAmount = stateAmount !== null && stateAmount !== void 0 ? stateAmount : getSpeedtestStateAmount(stateName);
     const unitInfo = {};
     if (stateName === "download" || stateName === "upload") {
         if (stateAmount < 1000) {
@@ -278,15 +292,15 @@ const updateTestStateInfo = function (stateName) {
         const meterUnitInfoElement = $(".speedtest-container .info-container");
         let unitInfo = getStateUnitInfo(stateName);
         if (stateName === "ping") {
-            unitInfo = { ...unitInfo, footer: "Latency" };
+            unitInfo = Object.assign(Object.assign({}, unitInfo), { footer: "Latency" });
             setUnitElementInfo(unitInfo, meterUnitInfoElement);
         }
         else if (stateName === "download") {
-            unitInfo = { ...unitInfo, kind: "↓", footer: "Download" };
+            unitInfo = Object.assign(Object.assign({}, unitInfo), { kind: "↓", footer: "Download" });
             setUnitElementInfo(unitInfo, meterUnitInfoElement);
         }
         else if (stateName === "upload") {
-            unitInfo = { ...unitInfo, kind: "↑", footer: "Upload" };
+            unitInfo = Object.assign(Object.assign({}, unitInfo), { kind: "↑", footer: "Upload" });
             setUnitElementInfo(unitInfo, meterUnitInfoElement);
         }
     }
@@ -431,136 +445,150 @@ const speedtestOnEnd = function (aborted) {
         onend();
     }
 };
-async function onload() {
-    // @ts-ignore
-    speedtestObject = new Speedtest();
-    speedtestObject.setParameter("getIp_ispInfo", false);
-    speedtestObject.setParameter("getIp_ispInfo_distance", false);
-    speedtestObject.onupdate = speedtestOnUpdate;
-    speedtestObject.onend = speedtestOnEnd;
-    // Progress bar for the speedtest as a whole.
-    // The progress bar object is for an individual state.
-    createProgressBar($("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
-        styles: {
-            "border-top-left-radius": BORDER_RADIUS_PRIMARY,
-            "border-bottom-left-radius": BORDER_RADIUS_PRIMARY
-        }
-    }, {
-        styles: {
-            "border-top-right-radius": BORDER_RADIUS_PRIMARY,
-            "border-bottom-right-radius": BORDER_RADIUS_PRIMARY
-        }
+function onload() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // @ts-ignore
+        speedtestObject = new Speedtest();
+        speedtestObject.setParameter("getIp_ispInfo", false);
+        speedtestObject.setParameter("getIp_ispInfo_distance", false);
+        speedtestObject.onupdate = speedtestOnUpdate;
+        speedtestObject.onend = speedtestOnEnd;
+        // Progress bar for the speedtest as a whole.
+        // The progress bar object is for an individual state.
+        createProgressBar($("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
+            styles: {
+                "border-top-left-radius": BORDER_RADIUS_PRIMARY,
+                "border-bottom-left-radius": BORDER_RADIUS_PRIMARY
+            }
+        }, {
+            styles: {
+                "border-top-right-radius": BORDER_RADIUS_PRIMARY,
+                "border-bottom-right-radius": BORDER_RADIUS_PRIMARY
+            }
+        });
     });
 }
-const toggleHidden = async function (el, duration = 1000) {
-    const hidden = el.classList.contains("hidden");
-    const height = el.clientHeight;
-    const transformFunc = function (v, t) {
-        t = hidden ? t : 0;
-        el.css({ height: `${v}px`, opacity: t });
-    };
-    if (!hidden) {
-        el.setAttribute("toggle-height", String(height));
-        const to = 0;
-        const from = height;
-        await smoothAnimate(to, from, duration, transformFunc, easeInCubic);
-        el.classList.add("hidden");
-    }
-    else {
-        el.classList.remove("hidden");
-        const to = el.getAttribute("toggle-height") ?? getOffset(el).height;
-        const from = 0;
-        await smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
-        el.css({ height: "auto" });
-    }
-};
-const openingSlide = once(async function () {
-    const testEl = $(".speedtest-container");
-    const infoEl = $("#info-progress-container");
-    const startModal = $("#start-pane");
-    toggleHidden(startModal);
-    [testEl, infoEl].forEach((el) => toggleHidden(el, 500));
-    openingAnimation(2000, easeInOutCubic);
-});
-const onstart = throttle(async function () {
-    const startButton = $("#start-btn");
-    const progressBarElement = $("#progress-bar");
-    const meterUnitInfoElement = $(".speedtest-container .info-container");
-    const start = async function () {
-        startButton.classList.add("running");
-        $(".text", startButton).innerHTML = "Stop";
-        openingSlide();
-        speedtestObject.start();
-    };
-    const abort = async function () {
-        speedtestObject.abort();
-        startButton.classList.remove("running");
-        $(".text", startButton).innerHTML = "Start";
-        updateTestState(true);
-        openingAnimation(2000, easeInOutCubic);
-        await sleep(500);
-        setUnitElementInfo({ amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK }, meterUnitInfoElement);
-        $$(".info-progress-container .unit-container").forEach((el) => {
-            el.classList.add("in-progress");
-            setUnitElementInfo({ amount: BLANK }, el);
-        });
-        animateProgressBar(progressBarElement, 0, parseFloat(progressBarElement.getAttribute("percent-complete")) || 0, 1000);
-    };
-    if (speedtestObject.getState() === 3) {
-        abort();
-    }
-    else {
-        start();
-    }
-}, 500);
-const onend = async function () {
-    const startButton = $("#start-btn");
-    const testEl = $(".speedtest-container");
-    const completeModal = $("#complete-pane");
-    const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
-    const windowMessage = {
-        message: "complete",
-        key: "password",
-        data: {
-            dlStatus: speedtestData.dlStatus,
-            ulStatus: speedtestData.ulStatus,
-            pingStatus: speedtestData.pingStatus,
-            jitterStatus: speedtestData.jitterStatus,
-            ip: ip
+const toggleHidden = function (el, duration = 1000) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const hidden = el.classList.contains("hidden");
+        const height = el.clientHeight;
+        const transformFunc = function (v, t) {
+            t = hidden ? t : 0;
+            el.css({ height: `${v}px`, opacity: t });
+        };
+        if (!hidden) {
+            el.setAttribute("toggle-height", String(height));
+            const to = 0;
+            const from = height;
+            yield smoothAnimate(to, from, duration, transformFunc, easeInCubic);
+            el.classList.add("hidden");
         }
-    };
-    postMessage(eventObject, windowMessage);
-    startButton.classList.toggle("running");
-    await awaitHidden();
-    await closingAnimation(2000, easeInOutCubic);
-    await toggleHidden(testEl);
-    toggleHidden(completeModal);
-    $(".text", startButton).innerHTML = "Next →";
+        else {
+            el.classList.remove("hidden");
+            const to = (_a = el.getAttribute("toggle-height")) !== null && _a !== void 0 ? _a : getOffset(el).height;
+            const from = 0;
+            yield smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
+            el.css({ height: "auto" });
+        }
+    });
 };
-window.onload = function () {
+const openingSlide = once(function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        toggleHidden($("#start-pane"));
+        [$(".speedtest-container"), $("#info-progress-container")].forEach((el) => toggleHidden(el, 500));
+        openingAnimation(2000, easeInOutCubic);
+    });
+});
+const onstart = throttle(function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        const startButton = $("#start-btn");
+        const progressBarElement = $("#progress-bar");
+        const meterUnitInfoElement = $(".speedtest-container .info-container");
+        const start = function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                startButton.classList.add("running");
+                $(".text", startButton).innerHTML = "Stop";
+                openingSlide();
+                speedtestObject.start();
+            });
+        };
+        const abort = function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                speedtestObject.abort();
+                startButton.classList.remove("running");
+                $(".text", startButton).innerHTML = "Start";
+                updateTestState(true);
+                openingAnimation(2000, easeInOutCubic);
+                yield sleep(500);
+                setUnitElementInfo({ amount: BLANK, unit: BLANK, footer: "Waiting...", kind: BLANK }, meterUnitInfoElement);
+                $$(".info-progress-container .unit-container").forEach((el) => {
+                    el.classList.add("in-progress");
+                    setUnitElementInfo({ amount: BLANK }, el);
+                });
+                animateProgressBar(progressBarElement, 0, parseFloat(progressBarElement.getAttribute("percent-complete")) || 0, 1000);
+            });
+        };
+        if (speedtestObject.getState() === 3) {
+            abort();
+        }
+        else {
+            start();
+        }
+    });
+}, 750);
+const onend = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        const startButton = $("#start-btn");
+        const speedtestContainer = $(".speedtest-container");
+        const completePane = $("#complete-pane");
+        const ip = String(speedtestData.clientIp).trim().split(" ")[0].trim();
+        const windowMessage = {
+            message: "complete",
+            key: "password",
+            data: {
+                dlStatus: speedtestData.dlStatus,
+                ulStatus: speedtestData.ulStatus,
+                pingStatus: speedtestData.pingStatus,
+                jitterStatus: speedtestData.jitterStatus,
+                ip: ip
+            }
+        };
+        postMessage(eventObject, windowMessage);
+        startButton.classList.toggle("running");
+        yield awaitHidden();
+        yield closingAnimation(2000, easeInOutCubic);
+        yield toggleHidden(speedtestContainer);
+        toggleHidden(completePane);
+        $(".text", startButton).innerHTML = "Next →";
+    });
+};
+$("#start-btn").on("click", function (ev) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const duration = 1000;
+        const startButton = this;
+        rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
+        const stateName = getSpeedtestStateName();
+        if (stateName !== "finished") {
+            onstart();
+        }
+        else {
+            const windowMessage = {
+                message: "next",
+                key: "password",
+                data: {}
+            };
+            postMessage(eventObject, windowMessage).catch(() => {
+                console.error("Cannot post to null event object. Aborting.");
+                $(".modal").classList.toggle("visible");
+            });
+        }
+    });
+});
+$(window).on("load", function () {
     onload();
     animationLoopOnload();
     animationLoopOuter(animationLoopOnupdate, animationLoopOndraw);
-};
-$("#start-btn").on("click", async function (ev) {
-    const duration = 1000;
-    const startButton = this;
-    rippleButton(ev, startButton, $(".ripple", startButton), 15, 0, duration);
-    const stateName = getSpeedtestStateName();
-    if (stateName !== "finished") {
-        onstart();
-    }
-    else {
-        const windowMessage = {
-            message: "next",
-            key: "password",
-            data: {}
-        };
-        postMessage(eventObject, windowMessage).catch(() => {
-            console.error("Cannot post to null event object. Aborting.");
-            $(".modal").classList.toggle("visible");
-        });
-    }
 });
 $(window).on("click touchend", function (ev) {
     const modal = $(".modal");

@@ -117,6 +117,6 @@ function $<T>(query: T, context = document) {
     }
 }
 
-export { $, $$ };
+export { $$, $ };
 
 export { IDollarElement, DomElement };

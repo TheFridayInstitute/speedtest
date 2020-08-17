@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no"
+        />
+        <meta charset="UTF-8" />
+
+        <link rel="stylesheet" href="../styles/style.css" />
+        <link rel="stylesheet" href="../styles/extras.css" />
+        <link rel="stylesheet" href="../styles/utils.css" />
+
+        <!-- <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap"
+            rel="stylesheet"
+        /> -->
+
+        <title>speedtest.fi ⏱</title>
+    </head>
+
+    <body>
+        <div class="modal">
+            <section class="pane-container">
+                <div class="content">
+                    <h1>Heads up!</h1>
+
+                    <hr />
+
+                    <p>
+                        Something went wrong and we can't progress you to the next part
+                        of the survey. Try reloading the webpage.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <main>
+            <section class="pane-container" id="start-pane">
+                <div class="content">
+                    <h1>
+                        Let's test your internet speed.
+                    </h1>
+
+                    <hr />
+
+                    <p>
+                        Up to <strong>25 MB</strong> of data on
+                        <strong>cellular</strong> or
+                        <strong>satellite</strong> connections may be consumed.
+
+                        <br />
+                        <br />
+
+                        Press the Start button to begin.
+                    </p>
+                </div>
+            </section>
+
+            <section class="pane-container hidden" id="complete-pane">
+                <div class="content">
+                    <h1>
+                        Speed test complete.
+                    </h1>
+
+                    <hr />
+
+                    <p>
+                        Click the Next → button to continue.
+                    </p>
+                </div>
+            </section>
+
+            <section class="pane-container speedtest-container hidden">
+                <div class="speedtest square-box">
+                    <canvas class="square-box" id="meter"></canvas>
+                </div>
+
+                <div class="info-container">
+                    <div class="info">
+                        <div class="header"></div>
+
+                        <div class="unit-container">
+                            <div class="amount" aria-label="active-test-speed">
+                                &nbsp;
+                            </div>
+                            <div class="unit">&nbsp;</div>
+                        </div>
+
+                        <div class="footer">Waiting...</div>
+                    </div>
+
+                    <div class="kind">&nbsp;</div>
+                </div>
+            </section>
+
+            <section
+                class="info-progress-container hidden"
+                id="info-progress-container"
+            >
+                <div class="info-container">
+                    <div class="info" id="ping">
+                        <div class="header">
+                            Latency
+                        </div>
+
+                        <div class="unit-container in-progress">
+                            <div class="amount" aria-label="latency"></div>
+                            <div class="unit">ms</div>
+                        </div>
+                    </div>
+
+                    <div class="info" id="download">
+                        <div class="header">
+                            Download
+                        </div>
+                        <div class="unit-container in-progress">
+                            <div class="amount" aria-label="download-speed"></div>
+                            <div class="unit">Mbps</div>
+                        </div>
+                    </div>
+
+                    <div class="info" id="upload">
+                        <div class="header">
+                            Upload
+                        </div>
+                        <div class="unit-container in-progress">
+                            <div class="amount" aria-label="upload-speed"></div>
+                            <div class="unit">Mbps</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress-bar-container" id="progress-bar"></div>
+            </section>
+
+            <button
+                class="start-btn btn-prime"
+                id="start-btn"
+                aria-label="start-button"
+            >
+                <div class="text">Start</div>
+                <div class="ripple"></div>
+            </button>
+        </main>
+
+        <script
+            defer
+            type="text/javascript"
+            src="../scripts/librespeed/speedtest.js"
+        ></script>
+        <script defer type="module" src="../scripts/index.js"></script>
+    </body>
+</html>

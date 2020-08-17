@@ -1,0 +1,81 @@
+
+@element box: {
+    @duration: 1000ms;
+    @timing function: ease in
+    @keyframes: animation 1
+}
+
+@keyframes animation 1: {
+    0%: {
+        opacity: 1;
+        transform: translateX(0);
+        funk: 0;
+    }
+    1tr: {
+        opacity: 0;
+        transform: translateX(100px);
+        funk: 100;
+    }
+    100%: {
+        opacity: 1;
+        transform: translateX(0);
+        funk: 0;
+    }
+}
+
+compiles to:
+
+const keyframes: IKeyframes = {
+    0: {
+        properties: {
+            styles: {
+                transform: {
+                    translateX: {
+                        amount: 0,
+                        unit: "px"
+                    },
+                },
+                opacity: {
+                        amount: 1,
+                        unit: ""
+                }
+            },
+            funk: 0
+        }
+    },
+    50: {
+        properties: {
+            styles: {
+                transform: {
+                    translateX: {
+                        amount: 100,
+                        unit: "px"
+                    },
+                },
+                opacity: {
+                        amount: 0,
+                        unit: ""
+                }
+            },
+            funk: 100
+        }
+    },
+    100: {
+       properties: {
+            styles: {
+                transform: {
+                    translateX: {
+                        amount: 0,
+                        unit: "px"
+                    },
+                },
+                opacity: {
+                        amount: 1,
+                        unit: ""
+                }
+            },
+            funk: 0
+        }
+    }
+};
+  

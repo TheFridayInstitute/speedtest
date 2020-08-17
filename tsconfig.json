@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "outDir": "scripts/",
+        "sourceMap": false,
+        "module": "ES2020",
+        "lib": [
+            "ES2020",
+            "DOM",
+        ]
+    },
+    "exclude": [
+        ""
+    ],
+    "include": [
+        "scripts/*"
+    ]
+}

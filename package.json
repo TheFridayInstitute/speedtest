@@ -1,0 +1,29 @@
+{
+  "name": "speedtest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheFridayInstitute/speedtest.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheFridayInstitute/speedtest/issues"
+  },
+  "homepage": "https://github.com/TheFridayInstitute/speedtest#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.8.0",
+    "@typescript-eslint/parser": "^3.8.0",
+    "eslint": "^7.6.0",
+    "eslint-config-google": "^0.14.0",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.7",
+    "typescript-eslint": "0.0.1-alpha.0"
+  }
+}

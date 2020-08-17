@@ -2,7 +2,7 @@
 @import "utils.scss";
 
 $meter-width: 32rem;
-$meter-height: 64rem;
+$meter-height: 32rem;
 $meter-padding: 10rem;
 $meter-outer-radius: 30rem;
 $max-height-multiplier: 2;
@@ -22,26 +22,29 @@ $ALPHA_0: $PI * 0.8;
 :root {
     --background-color-primary: rgba(51, 51, 51, 1);
     --background-color-primary-dark: rgb(37, 37, 37);
-    --background-color-secondary: rgb(66, 66, 66, 1);
+    --background-color-secondary: rgb(61, 61, 61, 1);
     --font-color-primary: #fff;
 
     --color-primary: #fff;
     --color-secondary: #34c83c;
     --color-secondary-dark: #2ead34;
     --font-family-primary: "Helvetica", sans-serif;
+    // --font-family-primary: "IBM Plex Mono";
 
-    --dl-color-1: #8630e6;
+    --dl-color-0: #6728d3;
+    --dl-color-1: #d359ff;
     --dl-color-2: #f71e6a;
 
-    --ul-color-1: #ff8000;
+    --ul-color-0: #ff8800;
+    --ul-color-1: #f77300;
     --ul-color-2: #ff0000;
 
     --meter-background-color: rgb(0, 0, 0, 0.25);
 
     --progress-bar-gradient: linear-gradient(
         to right,
-        var(--dl-color-1),
-        var(--ul-color-1)
+        var(--dl-color-0),
+        var(--ul-color-0)
     );
 
     --meter-width: #{$meter-width};
@@ -53,272 +56,316 @@ $ALPHA_0: $PI * 0.8;
     --ncsu-red: #c00;
     --ncsu-red-dark: rgb(173, 0, 0);
     --border-radius-primary: 0.75rem;
+
+    // --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.10);
+    --column-gap: 0.5rem;
 }
 
 html {
-    width: 100%;
     height: 100%;
-    box-sizing: border-box;
+    width: 100%;
 }
 
 body {
-    background: var(--background-color-primary);
     display: flex;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    align-items: center;
+    position: relative;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    align-items: center;
+    background: var(--background-color-primary);
+    color: var(--font-color-primary);
+    font-family: var(--font-family-primary);
+    justify-content: center;
+
+    min-height: 100%;
+    min-width: 100%;
 }
 
 main {
-    box-sizing: border-box;
-    color: var(--font-color-primary);
+    display: grid;
     padding: $row-gap/2;
 
-    display: grid;
-    font-family: var(--font-family-primary);
+    // height: 100%;
+    // width: 100%;
+    box-sizing: border-box;
 
     grid-template-areas:
         "test"
         "info"
         "button";
 
-    grid-template-rows: 1fr 1fr 1fr;
-    height: 100%;
-    max-height: calc(min(100vh, #{$meter-height}));
-    max-width: calc(min(100vw, #{$meter-width}));
-    row-gap: $row-gap;
-    width: 100%;
+    grid-template-rows: repeat(auto, 3);
+    max-height: calc(min(#{$meter-height}, 100%));
+    max-width: calc(min(#{$meter-width}, 100%));
 
-    .test-container {
+    row-gap: calc(1 * var(--column-gap));
+    overflow: hidden;
+
+    .speedtest-container {
+        overflow: hidden;
+        align-self: end;
         grid-area: test;
     }
 
-    .test-info-progress-container {
+    .info-progress-container {
+        overflow: hidden;
         grid-area: info;
     }
 
-    .start-btn-container {
-        justify-self: center;
-        grid-area: button;
-        align-self: flex-start;
+    .start-btn {
+        overflow: hidden;
         height: 3rem;
-        width: 75%;
+        width: 66%;
+
+        grid-area: button;
+        justify-self: center;
     }
 }
 
 .pane-container {
-    border-radius: var(--border-radius-primary);
     grid-area: test;
-    box-sizing: border-box;
-    background: var(--background-color-secondary);
-    align-content: center;
-}
 
-.pane-info {
-    --padding: 1em;
-    height: 100%;
-    width: 100%;
-    padding: var(--padding);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    
+    .content {
+        --padding: 1rem;
+        padding: var(--padding);
 
-    h1,
-    h2 {
-        text-align: left;
-    }
-
-    hr {
-        --main-color: white;
-        width: calc(100% + var(--padding));
-        margin-right: calc(-1 * var(--padding));
-        height: 0.1em;
-        border-radius: 1rem;
-        background-color: var(--main-color);
-        border: none;
-    }
-}
-
-.hidden {
-    pointer-events: none;
-    visibility: hidden;
-}
-
-.test-container {
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-
-
-    .info {
-        $y: (1 - sin($ALPHA_0))/2 - 0.05;
-
-        background-color: var(--background-color-primary-dark);
-        border-top-left-radius: 1rem;
-        border-top-right-radius: 1rem;
-        bottom: 0;
+        background-color: var(--background-color-secondary);
+        border-radius: var(--border-radius-primary);
+        box-shadow: var(--box-shadow-main);
         box-sizing: border-box;
-        display: flex;
-        height: calc(100% *#{$y});
 
-        justify-content: center;
-        left: 0;
-        margin: 0 auto;
-        position: absolute;
-        align-items: center;
-        right: 0;
-        width: 75%;
-
-        .test-kind {
-            display: none;
-            grid-area: kind;
+        h1,
+        h2 {
+            text-align: left;
         }
 
-        .unit-container {
-            grid-area: unit;
-            margin: 0;
-            
-            .unit {
-                bottom: var(--font-size-sm);
-                left: 100%;
-                right: 0;
+        h1 {
+            font-size: 3rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+        }
+
+        hr {
+            --main-color: white;
+            height: 0.1rem;
+            width: calc(100% + var(--padding));
+            background-color: var(--main-color);
+            border: none;
+            border-radius: 1rem;
+            margin-right: calc(-1 * var(--padding));
+        }
+    }
+}
+
+.speedtest-container {
+    $y: (1 - sin($ALPHA_0))/2 - 0.025;
+    display: grid;
+    position: relative;
+    grid-template-areas:
+        "speedtest"
+        "info";
+
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(auto, 2);
+
+    row-gap: var(--column-gap);
+
+    .info-container {
+        --font-size: 3rem;
+        display: grid;
+        column-gap: var(--column-gap);
+        grid-area: info;
+        grid-template-columns: 2fr 1fr;
+
+        .info {
+            padding: var(--column-gap);
+            background-color: var(--background-color-primary-dark);
+            border-radius: var(--border-radius-primary);
+            box-sizing: border-box;
+
+            .header {
+                font-size: 1rem;
+            }
+            .unit-container {
+                --font-size-lg: var(--font-size);
+                align-items: baseline;
+                flex-direction: row;
+                font-weight: bold;
+            }
+
+            .footer {
+                color: rgba(255, 255, 255, 0.25);
             }
         }
+
+        .kind {
+            display: flex;
+            align-items: center;
+            background-color: var(--background-color-primary-dark);
+            border-radius: var(--border-radius-primary);
+            font-size: var(--font-size);
+            justify-content: center;
+        }
     }
 
-    .square-box {
-        grid-area: test;
+    .speedtest {
+        background: var(--background-color-secondary);
+        border-radius: var(--border-radius-primary);
+        grid-area: speedtest;
+
         z-index: 1;
 
         canvas {
-            box-sizing: border-box;
             padding: 0.5rem;
+            box-sizing: border-box;
         }
     }
 }
 
-.test-info-progress-container {
-    display: flex;
-    flex-direction: column;
-}
-
-.test-info-container {
-    display: flex;
-    flex-direction: row;
-    padding: 1rem 0;
-    background: var(--background-color-secondary);
-
-    .info {
-        flex: 1;
+.info-progress-container {
+    .info-container {
         display: flex;
-        flex-direction: column;
-        text-align: center;
+        flex-direction: row;
 
-        .test-kind {
-            font-size: 1.5rem;
+        .info {
+            display: flex;
+
+            flex: 1;
+            flex-direction: column;
+            @include space-between-row(0.5rem);
+
+            .header {
+                padding: 0.25rem 0;
+                font-weight: bold;
+            }
+
+            .unit-container {
+                padding: 0.5rem;
+
+                height: 100%;
+                width: 100%;
+
+                background: var(--background-color-secondary);
+                border-radius: var(--border-radius-primary);
+
+                text-align: left;
+
+                .dot-container {
+                    height: 100%;
+                    width: 100%;
+                }
+            }
         }
+    }
+    .progress-bar-container {
+        margin: 0.5rem 0;
     }
 }
 
 .progress-bar-container {
-    box-sizing: border-box;
     display: flex;
-    flex-direction: row;
-    height: 1rem;
-    margin: 0.5rem 0;
     position: relative;
+    height: 1rem;
     width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
 
     .progress-bar {
-        border-radius: 0;
         height: 1rem;
         width: 0;
+        border-radius: 0;
     }
 }
 
 .unit-container {
-    --font-size-lg: 3em;
-    --font-size-sm: calc(var(--font-size-lg) / 4);
-    --height: calc(var(--font-size-lg) + var(--font-size-sm));
+    --font-size-lg: 2rem;
+    --font-size-sm: calc(var(--font-size-lg) * 0.5);
 
+    display: flex;
     position: relative;
-    transition: color cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+    margin: 0;
     box-sizing: border-box;
-    margin-bottom: var(--font-size-sm);
+    flex-direction: column;
+
+    text-align: center;
+    justify-items: center;
+
+    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
 
     &.in-progress {
-        color: rgba(255, 255, 255, 0.11);
+        color: rgba(255, 255, 255, 0.25);
     }
 
     .amount {
+        font-weight: bold;
+        height: var(--font-size-lg);
         font-size: var(--font-size-lg);
     }
 
     .unit {
-        bottom: calc(-1 * var(--font-size-sm));
+        margin-top: calc(var(--font-size-sm) / 4);
         font-size: var(--font-size-sm);
-        left: 0;
-        position: absolute;
-        right: 0;
     }
+}
+
+.hidden {
+    height: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 @media all and (orientation: landscape) and (max-height: $screen-size-lg) {
     main {
+        align-items: center;
         column-gap: $row-gap;
         grid-template-areas:
-            "test info"
-            "test button";
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
+            "test test"
+            "info button";
 
-        max-width: calc(min(100vw, #{$meter-height}));
-        max-height: calc(min(100vh, #{$meter-width}));
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: auto auto;
+
+        .speedtest-container {
+            align-self: start;
+        }
+
+        .start-btn {
+            width: 100%;
+        }
     }
 
-    .test-info-progress-container {
-        .test-info-container {
-            flex-direction: column;
+    .speedtest-container {
+        column-gap: var(--column-gap);
+        grid-template-areas: "speedtest info";
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 1fr;
+
+        .info-container {
+            grid-area: info;
+            grid-template-columns: auto;
+            grid-template-rows: 3fr 1fr;
+            row-gap: var(--column-gap);
 
             .info {
-                align-items: center;
-                flex-direction: row;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
 
-                .test-kind {
-                    flex: 1;
-                }
                 .unit-container {
-                    flex: 1;
+                    flex-direction: inherit;
                 }
             }
         }
+
+        .speedtest {
+            grid-area: speedtest;
+        }
     }
-}
 
-// @media all and (max-width: $screen-size-md) {
-//     html,
-//     body {
-//         font-size: 0.95rem;
-//     }
-// }
-
-// @media all and (max-width: $screen-size-sm) {
-//     html,
-//     body {
-//         font-size: 0.9rem;
-//     }
-// }
-
-@media all and (max-width: $screen-size-xs) {
-    html {
-        font-size: 0.95rem;
+    .info-progress-container {
+        width: 100%;
+        margin: 0;
     }
 }

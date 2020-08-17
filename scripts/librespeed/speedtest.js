@@ -43,7 +43,7 @@
     - 4: test finished. You can run it again by calling start() if you want.
  */
 
-const DIR = "";
+const DIR = "../scripts/librespeed/";
 
 function Speedtest() {
     this._serverList = []; //when using multiple points of test, this is a list of test points

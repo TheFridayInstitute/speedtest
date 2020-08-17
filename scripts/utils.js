@@ -4,9 +4,7 @@ import { debounce } from "./animation.js";
 if (!String.prototype.splice) {
     String.prototype.splice = function (start, delCount, newSubStr) {
         return (
-            this.slice(0, start) +
-            newSubStr +
-            this.slice(start + Math.abs(delCount))
+            this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount))
         );
     };
 }
@@ -28,8 +26,7 @@ export function setMeterNumbers(
     alpha1 = alpha1 === undefined ? 2 * Math.PI : alpha1;
 
     originX = originX === undefined ? meterOffset.width / 2 : originX;
-    originY =
-        originY === undefined ? meterOffset.height / 2 + radius / 2 : originY;
+    originY = originY === undefined ? meterOffset.height / 2 + radius / 2 : originY;
 
     delay = delay === undefined ? 100 : delay;
 
@@ -153,7 +150,7 @@ export function getOffset(el) {
         width: rect.width,
         height: rect.height,
         leftX: rect.left,
-        topY: rect.top,
+        topY: rect.top
     };
 }
 
@@ -184,35 +181,34 @@ export function getComputedVariable(v, el = document.documentElement) {
 }
 
 export function setAttributes(el, attrs) {
-    for (var [key, value] of Object.entries(attrs)) {
-        if (
-            (key === "styles" || key === "style") &&
-            typeof value === "object"
-        ) {
-            for (var prop in value) {
-                el.style.setProperty(prop, value[prop]);
+    let elArray = !(el instanceof Array) ? [el] : el;
+
+    let inner = function (el) {
+        for (var [key, value] of Object.entries(attrs)) {
+            if ((key === "styles" || key === "style") && typeof value === "object") {
+                for (var prop in value) {
+                    el.style.setProperty(prop, value[prop]);
+                }
+            } else if (key === "html") {
+                el.innerHTML = value;
+            } else {
+                el.setAttribute(key, value);
             }
-        } else if (key === "html") {
-            el.innerHTML = value;
-        } else {
-            el.setAttribute(key, value);
         }
-    }
+    };
+
+    elArray.forEach(inner);
 }
 
 const objectMap = (obj, fn) =>
-    Object.fromEntries(
-        Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)])
-    );
+    Object.fromEntries(Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)]));
 
-export function fluidText(
-    el,
-    constrainEl = undefined,
-    maximize = false,
-    attributes = undefined
-) {
-    constrainEl = !constrainEl ? el.parentElement : constrainEl;
-    attributes = !attributes ? ["font-size"] : attributes;
+export function fluidText(el, options) {
+    let constrainEl = !options.constrainEl ? el.parentElement : options.constrainEl;
+    let attributes = !options.attributes ? ["font-size"] : options.attributes;
+    let percent = !options.percent ? 0.1 : options.percent;
+    let dynamic = !options.dynamic ? false : options.dynamic;
+
     let offsetOriginal = getOffset(constrainEl);
     let attributesObj = {};
 
@@ -222,14 +218,16 @@ export function fluidText(
 
     let _resize = function () {
         let offset = getOffset(constrainEl);
-        let maxSize = Math.ceil(Math.min(offset.width, offset.height));
 
-        let ratio =
-            Math.min(offset.height, offset.width) /
-            Math.min(offsetOriginal.height, offsetOriginal.width);
+        let ratio = dynamic
+            ? Math.min(offset.height, offset.width) /
+              Math.min(offsetOriginal.height, offsetOriginal.width)
+            : 1;
 
         let mappedAttributes = objectMap(attributesObj, function (attr) {
-            let size = maximize ? maxSize : clamp(attr * ratio, 0, maxSize);
+            let size = dynamic
+                ? clamp(attr * ratio, 0, percent * offset.width)
+                : percent * offset.width;
             return `${size}px`;
         });
 
@@ -241,4 +239,11 @@ export function fluidText(
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("orientationchange", resize);
+}
+
+export function addEventListeners(element, event, handler, ...args) {
+    if (args === undefined) {
+        args = [true, true];
+    }
+    event.split(/\s+/).forEach((e) => element.addEventListener(e, handler), ...args);
 }

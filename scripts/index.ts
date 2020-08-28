@@ -742,7 +742,7 @@ const toggleHidden = async function (el: IDollarElement & Element, duration = 10
         el.classList.add("hidden");
     } else {
         el.classList.remove("hidden");
-        const to = el.getAttribute("toggle-height") ?? getOffset(el).height;
+        const to = parseFloat(el.getAttribute("toggle-height")) ?? getOffset(el).height;
         const from = 0;
 
         await smoothAnimate(to, from, duration, transformFunc, easeOutCubic);

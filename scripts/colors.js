@@ -1,5 +1,13 @@
 import { clamp, lerp } from "./math.js";
 
+if (!String.prototype.splice) {
+    String.prototype.splice = function (start, delCount, newSubStr) {
+        return (
+            this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount))
+        );
+    };
+}
+
 export function toBase(num, base) {
     let digits = [];
     while (num !== 0) {
@@ -68,12 +76,7 @@ export function HSLAToRGBA(color) {
         b = hue2rgb(p, q, h - 1 / 3);
     }
 
-    return [
-        Math.round(r * 255),
-        Math.round(g * 255),
-        Math.round(b * 255),
-        a || 0,
-    ];
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), a || 0];
 }
 
 export function RGBAToHSLA(color) {
@@ -188,12 +191,7 @@ export function parseColor(color) {
     return pcolor;
 }
 
-export function interpColor(
-    colors,
-    steps = 2,
-    endPoints = true,
-    interpFunc = lerp
-) {
+export function interpColor(colors, steps = 2, endPoints = true, interpFunc = lerp) {
     colors = colors.map(function (color) {
         return parseColor(color);
     });

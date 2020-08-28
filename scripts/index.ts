@@ -491,7 +491,7 @@ const updateTestState = function (abort = false) {
         });
     } else {
         if (
-            testStateObject.prevState != SpeedtestState.notStarted &&
+            testStateObject.prevState !== SpeedtestState.notStarted &&
             testState !== testStateObject.prevState
         ) {
             testStateObject[testStateName] = TestState.started;
@@ -733,8 +733,6 @@ const toggleHidden = async function (el: IDollarElement & Element, duration = 10
     };
 
     if (!hidden) {
-        el.setAttribute("toggle-height", String(height));
-
         const to = 0;
         const from = height;
 
@@ -742,7 +740,7 @@ const toggleHidden = async function (el: IDollarElement & Element, duration = 10
         el.classList.add("hidden");
     } else {
         el.classList.remove("hidden");
-        const to = parseFloat(el.getAttribute("toggle-height")) ?? getOffset(el).height;
+        const to = getOffset(el).height;
         const from = 0;
 
         await smoothAnimate(to, from, duration, transformFunc, easeOutCubic);

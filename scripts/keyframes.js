@@ -189,6 +189,7 @@ const createInterpCallback = function (duration, startPercent, endPercent, eleme
                     console.log(elementAttributes);
                     element.setattr(elementAttributes);
                 });
+                return false;
             };
             yield smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);
         });
@@ -231,3 +232,4 @@ const animateKeyframes = function (elements, keyframes, duration, timingFunc = e
 };
 const duration = 2000;
 animateKeyframes([$("#box1"), $("#box2")], keyframes, duration, easeInBounce);
+//# sourceMappingURL=keyframes.js.map

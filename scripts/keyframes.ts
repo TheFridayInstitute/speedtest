@@ -1,31 +1,8 @@
 /* eslint-disable quote-props */
 /* eslint-disable guard-for-in */
-import {
-    clamp,
-    lerp,
-    normalize,
-    easeInOutCubic,
-    slerpPoints,
-    bounceInEase,
-    round,
-    easeInBounce
-} from "./math.js";
+import { lerp, easeInOutCubic, easeInBounce } from "./math.js";
 
-import {
-    smoothAnimate,
-    animationLoopOuter,
-    slideRight,
-    sleep,
-    slideLeft,
-    createProgressBar,
-    animateProgressBarWrapper,
-    animateProgressBar,
-    rippleButton,
-    slideRightWrap,
-    animateElements,
-    smoothScroll,
-    throttle
-} from "./animation.js";
+import { smoothAnimate } from "./animation.js";
 
 import { $, $$, IDollarElement } from "./dollar.js";
 
@@ -270,6 +247,7 @@ const createInterpCallback = function (
 
                 element.setattr(elementAttributes);
             });
+            return false;
         };
 
         await smoothAnimate(subDuration, 0, subDuration, transformFunc, timingFunc);

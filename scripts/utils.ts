@@ -1,6 +1,6 @@
-function once(func) {
-    let result;
-    return function (...args) {
+function once(func: (...args: any) => any) {
+    let result: any;
+    return function (...args: any) {
         if (func) {
             result = func.apply(this, ...args);
             func = null;
@@ -8,8 +8,10 @@ function once(func) {
         return result;
     };
 }
-function getOffset(el) {
+
+function getOffset(el: Element) {
     const rect = el.getBoundingClientRect();
+    
     return {
         left: rect.left + window.scrollX,
         top: rect.top + window.scrollY,
@@ -19,25 +21,31 @@ function getOffset(el) {
         topY: rect.top
     };
 }
-function emToPixels(em) {
+
+function emToPixels(em: string): number {
     em = em.toLowerCase();
     let emNumber = 1;
+
     if (em.indexOf("px") !== -1) {
         emNumber = parseFloat(em.split("px")[0]);
         return emNumber;
-    }
-    else if (em.indexOf("em") !== -1) {
+    } else if (em.indexOf("em") !== -1) {
         emNumber = parseFloat(em.split("em")[0]);
     }
-    const fontSize = parseFloat(window
-        .getComputedStyle(document.body)
-        .getPropertyValue("font-size")
-        .toLowerCase()
-        .replace(/[a-z]/g, ""));
+
+    const fontSize = parseFloat(
+        window
+            .getComputedStyle(document.body)
+            .getPropertyValue("font-size")
+            .toLowerCase()
+            .replace(/[a-z]/g, "")
+    );
+
     return emNumber * fontSize;
 }
-function getComputedVariable(v, el = document.documentElement) {
+
+function getComputedVariable(v: string, el = document.documentElement) {
     return window.getComputedStyle(el).getPropertyValue(v);
 }
+
 export { getOffset, getComputedVariable, once, emToPixels };
-//# sourceMappingURL=utils.js.map

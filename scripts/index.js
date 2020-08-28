@@ -138,6 +138,7 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     return t;
 };
 const animateProgressBarEl = function () {
+    //@ts-expect-error
     animateProgressBarWrapper($("#progress-bar"), 1000, 3);
 };
 const openingAnimation = function (duration, timingFunc) {
@@ -155,6 +156,7 @@ const openingAnimation = function (duration, timingFunc) {
                 .rotate(-theta, true)
                 .scale(1);
             progressBarObject.mesh.draw(canvasObject, 0);
+            return false;
         };
         yield smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
     });
@@ -175,6 +177,7 @@ const closingAnimation = function (duration, timingFunc) {
                 .rotate(-theta, true)
                 .scale(1 / t);
             progressBarObject.mesh.draw(canvasObject, t);
+            return false;
         };
         yield smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
     });
@@ -322,7 +325,7 @@ const updateTestState = function (abort = false) {
         });
     }
     else {
-        if (testStateObject.prevState != SpeedtestState.notStarted &&
+        if (testStateObject.prevState !== SpeedtestState.notStarted &&
             testState !== testStateObject.prevState) {
             testStateObject[testStateName] = TestState.started;
             testStateObject[prevTestStateName] = TestState.finished;
@@ -455,7 +458,9 @@ function onload() {
         speedtestObject.onend = speedtestOnEnd;
         // Progress bar for the speedtest as a whole.
         // The progress bar object is for an individual state.
-        createProgressBar($("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
+        createProgressBar(
+        //@ts-expect-error
+        $("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
             styles: {
                 "border-top-left-radius": BORDER_RADIUS_PRIMARY,
                 "border-bottom-left-radius": BORDER_RADIUS_PRIMARY
@@ -469,16 +474,15 @@ function onload() {
     });
 }
 const toggleHidden = function (el, duration = 1000) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const hidden = el.classList.contains("hidden");
         const height = el.clientHeight;
         const transformFunc = function (v, t) {
             t = hidden ? t : 0;
             el.css({ height: `${v}px`, opacity: t });
+            return false;
         };
         if (!hidden) {
-            el.setAttribute("toggle-height", String(height));
             const to = 0;
             const from = height;
             yield smoothAnimate(to, from, duration, transformFunc, easeInCubic);
@@ -486,7 +490,7 @@ const toggleHidden = function (el, duration = 1000) {
         }
         else {
             el.classList.remove("hidden");
-            const to = (_a = el.getAttribute("toggle-height")) !== null && _a !== void 0 ? _a : getOffset(el).height;
+            const to = getOffset(el).height;
             const from = 0;
             yield smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
             el.css({ height: "auto" });
@@ -594,3 +598,4 @@ $(window).on("click touchend", function (ev) {
     }
 });
 $(window).on("message", receiveMessage);
+//# sourceMappingURL=index.js.map

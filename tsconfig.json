@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "ES6",
         "outDir": "scripts/",
-        "sourceMap": false,
+        "sourceMap": true,
         "module": "ES2020",
         "lib": [
             "ES2020",

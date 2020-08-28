@@ -325,7 +325,7 @@ const updateTestState = function (abort = false) {
         });
     }
     else {
-        if (testStateObject.prevState != SpeedtestState.notStarted &&
+        if (testStateObject.prevState !== SpeedtestState.notStarted &&
             testState !== testStateObject.prevState) {
             testStateObject[testStateName] = TestState.started;
             testStateObject[prevTestStateName] = TestState.finished;
@@ -474,7 +474,6 @@ function onload() {
     });
 }
 const toggleHidden = function (el, duration = 1000) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const hidden = el.classList.contains("hidden");
         const height = el.clientHeight;
@@ -484,7 +483,6 @@ const toggleHidden = function (el, duration = 1000) {
             return false;
         };
         if (!hidden) {
-            el.setAttribute("toggle-height", String(height));
             const to = 0;
             const from = height;
             yield smoothAnimate(to, from, duration, transformFunc, easeInCubic);
@@ -492,7 +490,7 @@ const toggleHidden = function (el, duration = 1000) {
         }
         else {
             el.classList.remove("hidden");
-            const to = (_a = parseFloat(el.getAttribute("toggle-height"))) !== null && _a !== void 0 ? _a : getOffset(el).height;
+            const to = getOffset(el).height;
             const from = 0;
             yield smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
             el.css({ height: "auto" });

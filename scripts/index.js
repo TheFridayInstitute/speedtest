@@ -492,7 +492,7 @@ const toggleHidden = function (el, duration = 1000) {
         }
         else {
             el.classList.remove("hidden");
-            const to = (_a = el.getAttribute("toggle-height")) !== null && _a !== void 0 ? _a : getOffset(el).height;
+            const to = (_a = parseFloat(el.getAttribute("toggle-height"))) !== null && _a !== void 0 ? _a : getOffset(el).height;
             const from = 0;
             yield smoothAnimate(to, from, duration, transformFunc, easeOutCubic);
             el.css({ height: "auto" });

@@ -138,6 +138,7 @@ const hysteresis = function (t, key, eps = 0.01, step = 1 / 15) {
     return t;
 };
 const animateProgressBarEl = function () {
+    //@ts-expect-error
     animateProgressBarWrapper($("#progress-bar"), 1000, 3);
 };
 const openingAnimation = function (duration, timingFunc) {
@@ -155,6 +156,7 @@ const openingAnimation = function (duration, timingFunc) {
                 .rotate(-theta, true)
                 .scale(1);
             progressBarObject.mesh.draw(canvasObject, 0);
+            return false;
         };
         yield smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
     });
@@ -175,6 +177,7 @@ const closingAnimation = function (duration, timingFunc) {
                 .rotate(-theta, true)
                 .scale(1 / t);
             progressBarObject.mesh.draw(canvasObject, t);
+            return false;
         };
         yield smoothAnimate(meterObject.endAngle, meterObject.startAngle, duration, transformFunc, timingFunc);
     });
@@ -455,7 +458,9 @@ function onload() {
         speedtestObject.onend = speedtestOnEnd;
         // Progress bar for the speedtest as a whole.
         // The progress bar object is for an individual state.
-        createProgressBar($("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
+        createProgressBar(
+        //@ts-expect-error
+        $("#progress-bar"), [PROGRESS_BAR_GRADIENT], {
             styles: {
                 "border-top-left-radius": BORDER_RADIUS_PRIMARY,
                 "border-bottom-left-radius": BORDER_RADIUS_PRIMARY
@@ -476,6 +481,7 @@ const toggleHidden = function (el, duration = 1000) {
         const transformFunc = function (v, t) {
             t = hidden ? t : 0;
             el.css({ height: `${v}px`, opacity: t });
+            return false;
         };
         if (!hidden) {
             el.setAttribute("toggle-height", String(height));
@@ -594,3 +600,4 @@ $(window).on("click touchend", function (ev) {
     }
 });
 $(window).on("message", receiveMessage);
+//# sourceMappingURL=index.js.map

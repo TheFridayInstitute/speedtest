@@ -250,6 +250,7 @@ const hysteresis = function (t: number, key: string, eps = 0.01, step = 1 / 15) 
 };
 
 const animateProgressBarEl = function () {
+    //@ts-expect-error
     animateProgressBarWrapper($("#progress-bar"), 1000, 3);
 };
 
@@ -278,6 +279,8 @@ const openingAnimation = async function (duration: number, timingFunc: any) {
             .scale(1);
 
         progressBarObject.mesh.draw(canvasObject, 0);
+
+        return false;
     };
     await smoothAnimate(
         meterObject.endAngle,
@@ -314,6 +317,7 @@ const closingAnimation = async function (duration: number, timingFunc: any) {
             .scale(1 / t);
 
         progressBarObject.mesh.draw(canvasObject, t);
+        return false;
     };
     await smoothAnimate(
         meterObject.endAngle,
@@ -700,6 +704,7 @@ async function onload() {
     // Progress bar for the speedtest as a whole.
     // The progress bar object is for an individual state.
     createProgressBar(
+        //@ts-expect-error
         $("#progress-bar"),
         [PROGRESS_BAR_GRADIENT],
         {
@@ -724,6 +729,7 @@ const toggleHidden = async function (el: IDollarElement & Element, duration = 10
     const transformFunc = function (v: number, t: number) {
         t = hidden ? t : 0;
         el.css({ height: `${v}px`, opacity: t });
+        return false;
     };
 
     if (!hidden) {
@@ -756,7 +762,7 @@ const openingSlide = once(async function () {
 
 const onstart = throttle(async function () {
     const startButton = $("#start-btn");
-    const progressBarElement = $("#progress-bar");
+    const progressBarElement = <HTMLElement>$("#progress-bar");
     const meterUnitInfoElement = $(".speedtest-container .info-container");
 
     const start = async function () {
@@ -838,7 +844,14 @@ const onend = async function () {
 $(document.getElementById("start-btn")).on("click", function (ev) {
     const duration = 1000;
 
-    rippleButton(ev, this, $(".ripple", this), 15, 0, duration);
+    rippleButton(
+        <MouseEvent>ev,
+        this,
+        <HTMLElement>$(".ripple", this),
+        15,
+        0,
+        duration
+    );
 
     const stateName = getSpeedtestStateName();
 

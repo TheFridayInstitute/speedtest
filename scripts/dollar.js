@@ -84,3 +84,4 @@ function $(query, context = document) {
     }
 }
 export { $$, $ };
+//# sourceMappingURL=dollar.js.map

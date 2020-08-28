@@ -202,3 +202,4 @@ export function round(n, d, mode = 0) {
     }
     return v / ten;
 }
+//# sourceMappingURL=math.js.map

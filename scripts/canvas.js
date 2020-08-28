@@ -489,3 +489,4 @@ function progressBarIntervals(leftX, leftY, width, height, colors) {
     return intervalMesh;
 }
 export { Canvas, progressBarIntervals, roundedArc, roundedRectangle, setRoundedArcColor, generateGradient, Mesh, Rectangle, Arc, Polygon, Shape };
+//# sourceMappingURL=canvas.js.map

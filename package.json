@@ -1,0 +1,19 @@
+{
+  "name": "@mkbabb/libre-speed",
+  "version": "1.0.0",
+  "description": "![LibreSpeed Logo](https://github.com/librespeed/speedtest/blob/master/.logo/logo3.png?raw=true)",
+  "main": "speedtest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheFridayInstitute/speedtest.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheFridayInstitute/speedtest/issues"
+  },
+  "homepage": "https://github.com/TheFridayInstitute/speedtest#readme"
+}

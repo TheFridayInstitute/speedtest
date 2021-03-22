@@ -319,7 +319,10 @@ Speedtest.prototype = {
    */
   start: function() {
     if (this._state == 3) throw "Test already running";
-    this.worker = new Worker("speedtest_worker.js?r=" + Math.random());
+    
+    var url = new URL("speedtest_worker.js?r=" + Math.random(), window.location.origin);
+
+    this.worker = new Worker(url.toString());
     this.worker.onmessage = function(e) {
       if (e.data === this._prevData) return;
       else this._prevData = e.data;
@@ -377,3 +380,5 @@ Speedtest.prototype = {
     if (this._state < 4) this.worker.postMessage("abort");
   }
 };
+
+export { Speedtest }

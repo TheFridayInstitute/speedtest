@@ -692,9 +692,20 @@ const speedtestOnEnd = function (aborted: boolean) {
     }
 };
 
+async function getIP() {
+    // make a fetch call to get the IP address
+    const response = await fetch("https://api.ipify.org?format=json");
+    const data = await response.json();
+    // return the IP address
+    return data?.ip;
+}
+
 async function onload() {
     // @ts-ignore
     speedtestObject = new Speedtest();
+
+    const ip = await getIP();
+
     speedtestObject.setParameter("getIp_ispInfo", false);
     speedtestObject.setParameter("getIp_ispInfo_distance", false);
 

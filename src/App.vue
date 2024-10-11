@@ -64,9 +64,9 @@
 
         <Tabs
             default-value="speedtest"
-            class="flex h-full w-full flex-col items-center"
+            class="flex h-full w-full flex-col items-center justify-center justify-items-center"
         >
-            <TabsList class="m-2 grid w-fit grid-cols-2">
+            <TabsList class="m-auto grid w-fit grid-cols-2">
                 <TabsTrigger value="speedtest">Speed Test</TabsTrigger>
                 <TabsTrigger value="dnsspeedtest">DNS Speed Test</TabsTrigger>
             </TabsList>
@@ -260,6 +260,10 @@
                                         dnsResult?.speedtest_dl_speed,
                                     )
                                 }}
+                            </h2>
+
+                            <h2 v-else class="bold my-4 text-5xl">
+                                <div class="dot-container"><div class="dot-typing"></div></div>
                             </h2>
 
                             <hr class="my-6 h-2 rounded-sm bg-foreground" />

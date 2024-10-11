@@ -1,5 +1,5 @@
 <template>
-    <div class="flex min-h-screen w-full flex-col">
+    <div class="flex max-h-[1080px] min-h-screen w-full flex-col">
         <div
             :class="`pointer-events-none sticky top-0 z-[100] col-span-2 flex h-fit w-full
                 flex-row-reverse items-center justify-between justify-items-center gap-6 p-4
@@ -45,7 +45,9 @@
             </HoverCard>
         </div>
 
-        <div class="ipinfo-container z-10 grid w-full columns-2 gap-2 p-6">
+        <div
+            class="ipinfo-container z-10 grid w-full columns-2 gap-2 self-start p-4"
+        >
             <div
                 class="fraunces col-span-2 text-2xl font-bold text-purple-400"
                 v-if="lookedUpIp?.row"
@@ -245,7 +247,7 @@
                         id="dns-result-pane"
                     >
                         <CardContent
-                            class="content relative max-h-[60vh] overflow-scroll"
+                            class="content relative max-h-[32rem] overflow-scroll"
                         >
                             <div class="bg-background">
                                 <CardTitle class="fraunces font-normal italic"

@@ -1,4 +1,88 @@
 @use "sass:math";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 84% 4.9%;
+
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 84% 4.9%;
+
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+
+        --secondary: 210 40% 96.1%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+
+        --accent: 210 40% 96.1%;
+        --accent-foreground: 222.2 47.4% 11.2%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+
+        --ring: 222.2 84% 4.9%;
+
+        --radius: 0.5rem;
+
+        --shadow: 0, 0%, 65%;
+    }
+
+    .dark {
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+
+        --popover: 222.2 84% 4.9%;
+        --popover-foreground: 210 40% 98%;
+
+        --card: 222.2 84% 4.9%;
+        --card-foreground: 210 40% 98%;
+
+        --border: 217.2 32.6% 17.5%;
+        --input: 217.2 32.6% 17.5%;
+
+        --primary: 210 40% 98%;
+        --primary-foreground: 222.2 47.4% 11.2%;
+
+        --secondary: 217.2 32.6% 17.5%;
+        --secondary-foreground: 210 40% 98%;
+
+        --accent: 217.2 32.6% 17.5%;
+        --accent-foreground: 210 40% 98%;
+
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 40% 98%;
+
+        --ring: 212.7 26.8% 83.9%;
+
+        --shadow: 0, 0%, 45%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
 @import "utils.scss";
 
 $meter-width: 32rem;
@@ -20,15 +104,7 @@ $PI: 3.14159265358929;
 $ALPHA_0: $PI * 0.8;
 
 :root {
-    --background-color-primary: rgba(51, 51, 51, 1);
-    --background-color-primary-dark: rgb(37, 37, 37);
-    --background-color-secondary: rgb(61, 61, 61, 1);
-    --font-color-primary: #fff;
-
-    --color-primary: #fff;
-    --color-secondary: #34c83c;
-    --color-secondary-dark: #2ead34;
-    --font-family-primary: "Helvetica", sans-serif;
+    --font-family-primary: "Fira Code", sans-serif;
     // --font-family-primary: "IBM Plex Mono";
 
     --dl-color-0: #6728d3;
@@ -72,8 +148,7 @@ body {
     margin: 0;
     padding: 0;
     align-items: center;
-    background: var(--background-color-primary);
-    color: var(--font-color-primary);
+
     font-family: var(--font-family-primary);
     justify-content: center;
 
@@ -85,8 +160,8 @@ main {
     display: grid;
     padding: $row-gap/2;
 
-    // height: 100%;
-    // width: 100%;
+    height: 100%;
+    width: 100%;
     box-sizing: border-box;
 
     grid-template-areas:
@@ -129,33 +204,15 @@ main {
         --padding: 1rem;
         padding: var(--padding);
 
-        background-color: var(--background-color-secondary);
-        border-radius: var(--border-radius-primary);
-        box-shadow: var(--box-shadow-main);
-        box-sizing: border-box;
-
-        h1,
-        h2 {
-            text-align: left;
-        }
-
-        h1 {
-            font-size: 3rem;
-        }
-
-        h2 {
-            font-size: 2rem;
-        }
-
-        hr {
-            --main-color: white;
-            height: 0.1rem;
-            width: calc(100% + var(--padding));
-            background-color: var(--main-color);
-            border: none;
-            border-radius: 1rem;
-            margin-right: calc(-1 * var(--padding));
-        }
+        // hr {
+        //     --main-color: white;
+        //     height: 0.1rem;
+        //     width: calc(100% + var(--padding));
+        //     background-color: var(--main-color);
+        //     border: none;
+        //     border-radius: 1rem;
+        //     margin-right: calc(-1 * var(--padding));
+        // }
     }
 }
 
@@ -180,9 +237,9 @@ main {
         grid-template-columns: 2fr 1fr;
 
         .info {
+            @apply rounded-lg bg-secondary;
             padding: var(--column-gap);
-            background-color: var(--background-color-primary-dark);
-            border-radius: var(--border-radius-primary);
+
             box-sizing: border-box;
 
             .header {
@@ -196,23 +253,25 @@ main {
             }
 
             .footer {
-                color: rgba(255, 255, 255, 0.25);
+                // color: rgba(255, 255, 255, 0.25);
             }
         }
 
         .kind {
+            @apply rounded-lg bg-secondary;
+
             display: flex;
             align-items: center;
-            background-color: var(--background-color-primary-dark);
-            border-radius: var(--border-radius-primary);
+
             font-size: var(--font-size);
             justify-content: center;
         }
     }
 
     .speedtest {
-        background: var(--background-color-secondary);
-        border-radius: var(--border-radius-primary);
+        @apply rounded-lg bg-secondary;
+
+      
         grid-area: speedtest;
 
         z-index: 1;
@@ -247,8 +306,7 @@ main {
                 height: 100%;
                 width: 100%;
 
-                background: var(--background-color-secondary);
-                border-radius: var(--border-radius-primary);
+                @apply rounded-lg bg-secondary;
 
                 text-align: left;
 

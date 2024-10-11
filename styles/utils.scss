@@ -121,14 +121,14 @@
     display: flex;
     position: relative;
     align-items: center;
-    background-color: var(--color-secondary);
+    // background-color: var(--color-secondary);
     border: none;
-    border-radius: var(--border-radius-primary);
-    color: black;
+    // border-radius: var(--border-radius-primary);
+    // color: black;
     cursor: pointer;
-    font-family: var(--font-family-primary);
+    // font-family: var(--font-family-primary);
     font-size: 1.5rem;
-    font-weight: normal;
+    // font-weight: normal;
     justify-content: center;
 
     &.running {
@@ -207,4 +207,192 @@
         transform: translateY(0);
         visibility: visible;
     }
+}
+
+
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap");
+
+:root {
+    --ppmycota-primary: 248, 88%, 71%;
+}
+
+.preserve-3d {
+    transform-style: preserve-3d;
+}
+
+.fraunces {
+    font-family: "Fraunces", sans-serif;
+}
+
+.fira-code {
+    font-family: "Fira Code", monospace;
+}
+
+.rainbow-border {
+    border: solid 5px transparent;
+    border-radius: 50px;
+    background:
+        linear-gradient(currentColor, currentColor) padding-box,
+        linear-gradient(
+                to right,
+                #ff2400,
+                #e81d1d,
+                #e8b71d,
+                #e3e81d,
+                #1de840,
+                #1ddde8,
+                #2b1de8,
+                #dd00f3,
+                #dd00f3
+            )
+            border-box;
+}
+
+.container-inline-size {
+    container-type: inline-size;
+}
+
+.scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.depth-text {
+    position: relative;
+    display: inline-block;
+
+    --color-primary: hsla(var(--primary), 1);
+    --color-shadow: hsla(var(--shadow), 1);
+
+    color: var(--color-primary);
+
+    text-shadow:
+        1px 1px 0 var(--color-shadow),
+        2px 2px 0 var(--color-shadow),
+        3px 3px 0 var(--color-shadow),
+        4px 4px 0 var(--color-shadow),
+        5px 5px 0 var(--color-shadow),
+        5px 5px 1px rgba(0, 0, 0, 0.1),
+        1px 1px 3px rgba(0, 0, 0, 0.1),
+        2px 2px 2px rgba(0, 0, 0, 0.2),
+        3px 3px 3px rgba(0, 0, 0, 0.2),
+        4px 4px 5px rgba(0, 0, 0, 0.25),
+        5px 5px 6px rgba(0, 0, 0, 0.2),
+        6px 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.icon {
+    --size: 1rem font-size: --size;
+    width: --size;
+    aspect-ratio: 1/1;
+}
+
+.rainbow-text {
+    background-image: linear-gradient(
+        to right,
+        #f00 0%,
+        #ff0 17%,
+        #0f0 33%,
+        #0ff 50%,
+        #00f 67%,
+        #f0f 83%,
+        #f00 100%
+    ) !important;
+    background-clip: text;
+    color: transparent;
+}
+
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.rainbow-wrapper {
+    height: 100%;
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    position: absolute;
+}
+
+.rainbow-wrapper:before {
+    content: "";
+    height: 100%;
+    width: 100%;
+
+    left: 0;
+    right: 0;
+
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    background-color: none;
+
+    background: linear-gradient(
+        124deg,
+        #ff2400,
+        #e81d1d,
+        #e8b71d,
+        #e3e81d,
+        #1de840,
+        #1ddde8,
+        #2b1de8,
+        #dd00f3,
+        #dd00f3
+    );
+
+    background-size: 800% 800%;
+    opacity: 0.75;
+    z-index: 1;
+
+    animation: rainbow 5s ease infinite;
+}
+
+@keyframes rainbow {
+    0% {
+        background-position: 0% 82%;
+    }
+    50% {
+        background-position: 100% 19%;
+    }
+    100% {
+        background-position: 0% 82%;
+    }
+}
+
+.ppmycota-cube {
+    // background-color: transparent;
+    background-color: hsl(var(--secondary));
+    opacity: 0.75;
+
+    // filter: brightness(0.5) sepia(1) hue-rotate(-70deg) saturate(5);
+    //  filter: invert(100%) sepia(100%) saturate(1%) hue-rotate(3deg) brightness(106%) contrast(101%)
+}
+
+.ppmycota-logo-lg {
+    background-image: url("@assets/ppmycota-logo-2.svg") !important;
+    background-size: cover;
+
+    // filter: brightness(0.5) sepia(1) hue-rotate(-70deg) saturate(5);
+    // filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(122deg) brightness(102%)
+    //     contrast(107%);
+    // filter: invert(100%) sepia(100%) saturate(1%) hue-rotate(3deg) brightness(106%) contrast(101%)
+    filter: invert(55%) sepia(80%) saturate(1496%) hue-rotate(220deg) brightness(95%)
+        contrast(103%);
+}
+
+.ppmycota-logo-sm {
+    background-image: url("@assets/ppmycota-logo-3.svg") !important;
+    background-size: contain;
+
+    // filter: brightness(0.5) sepia(1) hue-rotate(-70deg) saturate(5);
+    filter: invert(55%) sepia(80%) saturate(1496%) hue-rotate(220deg) brightness(95%)
+        contrast(103%);
 }

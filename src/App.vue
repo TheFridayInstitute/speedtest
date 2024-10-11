@@ -86,7 +86,7 @@
                 <main class="m-auto">
                     <Card class="pane-container" id="start-pane">
                         <CardContent class="fraunces content">
-                            <CardTitle class="fraunces text-6xl font-bold">
+                            <CardTitle class="fraunces text-6xl">
                                 Let's test your internet speed.
                             </CardTitle>
 
@@ -212,14 +212,14 @@
             </TabsContent>
 
             <TabsContent
-                class="w-full0 h-full"
+                class="w-full h-full"
                 :force-mount="true"
                 value="dnsspeedtest"
             >
                 <main class="m-auto">
                     <Card class="pane-container" id="dns-start-pane">
                         <CardContent class="fraunces content">
-                            <CardTitle class="fraunces text-6xl font-bold">
+                            <CardTitle class="fraunces text-6xl">
                                 Let's test your internet speed.
                             </CardTitle>
 
@@ -240,7 +240,7 @@
                     <Button
                         @click="startDNSSpeedtest"
                         ref="dnsStartBtn"
-                        class="start-btn fira-code grid-area:none m-4 w-full p-4 text-2xl font-bold"
+                        class="start-btn fira-code m-4 p-4 text-2xl font-bold"
                         id="dns-start-btn"
                     >
                         <span class="text">Start</span>
@@ -266,7 +266,7 @@
                                             dnsResult?.speedtest_dl_speed,
                                         )
                                     "
-                                    class="bold my-4 text-5xl"
+                                    class="bold my-4 text-5xl font-bold"
                                 >
                                     {{
                                         getFormattedSpeed(
@@ -276,7 +276,7 @@
                                 </h2>
 
                                 <h2 v-else class="bold my-4 text-5xl">
-                                    <div class="dot-container">
+                                    <div class="dot-container p-4">
                                         <div class="dot-typing"></div>
                                     </div>
                                 </h2>

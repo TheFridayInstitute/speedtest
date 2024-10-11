@@ -48,8 +48,9 @@ export default defineConfig((mode) => {
             build: {
                 minify: true,
                 sourcemap: true,
+                outDir: path.resolve(__dirname, "./dist/"),
             },
-            plugins: [...defaultPlugins, dts({ rollupTypes: true })],
+            plugins: [...defaultPlugins],
         };
     } else if (mode.mode === "gh-pages") {
         return {

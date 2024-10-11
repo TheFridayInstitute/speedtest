@@ -35,7 +35,7 @@
                                 Check out the project on
                                 <a
                                     class="font-bold hover:underline"
-                                    href="https://github.com/mkbabb/keyframes.js"
+                                    href="https://github.com/TheFridayInstitute/speedtest"
                                     >GitHub</a
                                 >🎉
                             </p>
@@ -219,8 +219,8 @@
                             <hr class="my-6 h-2 rounded-sm bg-foreground" />
 
                             <p>
-                                This test will measure the speed your internet
-                                connection using DNS queries. Press the
+                                This test will measure the speed of your
+                                internet connection using DNS queries. Press the
                                 <span
                                     class="rounded-sm p-2 font-bold text-purple-400"
                                     >Start</span
@@ -240,31 +240,40 @@
                         <div class="ripple"></div>
                     </Button>
 
-                    <Card class="pane-container hidden" id="dns-result-pane">
-                        <CardContent class="content">
-                            <CardTitle class="fraunces font-normal italic"
-                                >{{ clientUID }}
-                            </CardTitle>
+                    <Card
+                        class="pane-container hidden overflow-scroll"
+                        id="dns-result-pane"
+                    >
+                        <CardContent
+                            class="content relative max-h-[60vh] overflow-scroll"
+                        >
+                            <div class="bg-background">
+                                <CardTitle class="fraunces font-normal italic"
+                                    >{{ clientUID }}
+                                </CardTitle>
 
-                            <h2
-                                v-if="
-                                    dnsResult?.speedtest_dl_speed &&
-                                    Number.isFinite(
-                                        dnsResult?.speedtest_dl_speed,
-                                    )
-                                "
-                                class="bold my-4 text-5xl"
-                            >
-                                {{
-                                    getFormattedSpeed(
-                                        dnsResult?.speedtest_dl_speed,
-                                    )
-                                }}
-                            </h2>
+                                <h2
+                                    v-if="
+                                        dnsResult?.speedtest_dl_speed &&
+                                        Number.isFinite(
+                                            dnsResult?.speedtest_dl_speed,
+                                        )
+                                    "
+                                    class="bold my-4 text-5xl"
+                                >
+                                    {{
+                                        getFormattedSpeed(
+                                            dnsResult?.speedtest_dl_speed,
+                                        )
+                                    }}
+                                </h2>
 
-                            <h2 v-else class="bold my-4 text-5xl">
-                                <div class="dot-container"><div class="dot-typing"></div></div>
-                            </h2>
+                                <h2 v-else class="bold my-4 text-5xl">
+                                    <div class="dot-container">
+                                        <div class="dot-typing"></div>
+                                    </div>
+                                </h2>
+                            </div>
 
                             <hr class="my-6 h-2 rounded-sm bg-foreground" />
 

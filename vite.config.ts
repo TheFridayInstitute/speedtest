@@ -1,13 +1,11 @@
 import { defineConfig } from "vite";
 import path from "path";
-
 import VueMacros from "unplugin-vue-macros/vite";
 import Vue from "@vitejs/plugin-vue";
 
-import dts from "vite-plugin-dts";
-
 import tailwind from "tailwindcss";
 import autoprefixer from "autoprefixer";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const defaultOptions = {
     base: "./",
@@ -16,7 +14,6 @@ const defaultOptions = {
             plugins: [tailwind("./tailwind.config.ts"), autoprefixer()],
         },
     },
-
     resolve: {
         alias: {
             "@src": path.resolve(__dirname, "src"),
@@ -47,22 +44,21 @@ export default defineConfig((mode) => {
             },
             build: {
                 minify: true,
-                sourcemap: true,
-                outDir: path.resolve(__dirname, "./dist/"),
-            },
-            plugins: [...defaultPlugins],
-        };
-    } else if (mode.mode === "gh-pages") {
-        return {
-            ...defaultOptions,
-            root: "./demo/cube/",
-            build: {
-                outDir: path.resolve(__dirname, "./dist/"),
                 emptyOutDir: true,
-                minify: true,
                 sourcemap: true,
+                outDir: path.resolve(__dirname, "./dist/"),
             },
-            plugins: [...defaultPlugins],
+            plugins: [
+                ...defaultPlugins,
+                viteStaticCopy({
+                    targets: [
+                        {
+                            src: "utils/librespeed/*",
+                            dest: ".",
+                        },
+                    ],
+                }),
+            ],
         };
     } else {
         return {};

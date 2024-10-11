@@ -246,7 +246,15 @@
                                 >{{ clientUID }}
                             </CardTitle>
 
-                            <h2 class="bold my-4 text-5xl">
+                            <h2
+                                v-if="
+                                    dnsResult?.speedtest_dl_speed &&
+                                    Number.isFinite(
+                                        dnsResult?.speedtest_dl_speed,
+                                    )
+                                "
+                                class="bold my-4 text-5xl"
+                            >
                                 {{
                                     getFormattedSpeed(
                                         dnsResult?.speedtest_dl_speed,
@@ -983,9 +991,9 @@ const speedtestOnEnd = function (aborted: boolean) {
     }
 };
 
-let clientIp = ref("");
-let ipInfo = ref({});
-let lookedUpIp = ref({});
+let clientIp: any = ref("");
+let ipInfo: any = ref({});
+let lookedUpIp: any = ref({});
 
 async function onload() {
     // @ts-ignore
@@ -1185,7 +1193,7 @@ onMounted(() => {
 
 const byteAmount = ref(30000);
 const clientUID = ref("");
-const dnsResult = ref({});
+const dnsResult: any = ref({});
 const started = ref(false);
 
 const startDNSSpeedtest = async function () {

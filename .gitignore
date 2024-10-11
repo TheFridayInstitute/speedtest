@@ -1,6 +1,6 @@
 backend/config.php
 .prettierrc
-assets/
+
 .vscode/
 .DS_Store
 node_modules

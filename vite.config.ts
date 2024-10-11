@@ -54,7 +54,7 @@ export default defineConfig((mode) => {
                     targets: [
                         {
                             src: "utils/librespeed/*",
-                            dest: ".",
+                            dest: "./assets/",
                         },
                     ],
                 }),

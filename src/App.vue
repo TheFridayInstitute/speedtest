@@ -247,7 +247,7 @@
                         id="dns-result-pane"
                     >
                         <CardContent
-                            class="content relative max-h-[32rem] overflow-scroll"
+                            class="content relative max-h-[70vh] overflow-scroll"
                         >
                             <div class="bg-background">
                                 <CardTitle class="fraunces font-normal italic"

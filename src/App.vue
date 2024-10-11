@@ -991,8 +991,8 @@ async function onload() {
     // @ts-ignore
     speedtestObject = new Speedtest();
 
-    // clientIp.value = await getIP();
-    clientIp.value = "152.26.175.192";
+    clientIp.value = await getIP();
+    // clientIp.value = "152.26.175.192";
 
     ipInfo.value = await getIPInfo(clientIp.value);
 

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no"
+        />
+        <meta charset="UTF-8" />
+
+        <script type="module">
+            import { createApp } from "vue";
+            import App from "./App.vue";
+
+            import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+            import { library } from "@fortawesome/fontawesome-svg-core";
+
+            import {
+                faRotateRight,
+                faClipboard,
+                faPause,
+                faPlay,
+                faPaintRoller,
+            } from "@fortawesome/free-solid-svg-icons";
+
+            library.add(
+                faRotateRight,
+                faClipboard,
+                faPause,
+                faPlay,
+                faPaintRoller,
+            );
+
+            const app = createApp(App);
+
+            app.component("font-awesome-icon", FontAwesomeIcon).mount("#app");
+        </script>
+
+        <title>speedtest.fi</title>
+    </head>
+
+    <body>
+        <div style="display: contents" id="app"></div>
+    </body>
+</html>

@@ -46,6 +46,11 @@
         </div>
 
         <div
+            ref="gridBackground"
+            class="grid-background absolute h-full w-full"
+        ></div>
+
+        <div
             class="ipinfo-container z-10 grid w-full columns-2 gap-2 self-start p-4"
         >
             <div
@@ -68,13 +73,13 @@
             default-value="speedtest"
             class="flex h-full w-full flex-col items-center justify-center justify-items-center"
         >
-            <TabsList class="m-auto grid w-fit grid-cols-2">
+            <TabsList class="fraunces m-auto grid grid-cols-2">
                 <TabsTrigger value="speedtest">Speed Test</TabsTrigger>
                 <TabsTrigger value="dnsspeedtest">DNS Speed Test</TabsTrigger>
             </TabsList>
 
             <TabsContent
-                class="m-0 h-full w-full p-0"
+                class="h-full w-full"
                 :force-mount="true"
                 value="speedtest"
             >
@@ -138,7 +143,7 @@
                                     >
                                         &nbsp;
                                     </div>
-                                    <div class="unit">&nbsp;</div>
+                                    <div class="italic unit">&nbsp;</div>
                                 </div>
 
                                 <div class="footer">Waiting...</div>
@@ -160,7 +165,7 @@
                                     <div class="amount" aria-label="latency">
                                         &nbsp;
                                     </div>
-                                    <div class="unit">ms</div>
+                                    <div class="italic unit">ms</div>
                                 </div>
                             </div>
 
@@ -173,7 +178,7 @@
                                     >
                                         &nbsp;
                                     </div>
-                                    <div class="unit">Mbps</div>
+                                    <div class="italic unit">Mbps</div>
                                 </div>
                             </div>
 
@@ -186,7 +191,7 @@
                                     >
                                         &nbsp;
                                     </div>
-                                    <div class="unit">Mbps</div>
+                                    <div class="italic unit">Mbps</div>
                                 </div>
                             </div>
                         </div>
@@ -207,7 +212,7 @@
             </TabsContent>
 
             <TabsContent
-                class="w-full0 m-0 h-full p-0"
+                class="w-full0 h-full"
                 :force-mount="true"
                 value="dnsspeedtest"
             >
@@ -1173,7 +1178,17 @@ const onend = async function () {
     $(".text", startButton).innerHTML = "Restart";
 };
 
+const gridBackground = ref<HTMLElement>(null);
+
 onMounted(() => {
+    const encodedSVG = encodeURIComponent(`
+    <svg class="tmp" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'>
+        <path d='M1 2V0h1v1H0v1z' fill-opacity='0.10'/>
+    </svg>
+`);
+
+    gridBackground.value.style.backgroundImage = `url("data:image/svg+xml,${encodedSVG}")`;
+
     onload();
     animationLoopOnload();
     animationLoopOuter(animationLoopOnupdate, animationLoopOndraw);
@@ -1298,4 +1313,17 @@ const getFormattedSpeed = function (speed: number) {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.grid-background {
+    background-size: 1rem !important;
+    background-repeat: repeat;
+
+    pointer-events: none;
+
+
+    opacity: 0.2;
+    // perspective: 900px;
+
+    // transform:  rotate3d(-1, 1, 0, 30deg) rotateX(90deg)  ;
+}
+</style>

@@ -35,7 +35,10 @@
     $sin: 0;
     $theta: rad($theta);
     @for $i from 0 through 10 {
-        $sin: $sin + ipow(-1, $i) * ipow($theta, (2 * $i + 1)) / factorial(2 * $i + 1);
+        $sin: $sin +
+            ipow(-1, $i) *
+            ipow($theta, (2 * $i + 1)) /
+            factorial(2 * $i + 1);
     }
     @return $sin;
 }
@@ -44,7 +47,13 @@
     @return sin($PI/2 - $theta);
 }
 
-@mixin attr-x($attr, $attr-count: 10, $attr-steps: 10, $unit: "%", $attr-abrv: null) {
+@mixin attr-x(
+    $attr,
+    $attr-count: 10,
+    $attr-steps: 10,
+    $unit: "%",
+    $attr-abrv: null
+) {
     $attr-list: null;
 
     @if not $attr-abrv {
@@ -54,7 +63,11 @@
     @for $i from 1 through $attr-count {
         $attr-value: $attr-steps * $i;
 
-        $attr-list: append($attr-list, unquote(".#{$attr}-#{$attr-value}"), comma);
+        $attr-list: append(
+            $attr-list,
+            unquote(".#{$attr}-#{$attr-value}"),
+            comma
+        );
 
         .#{$attr-abrv}-#{$attr-value} {
             #{$attr}: #{$attr-value}#{$unit};
@@ -165,8 +178,8 @@
 
         transform: translateY(-5px);
 
-        box-shadow: var(--box-shadow-hl) var(--box-shadow-vl) var(--box-shadow-br)
-            var(--box-shadow-sr) var(--box-shadow-color);
+        box-shadow: var(--box-shadow-hl) var(--box-shadow-vl)
+            var(--box-shadow-br) var(--box-shadow-sr) var(--box-shadow-color);
     }
 }
 
@@ -208,7 +221,6 @@
         visibility: visible;
     }
 }
-
 
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap");
@@ -365,34 +377,4 @@
     100% {
         background-position: 0% 82%;
     }
-}
-
-.ppmycota-cube {
-    // background-color: transparent;
-    background-color: hsl(var(--secondary));
-    opacity: 0.75;
-
-    // filter: brightness(0.5) sepia(1) hue-rotate(-70deg) saturate(5);
-    //  filter: invert(100%) sepia(100%) saturate(1%) hue-rotate(3deg) brightness(106%) contrast(101%)
-}
-
-.ppmycota-logo-lg {
-    background-image: url("@assets/ppmycota-logo-2.svg") !important;
-    background-size: cover;
-
-    // filter: brightness(0.5) sepia(1) hue-rotate(-70deg) saturate(5);
-    // filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(122deg) brightness(102%)
-    //     contrast(107%);
-    // filter: invert(100%) sepia(100%) saturate(1%) hue-rotate(3deg) brightness(106%) contrast(101%)
-    filter: invert(55%) sepia(80%) saturate(1496%) hue-rotate(220deg) brightness(95%)
-        contrast(103%);
-}
-
-.ppmycota-logo-sm {
-    background-image: url("@assets/ppmycota-logo-3.svg") !important;
-    background-size: contain;
-
-    // filter: brightness(0.5) sepia(1) hue-rotate(-70deg) saturate(5);
-    filter: invert(55%) sepia(80%) saturate(1496%) hue-rotate(220deg) brightness(95%)
-        contrast(103%);
 }

@@ -1242,7 +1242,7 @@ const startDNSSpeedtest = async function () {
 
         clientUID.value = uid;
 
-        const url = `https://${uid}_${byteAmount.value}.dns.friday.institute`;
+        const url = `https://${uid}.dns.friday.institute`;
 
         try {
             const response = await fetch(url);

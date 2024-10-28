@@ -1221,7 +1221,7 @@ onMounted(() => {
     $(window).on("message", receiveMessage);
 });
 
-const byteAmount = ref(30000);
+const byteAmount = ref(60000);
 const clientUID = ref("");
 const dnsResult: any = ref({});
 const started = ref(false);
@@ -1242,7 +1242,7 @@ const startDNSSpeedtest = async function () {
 
         clientUID.value = uid;
 
-        const url = `https://${uid}.dns.friday.institute`;
+        const url = `https://${uid}_${byteAmount.value}.dns.friday.institute`;
 
         try {
             const response = await fetch(url);

@@ -1269,7 +1269,7 @@ const startDNSSpeedtest = async function () {
 };
 
 const getDNSResult = async function (uid: string, attempts = 0) {
-    const url = `https://ip.friday.institute/dns-results/${uid}`;
+    const url = `https://ip.friday.institute/dns-results/speedtest/${uid}`;
 
     let data;
 

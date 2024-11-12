@@ -277,8 +277,6 @@
                                                         copyToClipboard(
                                                             JSON.stringify(
                                                                 pcapData,
-                                                                null,
-                                                                4,
                                                             ),
                                                         );
 

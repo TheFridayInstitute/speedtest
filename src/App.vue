@@ -277,11 +277,9 @@
                                                         copyToClipboard(
                                                             JSON.stringify(
                                                                 pcapData,
+                                                                null,
+                                                                4,
                                                             ),
-                                                        );
-
-                                                        toast.success(
-                                                            'Copied pcap data 📋',
                                                         );
                                                     }
                                                 "
@@ -1388,13 +1386,15 @@ const getDNSPcapData = async function (uid: string | undefined) {
     return data;
 };
 
-const copyToClipboard = function (text: string) {
-    const el = document.createElement("textarea");
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand("copy");
-    document.body.removeChild(el);
+const copyToClipboard = (text: string) => {
+    navigator.clipboard
+        .writeText(text)
+        .then(() => {
+            toast.success("Copied to clipboard 📋");
+        })
+        .catch((err) => {
+            toast.error("Could not copy to clipboard: " + err);
+        });
 };
 
 // if the clientUID changes, we should query the server for the result

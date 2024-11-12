@@ -1393,7 +1393,9 @@ const copyToClipboard = (text: string) => {
             toast.success("Copied to clipboard 📋");
         })
         .catch((err) => {
-            toast.error("Could not copy to clipboard: " + err);
+            toast.error("Could not copy to clipboard", {
+                description: err,
+            });
         });
 };
 

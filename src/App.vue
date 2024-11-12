@@ -143,7 +143,7 @@
                                     >
                                         &nbsp;
                                     </div>
-                                    <div class="italic unit">&nbsp;</div>
+                                    <div class="unit italic">&nbsp;</div>
                                 </div>
 
                                 <div class="footer">Waiting...</div>
@@ -165,7 +165,7 @@
                                     <div class="amount" aria-label="latency">
                                         &nbsp;
                                     </div>
-                                    <div class="italic unit">ms</div>
+                                    <div class="unit italic">ms</div>
                                 </div>
                             </div>
 
@@ -178,7 +178,7 @@
                                     >
                                         &nbsp;
                                     </div>
-                                    <div class="italic unit">Mbps</div>
+                                    <div class="unit italic">Mbps</div>
                                 </div>
                             </div>
 
@@ -191,7 +191,7 @@
                                     >
                                         &nbsp;
                                     </div>
-                                    <div class="italic unit">Mbps</div>
+                                    <div class="unit italic">Mbps</div>
                                 </div>
                             </div>
                         </div>
@@ -212,7 +212,7 @@
             </TabsContent>
 
             <TabsContent
-                class="w-full h-full"
+                class="h-full w-full"
                 :force-mount="true"
                 value="dnsspeedtest"
             >
@@ -255,8 +255,49 @@
                             class="content relative max-h-[70vh] overflow-scroll"
                         >
                             <div class="bg-background">
-                                <CardTitle class="fraunces font-normal italic"
-                                    >{{ clientUID }}
+                                <CardTitle class="fraunces font-normal italic">
+                                    <HoverCard>
+                                        <HoverCardTrigger>
+                                            <div
+                                                class="cursor-pointer hover:underline"
+                                                @click="
+                                                    async (e) => {
+                                                        const pcapData =
+                                                            await getDNSPcapData(
+                                                                clientUID,
+                                                            );
+
+                                                        if (!pcapData) {
+                                                            toast.error(
+                                                                'Failed to fetch pcap data',
+                                                            );
+                                                            return;
+                                                        }
+
+                                                        copyToClipboard(
+                                                            JSON.stringify(
+                                                                pcapData,
+                                                            ),
+                                                        );
+
+                                                        toast.success(
+                                                            'Copied pcap data 📋',
+                                                        );
+                                                    }
+                                                "
+                                            >
+                                                {{ clientUID }}
+                                            </div>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent>
+                                            <div class="p-4">
+                                                <p>
+                                                    Click to copy pcap data to
+                                                    the clipboard.
+                                                </p>
+                                            </div>
+                                        </HoverCardContent>
+                                    </HoverCard>
                                 </CardTitle>
 
                                 <h2
@@ -266,7 +307,7 @@
                                             dnsResult?.speedtest_dl_speed,
                                         )
                                     "
-                                    class="bold my-4 text-5xl font-bold"
+                                    class="bold my-4 text-5xl font-bold text-purple-400"
                                 >
                                     {{
                                         getFormattedSpeed(
@@ -284,7 +325,7 @@
 
                             <hr class="my-6 h-2 rounded-sm bg-foreground" />
 
-                            <div>
+                            <div v-if="dnsResult != undefined">
                                 <pre
                                     class="mt-4 overflow-auto rounded-md p-4"
                                 ><code id="dns-result-json">{{ dnsResult }}</code></pre>
@@ -294,6 +335,23 @@
                 </main>
             </TabsContent>
         </Tabs>
+
+        <Teleport to="html">
+            <Toaster
+                :toastOptions="{
+                    // unstyled: true,
+                    classes: {
+                        toast: 'bg-background text-background rounded-md fraunces px-6 py-4 grid grid-cols-1 gap-2 shadow-lg h-32 lg:w-96 w-full ',
+                        title: 'font-bold text-xl text-purple-400 fraunces',
+                        description: 'font-normal text-md fira-code',
+                        actionButton: '',
+                        cancelButton: '',
+                        closeButton: '',
+                    },
+                }"
+                :theme="isDark ? 'dark' : 'light'"
+            />
+        </Teleport>
     </div>
 </template>
 
@@ -318,6 +376,8 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 
 import { Avatar, AvatarImage } from "@components/ui/avatar";
+
+import { toast, Toaster } from "vue-sonner";
 
 // @ts-ignore
 import githubDark from "highlight.js/styles/github-dark.css?inline";
@@ -380,6 +440,9 @@ import "@styles/utils.scss";
 import { Speedtest } from "@utils/librespeed/speedtest";
 
 import { onMounted, ref, watch } from "vue";
+import { useDark } from "@vueuse/core";
+
+const isDark = useDark({ disableTransition: false });
 
 // Global speedtest and event state variables.
 let eventObject: MessageEvent;
@@ -1225,6 +1288,7 @@ const byteAmount = ref(60000);
 const clientUID = ref("");
 const dnsResult: any = ref({});
 const started = ref(false);
+const MAX_ATTEMPTS = 10;
 
 const startDNSSpeedtest = async function () {
     const dnsStartButton = $("#dns-start-btn");
@@ -1243,6 +1307,10 @@ const startDNSSpeedtest = async function () {
         clientUID.value = uid;
 
         const url = `https://${uid}_${byteAmount.value}.dns.friday.institute`;
+
+        toast.info("Starting DNS speedtest...", {
+            description: `For URL: ${url}`,
+        });
 
         try {
             const response = await fetch(url);
@@ -1268,12 +1336,16 @@ const startDNSSpeedtest = async function () {
     }
 };
 
-const getDNSResult = async function (uid: string, attempts = 0) {
+const getDNSSpeedtestResult = async function (uid: string, attempts = 0) {
     const url = `https://ip.friday.institute/dns-results/speedtest/${uid}`;
 
     let data;
 
     try {
+        toast.info("Fetching DNS speedtest results", {
+            description: `For URL: ${url}`,
+        });
+
         const response = await fetch(url);
         data = await response.json();
 
@@ -1286,9 +1358,9 @@ const getDNSResult = async function (uid: string, attempts = 0) {
 
     // if the data is not ready, we should wait for a bit and try again
     if (!data || data?.status === "pending") {
-        if (attempts < 10) {
+        if (attempts < MAX_ATTEMPTS) {
             await sleep(1000);
-            return getDNSResult(uid, attempts + 1);
+            return getDNSSpeedtestResult(uid, attempts + 1);
         } else {
             throw new Error("Max attempts reached");
         }
@@ -1297,10 +1369,38 @@ const getDNSResult = async function (uid: string, attempts = 0) {
     return data;
 };
 
+const getDNSPcapData = async function (uid: string | undefined) {
+    if (!uid) {
+        return;
+    }
+
+    const url = `https://ip.friday.institute/dns-results/pcap/${uid}`;
+
+    let data;
+
+    try {
+        const response = await fetch(url);
+        data = await response.json();
+    } catch (e) {
+        console.error(e);
+    }
+
+    return data;
+};
+
+const copyToClipboard = function (text: string) {
+    const el = document.createElement("textarea");
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+};
+
 // if the clientUID changes, we should query the server for the result
 watch(clientUID, async (uid) => {
     if (uid) {
-        dnsResult.value = await getDNSResult(uid);
+        dnsResult.value = await getDNSSpeedtestResult(uid);
     }
 });
 
@@ -1319,7 +1419,6 @@ const getFormattedSpeed = function (speed: number) {
     background-repeat: repeat;
 
     pointer-events: none;
-
 
     opacity: 0.2;
     // perspective: 900px;

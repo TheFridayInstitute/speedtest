@@ -258,41 +258,18 @@
                                 <CardTitle class="fraunces font-normal italic">
                                     <HoverCard>
                                         <HoverCardTrigger>
-                                            <div
+                                            <a
                                                 class="cursor-pointer hover:underline"
-                                                @click="
-                                                    async (e) => {
-                                                        const pcapData =
-                                                            await getDNSPcapData(
-                                                                clientUID,
-                                                            );
-
-                                                        if (!pcapData) {
-                                                            toast.error(
-                                                                'Failed to fetch pcap data',
-                                                            );
-                                                            return;
-                                                        }
-
-                                                        copyToClipboard(
-                                                            JSON.stringify(
-                                                                pcapData,
-                                                                null,
-                                                                4,
-                                                            ),
-                                                        );
-                                                    }
-                                                "
+                                                :href="`https://ip.friday.institute/dns-results/pcap/${clientUID}`"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                             >
                                                 {{ clientUID }}
-                                            </div>
+                                            </a>
                                         </HoverCardTrigger>
                                         <HoverCardContent>
                                             <div class="p-4">
-                                                <p>
-                                                    Click to copy pcap data to
-                                                    the clipboard.
-                                                </p>
+                                                <p>Click to view the raw DNS</p>
                                             </div>
                                         </HoverCardContent>
                                     </HoverCard>

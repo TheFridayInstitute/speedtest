@@ -414,7 +414,7 @@ import "@styles/utils.scss";
 
 import { Speedtest } from "@utils/librespeed/speedtest";
 
-import { onMounted, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import { useDark } from "@vueuse/core";
 
 const isDark = useDark({ disableTransition: false });
@@ -1058,7 +1058,6 @@ async function onload() {
     speedtestObject = new Speedtest();
 
     clientIp.value = await getIP();
-    // clientIp.value = "152.26.175.192";
 
     ipInfo.value = await getIPInfo(clientIp.value);
 
@@ -1069,6 +1068,8 @@ async function onload() {
 
     speedtestObject.onupdate = speedtestOnUpdate;
     speedtestObject.onend = speedtestOnEnd;
+
+    console.log("Initialized onload");
 
     // Progress bar for the speedtest as a whole.
     // The progress bar object is for an individual state.
@@ -1218,7 +1219,7 @@ const onend = async function () {
 
 const gridBackground = ref<HTMLElement>(null);
 
-onMounted(() => {
+onMounted(async () => {
     const encodedSVG = encodeURIComponent(`
     <svg class="tmp" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'>
         <path d='M1 2V0h1v1H0v1z' fill-opacity='0.10'/>
@@ -1227,11 +1228,14 @@ onMounted(() => {
 
     gridBackground.value.style.backgroundImage = `url("data:image/svg+xml,${encodedSVG}")`;
 
-    onload();
+    await onload();
     animationLoopOnload();
     animationLoopOuter(animationLoopOnupdate, animationLoopOndraw);
 
+    console.log("Initialized speedtest");
+
     $(document.getElementById("start-btn")).on("click", function (ev) {
+        console.log("Clicked start button");
         const duration = 1000;
 
         rippleButton(
@@ -1245,15 +1249,12 @@ onMounted(() => {
 
         const stateName = getSpeedtestStateName();
 
-        // if (stateName !== "finished") {
-        //     onstart();
-        // } else {
-        //     // speedtestObject = new Speedtest();
-
-        //     updateTestState(true);
-
-        onstart();
-        // }
+        if (stateName !== "finished") {
+            onstart();
+        } else {
+            // speedtestObject = new Speedtest();
+            updateTestState(true);
+        }
     });
 
     $(window).on("message", receiveMessage);
@@ -1261,13 +1262,15 @@ onMounted(() => {
 
 const byteAmount = ref(60000);
 const clientUID = ref("");
-const dnsResult: any = ref({});
+const dnsResult: any = ref(undefined);
 const started = ref(false);
-const MAX_ATTEMPTS = 10;
+const MAX_ATTEMPTS = 20;
 
 const startDNSSpeedtest = async function () {
     const dnsStartButton = $("#dns-start-btn");
     const dnsResultPane = $("#dns-result-pane");
+
+    dnsResult.value = undefined;
 
     const start = async function () {
         if (!started.value) {
@@ -1281,14 +1284,23 @@ const startDNSSpeedtest = async function () {
 
         clientUID.value = uid;
 
-        const url = `https://${uid}_${byteAmount.value}.dns.friday.institute`;
+        const url = `https://${byteAmount.value}_${uid}.dns.friday.institute`;
 
         toast.info("Starting DNS speedtest...", {
             description: `For URL: ${url}`,
         });
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                method: "GET",
+                mode: "cors",
+                cache: "no-cache",
+                credentials: "same-origin",
+                keepalive: false,
+                redirect: "error",
+
+                signal: AbortSignal.timeout(10), // Optional: adds timeout of 5 seconds
+            });
         } catch (e) {
             console.error(e);
         }
@@ -1334,7 +1346,7 @@ const getDNSSpeedtestResult = async function (uid: string, attempts = 0) {
     // if the data is not ready, we should wait for a bit and try again
     if (!data || data?.status === "pending") {
         if (attempts < MAX_ATTEMPTS) {
-            await sleep(1000);
+            await sleep(2000);
             return getDNSSpeedtestResult(uid, attempts + 1);
         } else {
             throw new Error("Max attempts reached");

@@ -59,6 +59,8 @@ export async function getIP() {
 }
 
 export async function lookupIP(ip?: string) {
+    console.log("lookupIP", ip);
+
     ip = ip ?? (await getIP());
     // make a fetch call to get the IP address
     const response = await fetch(`https://ip.friday.institute/lookup/${ip}`);

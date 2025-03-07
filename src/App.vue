@@ -260,7 +260,7 @@
                                         <HoverCardTrigger>
                                             <a
                                                 class="cursor-pointer hover:underline"
-                                                :href="`https://ip.friday.institute/dns-results/pcap/${clientUID}`"
+                                                :href="`https://ip.friday.institute/dns-results/pcap/uid/${clientUID}`"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
@@ -1324,7 +1324,7 @@ const startDNSSpeedtest = async function () {
 };
 
 const getDNSSpeedtestResult = async function (uid: string, attempts = 0) {
-    const url = `https://ip.friday.institute/dns-results/speedtest/${uid}`;
+    const url = `https://ip.friday.institute/dns-results/speedtest/uid/${uid}`;
 
     let data;
 
@@ -1361,7 +1361,7 @@ const getDNSPcapData = async function (uid: string | undefined) {
         return;
     }
 
-    const url = `https://ip.friday.institute/dns-results/pcap/${uid}`;
+    const url = `https://ip.friday.institute/dns-results/pcap/uid/${uid}`;
 
     let data;
 

@@ -17,6 +17,10 @@ module.exports = {
             },
         },
         extend: {
+            fontFamily: {
+                serif: ['"Instrument Serif"', "serif"],
+                mono: ['"Fira Code"', "monospace"],
+            },
             colors: {
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
@@ -53,13 +57,39 @@ module.exports = {
                 },
             },
             boxShadow: {
+                card: "var(--shadow-card)",
                 cartoon: "8px 8px 0px 0px rgba(0, 0, 0, 0.8)",
+                glass: "0 4px 16px hsl(var(--foreground) / 0.08)",
+                "glass-elevated":
+                    "0 8px 32px hsl(var(--foreground) / 0.12)",
             },
             borderRadius: {
                 xl: "calc(var(--radius) + 4px)",
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
+            },
+            zIndex: {
+                base: "var(--z-base)",
+                meter: "var(--z-meter)",
+                overlay: "var(--z-overlay)",
+                header: "var(--z-header)",
+                modal: "var(--z-modal)",
+            },
+            transitionTimingFunction: {
+                spring: "var(--ease-spring)",
+                standard: "var(--ease-standard)",
+                dock: "var(--ease-dock)",
+            },
+            transitionDuration: {
+                fast: "var(--duration-fast)",
+                normal: "var(--duration-normal)",
+                slow: "var(--duration-slow)",
+                panel: "var(--duration-panel)",
+            },
+            backdropBlur: {
+                glass: "12px",
+                "glass-heavy": "16px",
             },
             keyframes: {
                 "accordion-down": {

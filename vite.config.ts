@@ -10,6 +10,11 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
 const defaultOptions = {
     base: "./",
     css: {
+        preprocessorOptions: {
+            scss: {
+                api: "modern-compiler",
+            },
+        },
         postcss: {
             plugins: [tailwind("./tailwind.config.ts"), autoprefixer()],
         },
@@ -61,6 +66,20 @@ export default defineConfig((mode) => {
             ],
         };
     } else {
-        return {};
+        return {
+            ...defaultOptions,
+            root: "./src/",
+            plugins: [
+                ...defaultPlugins,
+                viteStaticCopy({
+                    targets: [
+                        {
+                            src: "utils/librespeed/*",
+                            dest: "./assets/",
+                        },
+                    ],
+                }),
+            ],
+        };
     }
 });

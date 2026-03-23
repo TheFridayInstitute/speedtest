@@ -5,7 +5,7 @@ import {
   type NavigationMenuContentEmits,
   type NavigationMenuContentProps,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<NavigationMenuContentProps & { class?: HTMLAttributes['class'] }>()

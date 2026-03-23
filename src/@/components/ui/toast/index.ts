@@ -1,4 +1,4 @@
-import type { ToastRootProps } from 'radix-vue'
+import type { ToastRootProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 
 export { default as Toaster } from './Toaster.vue'

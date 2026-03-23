@@ -5,7 +5,7 @@ import {
   type ContextMenuItemEmits,
   type ContextMenuItemProps,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<ContextMenuItemProps & { class?: HTMLAttributes['class'], inset?: boolean }>()

@@ -4,7 +4,7 @@ import {
   NavigationMenuTrigger,
   type NavigationMenuTriggerProps,
   useForwardProps,
-} from 'radix-vue'
+} from 'reka-ui'
 import { ChevronDown } from 'lucide-vue-next'
 import { navigationMenuTriggerStyle } from '.'
 import { cn } from '@src/@/utils'

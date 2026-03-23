@@ -6,7 +6,7 @@ import {
   type ContextMenuContentProps,
   ContextMenuPortal,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<ContextMenuContentProps & { class?: HTMLAttributes['class'] }>()

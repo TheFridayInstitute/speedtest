@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { type HTMLAttributes, computed } from 'vue'
-import { RangeCalendarCellTrigger, type RangeCalendarCellTriggerProps, useForwardProps } from 'radix-vue'
+import { RangeCalendarCellTrigger, type RangeCalendarCellTriggerProps, useForwardProps } from 'reka-ui'
 import { buttonVariants } from 'src/@/components/ui/button'
 import { cn } from '@src/@/utils'
 

@@ -6,7 +6,7 @@ import {
   type MenubarSubContentEmits,
   type MenubarSubContentProps,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<MenubarSubContentProps & { class?: HTMLAttributes['class'] }>()

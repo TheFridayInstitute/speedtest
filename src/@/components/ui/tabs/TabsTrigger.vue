@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { TabsTrigger, type TabsTriggerProps, useForwardProps } from 'radix-vue'
+import { TabsTrigger, type TabsTriggerProps, useForwardProps } from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>()
@@ -18,7 +18,7 @@ const forwardedProps = useForwardProps(delegatedProps)
   <TabsTrigger
     v-bind="forwardedProps"
     :class="cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-lg font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
+      'inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_hsl(var(--ring)/0.3)] disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
       props.class,
     )"
   >

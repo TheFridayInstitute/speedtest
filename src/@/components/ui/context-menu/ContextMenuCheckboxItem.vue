@@ -6,7 +6,7 @@ import {
   type ContextMenuCheckboxItemProps,
   ContextMenuItemIndicator,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { Check } from 'lucide-vue-next'
 import { cn } from '@src/@/utils'
 

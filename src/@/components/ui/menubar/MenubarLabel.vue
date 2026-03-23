@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { MenubarLabel, type MenubarLabelProps } from 'radix-vue'
+import { MenubarLabel, type MenubarLabelProps } from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<MenubarLabelProps & { class?: HTMLAttributes['class'], inset?: boolean }>()

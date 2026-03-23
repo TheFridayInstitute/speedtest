@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { TagsInputItemText, type TagsInputItemTextProps, useForwardProps } from 'radix-vue'
+import { TagsInputItemText, type TagsInputItemTextProps, useForwardProps } from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<TagsInputItemTextProps & { class?: HTMLAttributes['class'] }>()

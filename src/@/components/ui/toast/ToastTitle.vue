@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { ToastTitle, type ToastTitleProps } from 'radix-vue'
+import { ToastTitle, type ToastTitleProps } from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<ToastTitleProps & { class?: HTMLAttributes['class'] }>()

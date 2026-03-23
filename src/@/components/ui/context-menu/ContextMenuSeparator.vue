@@ -3,7 +3,7 @@ import { type HTMLAttributes, computed } from 'vue'
 import {
   ContextMenuSeparator,
   type ContextMenuSeparatorProps,
-} from 'radix-vue'
+} from 'reka-ui'
 import { cn } from '@src/@/utils'
 
 const props = defineProps<ContextMenuSeparatorProps & { class?: HTMLAttributes['class'] }>()

@@ -1,21 +1,25 @@
-import { sleep } from "@utils/animation";
-import { Color } from "@utils/colors.js";
-import { lerp } from "@utils/math";
+/**
+ * DOM and network utilities.
+ */
 
-function once(func: (...args: any) => any) {
+import { sleep } from "@utils/timing";
+
+/** Execute a function only once; subsequent calls return the cached result. */
+export function once(func: (...args: any) => any) {
     let result: any;
+    let called = false;
     return function (...args: any) {
-        if (func) {
+        if (!called) {
+            called = true;
             result = func.apply(this, ...args);
-            func = null;
         }
         return result;
     };
 }
 
-function getOffset(el: Element) {
+/** Get an element's position and dimensions relative to the viewport and scroll. */
+export function getOffset(el: Element) {
     const rect = el.getBoundingClientRect();
-
     return {
         left: rect.left + window.scrollX,
         top: rect.top + window.scrollY,
@@ -26,7 +30,8 @@ function getOffset(el: Element) {
     };
 }
 
-function emToPixels(em: string): number {
+/** Convert an em or px string value to pixels. */
+export function emToPixels(em: string): number {
     em = em.toLowerCase();
     let emNumber = 1;
 
@@ -48,68 +53,72 @@ function emToPixels(em: string): number {
     return emNumber * fontSize;
 }
 
-function getComputedVariable(v: string, el = document.documentElement) {
+/** Get the computed value of a CSS custom property. */
+export function getComputedVariable(v: string, el = document.documentElement): string {
     return window.getComputedStyle(el).getPropertyValue(v);
 }
 
-export async function getIP() {
-    // make a fetch call to get the IP address
+/** Fetch the client's public IP address. */
+export async function getIP(): Promise<string> {
     const response = await fetch("https://ip.friday.institute");
     return (await response.text()).trim();
 }
 
+/** Lookup entity information for an IP address. */
 export async function lookupIP(ip?: string) {
-    console.log("lookupIP", ip);
-
     ip = ip ?? (await getIP());
-    // make a fetch call to get the IP address
     const response = await fetch(`https://ip.friday.institute/lookup/${ip}`);
-    const data = await response.json();
-    // return the IP address
-    return data;
+    return await response.json();
 }
 
+/** Fetch ISP/org information for an IP address. */
 export async function getIPInfo(ip?: string) {
-    console.log("getIPInfo", ip);
-
     ip = ip ?? (await getIP());
-    // make a fetch call to get the IP address
     const response = await fetch(`https://ip.friday.institute/ipinfo/${ip}`);
-    const data = await response.json();
-    // return the IP address
-    return data;
+    return await response.json();
 }
 
-export const awaitHidden = async function () {
+/** Wait until the document is not hidden (tab is active). */
+export async function awaitHidden() {
     while (document.hidden) {
         await sleep(10);
     }
-};
+}
 
-export const generateColorStops = function (
+/**
+ * Generate color stop array from CSS custom properties.
+ * Reads --{colorName}-0, --{colorName}-1, etc. from the root element.
+ */
+export function generateColorStops(
     colorName: string,
     step = 0.5,
 ): Array<[number, string]> {
     const stops = Math.floor(1 / step) + 1;
-
     return Array(stops)
         .fill(0)
-        .map(function (_, index) {
+        .map((_, index) => {
             const stop = index * step;
             const tmpColorName = `--${colorName}-${index}`;
             const color: string = getComputedVariable(tmpColorName);
-
-            return [stop, color];
+            return [stop, color] as [number, string];
         });
-};
+}
 
-export const generateInnerColorStops = function (
+/**
+ * Create a semi-transparent version of a color stop.
+ * Parses the color and applies 0.3 opacity for inner meter rings.
+ */
+export function generateInnerColorStops(
     value: [number, string],
 ): [number, string] {
     const [stop, color] = value;
-    const newColor = new Color(color);
-    newColor.opacity = 0.3;
-    return [stop, newColor.colorString];
-};
-
-export { getOffset, getComputedVariable, once, emToPixels };
+    // Parse the CSS color by rendering it to a temporary canvas context
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = color.trim();
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return [stop, `rgba(${r}, ${g}, ${b}, 0.3)`];
+}

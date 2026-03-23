@@ -1,0 +1,182 @@
+/*
+ * Animations
+ * Loading indicators, pulse effects, and transition keyframes.
+ * Migrated from extras.scss with hardcoded values (no SCSS variables).
+ */
+
+/* ── Loading dots (typing indicator) ───────────────── */
+
+.dot-container {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin: auto;
+    position: relative;
+}
+
+.dot-typing {
+    position: relative;
+    left: -9999px;
+    background-color: hsl(var(--foreground));
+    border-radius: 5px;
+    color: hsl(var(--foreground));
+    height: 10px;
+    width: 10px;
+    box-shadow:
+        9984px 0 0 0 hsl(var(--foreground)),
+        9999px 0 0 0 hsl(var(--foreground)),
+        10014px 0 0 0 hsl(var(--foreground));
+    animation: dotTyping 1.5s infinite linear;
+}
+
+@keyframes dotTyping {
+    0% {
+        box-shadow:
+            9984px 0 0 0 hsl(var(--foreground)),
+            9999px 0 0 0 hsl(var(--foreground)),
+            10014px 0 0 0 hsl(var(--foreground));
+    }
+    16.667% {
+        box-shadow:
+            9984px -10px 0 0 hsl(var(--foreground)),
+            9999px 0 0 0 hsl(var(--foreground)),
+            10014px 0 0 0 hsl(var(--foreground));
+    }
+    33.333% {
+        box-shadow:
+            9984px 0 0 0 hsl(var(--foreground)),
+            9999px 0 0 0 hsl(var(--foreground)),
+            10014px 0 0 0 hsl(var(--foreground));
+    }
+    50% {
+        box-shadow:
+            9984px 0 0 0 hsl(var(--foreground)),
+            9999px -10px 0 0 hsl(var(--foreground)),
+            10014px 0 0 0 hsl(var(--foreground));
+    }
+    66.667% {
+        box-shadow:
+            9984px 0 0 0 hsl(var(--foreground)),
+            9999px 0 0 0 hsl(var(--foreground)),
+            10014px 0 0 0 hsl(var(--foreground));
+    }
+    83.333% {
+        box-shadow:
+            9984px 0 0 0 hsl(var(--foreground)),
+            9999px 0 0 0 hsl(var(--foreground)),
+            10014px -10px 0 0 hsl(var(--foreground));
+    }
+    100% {
+        box-shadow:
+            9984px 0 0 0 hsl(var(--foreground)),
+            9999px 0 0 0 hsl(var(--foreground)),
+            10014px 0 0 0 hsl(var(--foreground));
+    }
+}
+
+/* ── Rotating dot overtaking ───────────────────────── */
+
+.dot-overtaking {
+    animation: dotOvertaking 2s infinite cubic-bezier(0.2, 0.6, 0.8, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 -20px 0 0;
+    color: white;
+    filter: blur(2px);
+    height: 12px;
+    margin: -1px 0;
+    position: relative;
+    width: 12px;
+    z-index: 10;
+}
+
+.dot-overtaking::before,
+.dot-overtaking::after {
+    border-radius: 6px;
+    box-shadow: 0 -20px 0 0;
+    color: white;
+    content: "";
+    display: inline-block;
+    filter: blur(2px);
+    height: 12px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 12px;
+}
+
+.dot-overtaking::before {
+    animation: dotOvertaking 2s infinite cubic-bezier(0.2, 0.6, 0.8, 0.2);
+    animation-delay: 0.3s;
+}
+
+.dot-overtaking::after {
+    animation: dotOvertaking 1.5s infinite cubic-bezier(0.2, 0.6, 0.8, 0.2);
+    animation-delay: 0.6s;
+}
+
+@keyframes dotOvertaking {
+    0% {
+        transform: rotateZ(0deg);
+    }
+    100% {
+        transform: rotateZ(360deg);
+    }
+}
+
+/* ── Pulse ring ────────────────────────────────────── */
+
+@keyframes pulse {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    20% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    40% {
+        opacity: 0.2;
+        transform: scale(1.1);
+    }
+    60% {
+        opacity: 0.3;
+        transform: scale(1.15);
+    }
+    80% {
+        opacity: 0.2;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.25);
+    }
+}
+
+/* ── Ripple effect ─────────────────────────────────── */
+
+.ripple {
+    position: absolute;
+    margin: auto;
+    height: 0;
+    width: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 100%;
+    box-sizing: border-box;
+    opacity: 0;
+    transform-origin: center;
+}
+
+@keyframes ripple-expand {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.5;
+    }
+    100% {
+        width: var(--ripple-size, 200px);
+        height: var(--ripple-size, 200px);
+        opacity: 0;
+    }
+}

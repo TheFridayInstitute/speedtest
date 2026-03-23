@@ -1,8 +1,11 @@
-@use "sass:math";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import "tokens.css";
+@import "animations.css";
+
+/* ── Shadcn theme variables ────────────────────────── */
 
 @layer base {
     :root {
@@ -83,59 +86,27 @@
     }
 }
 
-@import "utils.scss";
+/* ── Glass utility ─────────────────────────────────── */
 
-$meter-width: 32rem;
-$meter-height: 32rem;
-$meter-padding: 10rem;
-$meter-outer-radius: 30rem;
-$max-height-multiplier: 2;
+@layer components {
+    .glass {
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: var(--glass-border);
+        box-shadow: var(--glass-shadow);
+    }
 
-$screen-size-ss: 256px;
-$screen-size-xs: 320px;
-$screen-size-sm: 480px;
-$screen-size-md: 768px;
-$screen-size-lg: 992px;
-$screen-size-xl: 1200px;
-
-$row-gap: 1rem;
-
-$PI: 3.14159265358929;
-$ALPHA_0: $PI * 0.8;
-
-:root {
-    --font-family-primary: "Fira Code", sans-serif;
-    // --font-family-primary: "IBM Plex Mono";
-
-    --dl-color-0: #6728d3;
-    --dl-color-1: #d359ff;
-    --dl-color-2: #f71e6a;
-
-    --ul-color-0: #ff8800;
-    --ul-color-1: #f77300;
-    --ul-color-2: #ff0000;
-
-    --meter-background-color: rgb(0, 0, 0, 0.25);
-
-    --progress-bar-gradient: linear-gradient(
-        to right,
-        var(--dl-color-0),
-        var(--ul-color-0)
-    );
-
-    --meter-width: #{$meter-width};
-    --meter-height: #{$meter-height};
-    --meter-padding: #{$meter-padding};
-    --meter-outer-radius: #{$meter-outer-radius};
-
-    --ncsu-font: "UniversCondensed";
-    --ncsu-red: #c00;
-    --ncsu-red-dark: rgb(173, 0, 0);
-    --border-radius-primary: 0.75rem;
-
-    // --box-shadow-main: 5px 0px 20px 0px rgba(0, 0, 0, 0.10);
-    --column-gap: 0.5rem;
+    .glass-elevated {
+        background: var(--glass-bg-heavy);
+        backdrop-filter: var(--glass-blur-heavy);
+        -webkit-backdrop-filter: var(--glass-blur-heavy);
+        border: var(--glass-border);
+        box-shadow: var(--glass-shadow-elevated);
+    }
 }
+
+/* ── Global layout ─────────────────────────────────── */
 
 html {
     height: 100%;
@@ -148,133 +119,79 @@ body {
     margin: 0;
     padding: 0;
     align-items: center;
-
-    font-family: var(--font-family-primary);
+    font-family: var(--font-display);
     justify-content: center;
-
     min-height: 100%;
     min-width: 100%;
 }
 
+/* ── Main grid layout ──────────────────────────────── */
+
 main {
-    display: grid;
-    padding: $row-gap/2;
-
-    height: 100%;
     width: 100%;
+    margin: auto;
     box-sizing: border-box;
-
-    grid-template-areas:
-        "test"
-        "info"
-        "button";
-
-    grid-template-rows: repeat(auto, 3);
-    max-height: calc(min(#{$meter-height}, 100%));
-    max-width: calc(min(#{$meter-width}, 100%));
-
-    row-gap: calc(1 * var(--column-gap));
-    overflow: hidden;
-
-    .speedtest-container {
-        overflow: hidden;
-        align-self: end;
-        grid-area: test;
-    }
-
-    .info-progress-container {
-        overflow: hidden;
-        grid-area: info;
-    }
-
-    .start-btn {
-        overflow: hidden;
-        height: 3rem;
-        width: 66%;
-
-        grid-area: button;
-        justify-self: center;
-    }
 }
 
-.pane-container {
-    grid-area: test;
+/* ── Pane container ────────────────────────────────── */
 
+.pane-container {
     .content {
         --padding: 1rem;
         padding: var(--padding);
-
-        // hr {
-        //     --main-color: white;
-        //     height: 0.1rem;
-        //     width: calc(100% + var(--padding));
-        //     background-color: var(--main-color);
-        //     border: none;
-        //     border-radius: 1rem;
-        //     margin-right: calc(-1 * var(--padding));
-        // }
     }
 }
 
+/* ── Speedtest meter container ─────────────────────── */
+
 .speedtest-container {
-    $y: (1 - sin($ALPHA_0))/2 - 0.025;
     display: grid;
     position: relative;
+
     grid-template-areas:
         "speedtest"
         "info";
 
     grid-template-columns: 1fr;
     grid-template-rows: repeat(auto, 2);
-
-    row-gap: var(--column-gap);
+    row-gap: var(--layout-gap);
 
     .info-container {
         --font-size: 3rem;
         display: grid;
-        column-gap: var(--column-gap);
+        column-gap: var(--layout-gap);
         grid-area: info;
         grid-template-columns: 2fr 1fr;
 
         .info {
-            @apply rounded-lg bg-secondary;
-            padding: var(--column-gap);
-
+            @apply glass rounded-lg;
+            padding: var(--layout-gap);
             box-sizing: border-box;
 
             .header {
                 font-size: 1rem;
             }
+
             .unit-container {
                 --font-size-lg: var(--font-size);
                 align-items: baseline;
                 flex-direction: row;
-                font-weight: bold;
-            }
-
-            .footer {
-                // color: rgba(255, 255, 255, 0.25);
             }
         }
 
         .kind {
-            @apply rounded-lg bg-secondary;
-
+            @apply glass rounded-lg;
             display: flex;
             align-items: center;
-
             font-size: var(--font-size);
             justify-content: center;
         }
     }
 
     .speedtest {
-        @apply rounded-lg bg-secondary;
-
-      
+        @apply glass rounded-lg;
         grid-area: speedtest;
-
-        z-index: 1;
+        z-index: var(--z-base);
 
         canvas {
             padding: 0.5rem;
@@ -283,31 +200,28 @@ main {
     }
 }
 
+/* ── Info & progress container ─────────────────────── */
+
 .info-progress-container {
     .info-container {
         display: flex;
         flex-direction: row;
+        gap: 0.5rem;
 
         .info {
             display: flex;
-
             flex: 1;
             flex-direction: column;
-            @include space-between-row(0.5rem);
 
             .header {
                 padding: 0.25rem 0;
-                font-weight: bold;
             }
 
             .unit-container {
                 padding: 0.5rem;
-
                 height: 100%;
                 width: 100%;
-
-                @apply rounded-lg bg-secondary;
-
+                @apply glass rounded-lg;
                 text-align: left;
 
                 .dot-container {
@@ -317,10 +231,13 @@ main {
             }
         }
     }
+
     .progress-bar-container {
         margin: 0.5rem 0;
     }
 }
+
+/* ── Progress bar ──────────────────────────────────── */
 
 .progress-bar-container {
     display: flex;
@@ -337,6 +254,8 @@ main {
     }
 }
 
+/* ── Unit container ────────────────────────────────── */
+
 .unit-container {
     --font-size-lg: 2rem;
     --font-size-sm: calc(var(--font-size-lg) * 0.5);
@@ -346,18 +265,14 @@ main {
     margin: 0;
     box-sizing: border-box;
     flex-direction: column;
-
-    text-align: center;
-    justify-items: center;
-
-    transition: all cubic-bezier(0.09, 0.91, 0.5, 1.1) 1000ms;
+    text-align: left;
+    transition: all var(--ease-in-out) 1000ms;
 
     &.in-progress {
-        color: rgba(255, 255, 255, 0.25);
+        @apply text-foreground/25;
     }
 
     .amount {
-        font-weight: bold;
         height: var(--font-size-lg);
         font-size: var(--font-size-lg);
     }
@@ -365,46 +280,30 @@ main {
     .unit {
         margin-top: calc(var(--font-size-sm) / 4);
         font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
     }
 }
 
-.hidden {
-    height: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
 
-@media all and (orientation: landscape) and (max-height: $screen-size-lg) {
+/* ── Landscape layout ──────────────────────────────── */
+
+@media all and (orientation: landscape) and (max-height: 992px) {
     main {
-        align-items: center;
-        column-gap: $row-gap;
-        grid-template-areas:
-            "test test"
-            "info button";
-
         grid-template-columns: 2fr 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: 1fr auto;
 
-        .speedtest-container {
-            align-self: start;
-        }
-
-        .start-btn {
-            width: 100%;
-        }
     }
 
     .speedtest-container {
-        column-gap: var(--column-gap);
+        column-gap: var(--layout-gap);
         grid-template-areas: "speedtest info";
         grid-template-columns: 2fr 1fr;
         grid-template-rows: 1fr;
 
         .info-container {
-            grid-area: info;
             grid-template-columns: auto;
             grid-template-rows: 3fr 1fr;
-            row-gap: var(--column-gap);
+            row-gap: var(--layout-gap);
 
             .info {
                 display: flex;
@@ -415,10 +314,6 @@ main {
                     flex-direction: inherit;
                 }
             }
-        }
-
-        .speedtest {
-            grid-area: speedtest;
         }
     }
 

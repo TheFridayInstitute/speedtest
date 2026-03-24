@@ -1,5 +1,5 @@
 <template>
-    <div class="relative min-h-screen w-full">
+    <div class="relative flex h-dvh w-full flex-col overflow-hidden">
         <AppHeader
             :servers="serverManager.traditionalServers.value"
             :active-server-id="serverManager.activeServer.value?.id ?? null"
@@ -12,8 +12,8 @@
 
         <canvas ref="atmosphereCanvas" class="pointer-events-none fixed inset-0 -z-10 h-full w-full" />
 
-        <!-- Centered content area -->
-        <div class="flex min-h-[calc(100vh-4rem)] max-h-[calc(100vh-8rem)] overflow-y-auto w-full items-center justify-center pb-[calc(var(--dock-h)+var(--dock-inset)*2)]">
+        <!-- Scrollable content area — header and dock stay pinned -->
+        <div class="flex min-h-0 flex-1 w-full items-center justify-center overflow-hidden p-4 pb-[calc(var(--dock-h)+var(--dock-inset)*2)]">
 
         <!-- View switcher -->
         <Transition name="pane-swap" mode="out-in">
@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide, nextTick, watch } from "vue";
+import { ref, computed, provide, watch } from "vue";
 import { useDark } from "@vueuse/core";
 
 import AppHeader from "@src/components/AppHeader.vue";
@@ -83,10 +83,12 @@ import ToastProvider from "@src/components/ToastProvider.vue";
 import { useIPInfo } from "@src/composables/useIPInfo";
 import { useServerManager } from "@src/composables/useServerManager";
 import { useWindowMessaging } from "@src/composables/useWindowMessaging";
-import { useAtmosphereCanvas } from "@src/composables/useAtmosphereCanvas";
+import { useAtmosphereCanvas } from "@mkbabb/glass-ui";
 import { useAPI } from "@src/composables/useAPI";
 import { useGeolocation } from "@src/composables/useGeolocation";
 import { useSpeedtest } from "@src/composables/useSpeedtest";
+import { useAppNavigation } from "@src/composables/useAppNavigation";
+import type { SpeedtestResults } from "@src/composables/useAppNavigation";
 
 import { DEFAULT_SURVEY_CONFIG } from "@src/config/survey";
 import {
@@ -98,51 +100,19 @@ import type { SurveySubmission } from "@src/types/survey";
 
 import "@styles/style.scss";
 
-// ── View state ────────────────────────────────────────────────────────
-
-type AppView = "speedtest" | "survey" | "dashboard" | "thankyou";
-const currentView = ref<AppView>("speedtest");
-const surveyConfig = DEFAULT_SURVEY_CONFIG;
-
 // ── Speedtest composable (lives at app level so it survives view changes) ──
 
-let lastSpeedtestResults: { download: number; upload: number; ping: number; jitter: number } | null = null;
+let lastSpeedtestResults: SpeedtestResults | null = null;
 const speedtest = useSpeedtest();
 const isSpeedtestRunning = ref(false);
 const isSpeedtestCompleted = ref(false);
 
-// Track the speedtest's own isRunning into our local ref (for dock).
-// When a new test starts, reset the completed flag.
 watch(() => speedtest.isRunning.value, (v) => {
     isSpeedtestRunning.value = v;
     if (v) isSpeedtestCompleted.value = false;
 });
 
-// Provide the speedtest instance so child components can inject it
 provide("speedtest", speedtest);
-
-// Initialize the speedtest worker and set default server.
-// When the test finishes, submit results to the API (best-effort) and mark completed.
-// Navigation to survey only happens when the user explicitly clicks "Next" or
-// was already on the speedtest view when the test ended (Flow A).
-function onSpeedtestEnd(aborted: boolean): void {
-    if (!aborted) {
-        isSpeedtestCompleted.value = true;
-        // Submit results to the API in the background
-        const results = {
-            download: parseFloat(speedtest.data.value?.dlStatus ?? "0"),
-            upload: parseFloat(speedtest.data.value?.ulStatus ?? "0"),
-            ping: parseFloat(speedtest.data.value?.pingStatus ?? "0"),
-            jitter: parseFloat(speedtest.data.value?.jitterStatus ?? "0"),
-        };
-        lastSpeedtestResults = results;
-        submitSpeedtestResults(results);
-    }
-}
-
-speedtest.initialize(onSpeedtestEnd);
-const defaultServer = DEFAULT_TRADITIONAL_SERVERS[0];
-if (defaultServer) speedtest.setServer(defaultServer);
 
 // ── Dark mode ──────────────────────────────────────────────────────────
 
@@ -188,115 +158,58 @@ const accentColor = computed(() => {
 
 useAtmosphereCanvas(atmosphereCanvas, accentColor);
 
-// ── View + survey navigation (dock controls) ─────────────────────────
+// ── Navigation (dock controls + view state) ──────────────────────────
 
 const surveyRef = ref<any>(null);
+const surveyConfig = DEFAULT_SURVEY_CONFIG;
 
-const canGoBack = computed(() => {
-    if (currentView.value === "survey") return true; // can always go back from survey (to speedtest or prev step)
-    if (currentView.value === "thankyou") return true;
-    if (currentView.value === "dashboard") return true;
-    return false;
+const nav = useAppNavigation({
+    speedtest,
+    surveyRef,
+    isSpeedtestRunning,
+    isSpeedtestCompleted,
+    onSpeedtestComplete(results) {
+        lastSpeedtestResults = results;
+        nav.currentView.value = "survey";
+    },
 });
 
-function onDockBack() {
-    if (currentView.value === "survey") {
-        const survey = surveyRef.value?.survey;
-        if (survey && !survey.isFirstStep.value) {
-            survey.prevStep();
-        } else {
-            currentView.value = "speedtest";
-        }
-    } else if (currentView.value === "thankyou") {
-        currentView.value = "survey";
-    } else if (currentView.value === "dashboard") {
-        currentView.value = "speedtest";
+const { currentView, canGoBack, onDockBack, onDockForward, onDockStart, onDockStop, onDockNext, onDockRetake } = nav;
+
+// ── Speedtest initialization ─────────────────────────────────────────
+
+function onSpeedtestEnd(aborted: boolean): void {
+    if (!aborted) {
+        isSpeedtestCompleted.value = true;
+        const results: SpeedtestResults = {
+            download: parseFloat(speedtest.data.value?.dlStatus ?? "0"),
+            upload: parseFloat(speedtest.data.value?.ulStatus ?? "0"),
+            ping: parseFloat(speedtest.data.value?.pingStatus ?? "0"),
+            jitter: parseFloat(speedtest.data.value?.jitterStatus ?? "0"),
+        };
+        lastSpeedtestResults = results;
+        submitSpeedtestResults(results);
     }
 }
 
-function onDockForward() {
-    if (currentView.value === "speedtest") {
-        currentView.value = "survey";
-    } else if (currentView.value === "survey") {
-        const survey = surveyRef.value?.survey;
-        if (survey && !survey.isLastStep.value) {
-            survey.nextStep();
-        } else if (survey?.isLastStep.value) {
-            // Submit on last step forward
-            surveyRef.value?.submitFromDock?.();
-        }
-    } else if (currentView.value === "thankyou") {
-        currentView.value = "speedtest";
-    } else if (currentView.value === "dashboard") {
-        // nowhere to go
-    }
-}
+speedtest.initialize(onSpeedtestEnd);
+const defaultServer = DEFAULT_TRADITIONAL_SERVERS[0];
+if (defaultServer) speedtest.setServer(defaultServer);
 
-function startSpeedtest(): void {
-    isSpeedtestCompleted.value = false;
-    speedtest.start();
-}
+// ── API submission helpers ───────────────────────────────────────────
 
-function onDockStart() {
-    if (currentView.value !== "speedtest") {
-        currentView.value = "speedtest";
-    }
-    // Ensure the view has mounted before the component reacts
-    nextTick(() => startSpeedtest());
-}
-
-function onDockStop() {
-    speedtest.abort();
-    isSpeedtestCompleted.value = false;
-}
-
-function onDockNext() {
-    if (isSpeedtestCompleted.value) {
-        emitSpeedtestComplete();
-    }
-}
-
-function onDockRetake() {
-    isSpeedtestCompleted.value = false;
-    isSpeedtestRunning.value = false;
-    currentView.value = "speedtest";
-    nextTick(() => startSpeedtest());
-}
-
-/** Build and emit the speedtest results, then navigate to survey. */
-function emitSpeedtestComplete() {
-    const results = {
-        download: parseFloat(speedtest.data.value?.dlStatus ?? "0"),
-        upload: parseFloat(speedtest.data.value?.ulStatus ?? "0"),
-        ping: parseFloat(speedtest.data.value?.pingStatus ?? "0"),
-        jitter: parseFloat(speedtest.data.value?.jitterStatus ?? "0"),
-    };
-    onSpeedtestComplete(results);
-}
-
-// ── Speedtest → Survey flow ───────────────────────────────────────────
-
-/** Submit speedtest results to the API (best-effort, non-blocking). */
-async function submitSpeedtestResults(results: typeof lastSpeedtestResults) {
+async function submitSpeedtestResults(results: SpeedtestResults) {
     try {
         await api.ensureSession();
-        if (results) {
-            await api.submitResult({
-                testType: "traditional",
-                serverId: "primary",
-                serverName: "Friday Institute Primary",
-                ...results,
-            });
-        }
+        await api.submitResult({
+            testType: "traditional",
+            serverId: "primary",
+            serverName: "Friday Institute Primary",
+            ...results,
+        });
     } catch {
         // Backend unavailable — results will be lost, but that's acceptable
     }
-}
-
-/** Navigate to the survey (called by dock "Next" after test completes). */
-function onSpeedtestComplete(results: typeof lastSpeedtestResults) {
-    lastSpeedtestResults = results;
-    currentView.value = "survey";
 }
 
 async function onSurveySubmit(submission: SurveySubmission) {

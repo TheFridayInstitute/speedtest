@@ -1,4 +1,4 @@
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, onUnmounted } from "vue";
 import type { Ref, ComputedRef } from "vue";
 import {
     TestState,
@@ -333,6 +333,13 @@ export function useSpeedtest() {
         }
         return speedtestObject.getState();
     }
+
+    // Clean up worker on unmount
+    onUnmounted(() => {
+        if (speedtestObject != null) {
+            speedtestObject.abort();
+        }
+    });
 
     return {
         // ── Reactive state ──

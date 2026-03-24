@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from "vue";
+import { ref, onUnmounted, type Ref } from "vue";
 import type { GeoCoordinates } from "./useGeolocation";
 
 export interface ParsedAddress {
@@ -166,6 +166,12 @@ export function useGooglePlaces(bias?: Ref<GeoCoordinates | null>) {
         predictions.value = [];
         query.value = "";
     }
+
+    // Clean up the hidden DOM element on unmount
+    onUnmounted(() => {
+        placesServiceElement?.remove();
+        if (debounceTimer) clearTimeout(debounceTimer);
+    });
 
     return {
         query,

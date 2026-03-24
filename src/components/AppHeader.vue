@@ -3,12 +3,14 @@
         <!-- Info popover (top-left) -->
         <Popover>
             <PopoverTrigger class="pointer-events-auto">
-                <button
-                    class="glass flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-lg text-muted-foreground transition-all hover:scale-105 hover:text-foreground active:scale-95"
+                <Button
+                    variant="glass"
+                    size="icon"
+                    class="h-9 w-9 text-lg text-muted-foreground hover:scale-105 hover:text-foreground"
                     aria-label="Connection info"
                 >
                     i
-                </button>
+                </Button>
             </PopoverTrigger>
             <PopoverContent
                 side="bottom"
@@ -22,7 +24,7 @@
                         :model-value="activeServerId ?? undefined"
                         @update:model-value="(id: string) => emit('selectServer', id)"
                     >
-                        <SelectTrigger class="mt-1 font-mono text-lg">
+                        <SelectTrigger class="mt-1 text-lg">
                             <SelectValue placeholder="Select server" />
                         </SelectTrigger>
                         <SelectContent>
@@ -30,7 +32,6 @@
                                 v-for="server in servers"
                                 :key="server.id"
                                 :value="server.id"
-                                class="font-mono"
                             >
                                 {{ server.config.name }}
                             </SelectItem>
@@ -38,7 +39,7 @@
                     </Select>
                 </section>
 
-                <hr v-if="clientIp" class="my-3 border-border" />
+                <Separator v-if="clientIp" class="my-3" />
 
                 <!-- Connection section -->
                 <section v-if="clientIp">
@@ -49,12 +50,12 @@
                     </p>
                 </section>
 
-                <hr v-if="lookedUpIp?.row && clientIp" class="my-3 border-border" />
+                <Separator v-if="lookedUpIp?.row && clientIp" class="my-3" />
 
                 <!-- Entity section -->
                 <section v-if="lookedUpIp?.row">
                     <h4 class="text-base uppercase tracking-wider text-muted-foreground">Entity</h4>
-                    <p class="mt-1 text-lg text-[var(--color-accent)]">
+                    <p class="mt-1 text-lg text-th-accent">
                         {{ lookedUpIp.row["Entity Name"] }}
                     </p>
                     <p class="mt-0.5 font-mono text-base text-muted-foreground">
@@ -81,17 +82,10 @@
 
 <script setup lang="ts">
 import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-} from "@components/ui/popover";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@components/ui/select";
+    Popover, PopoverTrigger, PopoverContent,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    Button, Separator,
+} from "@mkbabb/glass-ui";
 import UserCard from "./UserCard.vue";
 import type { IPInfo, LookedUpIP } from "@src/types/dns";
 import type { ManagedServer } from "@src/composables/useServerManager";

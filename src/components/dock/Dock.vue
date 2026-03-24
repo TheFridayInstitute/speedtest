@@ -7,6 +7,10 @@ import {
     Square,
     LayoutDashboard,
     RotateCcw,
+    Download,
+    Upload,
+    Activity,
+    Loader,
 } from "lucide-vue-next";
 import GlassDock from "./GlassDock.vue";
 
@@ -20,9 +24,13 @@ const props = defineProps<{
     currentPhase?: string;
 }>();
 
-function capitalize(s: string): string {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
+/** Map speedtest phase names to lucide icons. */
+const phaseIconMap: Record<string, any> = {
+    download: Download,
+    upload: Upload,
+    ping: Activity,
+    started: Loader,
+};
 
 const emit = defineEmits<{
     start: [];
@@ -65,6 +73,13 @@ const primaryButtonStyle = computed(() => {
     };
 });
 
+/** Color for the phase icon — accent pink during active phases. */
+const phaseColor = computed(() => {
+    if (!props.isRunning) return undefined;
+    if (props.currentPhase === 'started') return undefined; // neutral while initializing
+    return 'var(--color-accent-opaque)';
+});
+
 const showRetake = computed(
     () => props.testCompleted && !props.isRunning && props.currentView === "speedtest",
 );
@@ -102,11 +117,19 @@ function onPrimary() {
                     :style="primaryButtonStyle"
                     @click="onPrimary"
                 >
+                    <!-- Phase icon when running -->
                     <component
+                        v-if="isRunning && currentPhase && phaseIconMap[currentPhase]"
+                        :is="phaseIconMap[currentPhase]"
+                        class="w-4 h-4"
+                        :class="{ 'animate-spin': currentPhase === 'started' }"
+                    />
+                    <component
+                        v-else
                         :is="primaryIcon"
                         class="w-4 h-4"
                     />
-                    <span class="text-lg font-medium">{{ primaryLabel }}</span>
+                    <span v-if="!isRunning" class="text-lg font-medium">{{ primaryLabel }}</span>
                 </button>
 
                 <!-- Retake (only when completed) -->
@@ -139,16 +162,26 @@ function onPrimary() {
                 </button>
 
                 <template #collapsed>
+                    <!-- Phase icon when running -->
                     <component
+                        v-if="isRunning && currentPhase && phaseIconMap[currentPhase]"
+                        :is="phaseIconMap[currentPhase]"
+                        class="w-5 h-5 shrink-0"
+                        :class="{ 'animate-spin': currentPhase === 'started' }"
+                        :style="phaseColor ? { color: phaseColor } : {}"
+                    />
+                    <component
+                        v-else
                         :is="primaryIcon"
                         class="w-5 h-5 shrink-0"
-                        :class="isRunning ? 'text-destructive' : ''"
+                        :style="testCompleted ? { color: 'var(--color-accent-opaque)' } : {}"
                     />
                     <span
+                        v-if="!isRunning"
                         class="text-lg font-medium whitespace-nowrap"
-                        :style="testCompleted && !isRunning ? { color: 'var(--color-accent-opaque)' } : {}"
+                        :style="testCompleted ? { color: 'var(--color-accent-opaque)' } : {}"
                     >
-                        {{ isRunning ? (currentPhase ? capitalize(currentPhase) + '...' : 'Testing...') : testCompleted ? 'Complete' : 'Speedtest' }}
+                        {{ testCompleted ? 'Complete' : 'Speedtest' }}
                     </span>
                 </template>
             </GlassDock>

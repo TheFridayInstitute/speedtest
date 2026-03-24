@@ -1,30 +1,29 @@
 <template>
     <div :class="{ 'col-span-2': field.colSpan === 2 }">
-        <label :for="field.id" class="mb-1.5 block text-lg font-medium">
+        <Label :for="field.id" class="mb-1.5 block text-lg font-medium">
             {{ field.label }}
-        </label>
+        </Label>
 
         <!-- Text / Email / Tel / Readonly -->
-        <input
+        <Input
             v-if="isTextLike"
             :id="field.id"
             type="text"
-            class="input-pill"
             :class="{ 'opacity-60': field.type === 'readonly' && !field.editable }"
             :placeholder="field.placeholder"
             :disabled="field.type === 'readonly' && !field.editable"
-            :value="modelValue ?? ''"
-            @input="onInput"
+            :model-value="String(modelValue ?? '')"
+            @update:model-value="emit('update:modelValue', $event)"
         />
 
         <!-- Textarea -->
-        <textarea
+        <Textarea
             v-else-if="field.type === 'textarea'"
             :id="field.id"
-            class="input-pill min-h-[80px] py-2.5"
+            class="min-h-[80px] py-2.5"
             :placeholder="field.placeholder"
-            :value="(modelValue as string) ?? ''"
-            @input="onInput"
+            :model-value="String(modelValue ?? '')"
+            @update:model-value="emit('update:modelValue', $event)"
         />
 
         <!-- Select (proper reka-ui component) -->
@@ -54,7 +53,7 @@
                 :key="opt.value"
                 class="cursor-pointer rounded-full px-3 py-1.5 text-lg transition-all"
                 :class="modelValue === opt.value
-                    ? 'bg-[var(--color-accent-opaque)] text-foreground font-medium'
+                    ? 'bg-th-accent-opaque text-foreground font-medium'
                     : 'glass hover:bg-accent/10'"
             >
                 <input
@@ -70,18 +69,17 @@
         </div>
 
         <!-- Checkbox -->
-        <label
+        <div
             v-else-if="field.type === 'checkbox'"
             class="flex cursor-pointer items-center gap-2 pt-1"
+            @click="emit('update:modelValue', !modelValue)"
         >
-            <input
-                type="checkbox"
+            <Checkbox
                 :checked="!!modelValue"
-                class="h-4 w-4 rounded accent-[var(--color-accent-opaque)]"
-                @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
+                @update:checked="emit('update:modelValue', $event)"
             />
-            <span class="text-lg">{{ field.placeholder }}</span>
-        </label>
+            <Label class="text-lg cursor-pointer">{{ field.placeholder }}</Label>
+        </div>
 
         <!-- Address (slot for AddressAutocomplete) -->
         <slot v-else-if="field.type === 'address'" name="address" />
@@ -102,12 +100,9 @@
 import { computed } from "vue";
 import type { SurveyFieldConfig } from "@src/types/survey";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@components/ui/select";
+    Input, Textarea, Checkbox, Label,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@mkbabb/glass-ui";
 
 const props = defineProps<{
     field: SurveyFieldConfig;
@@ -122,8 +117,4 @@ const emit = defineEmits<{
 const isTextLike = computed(() =>
     ["text", "number", "email", "tel", "readonly"].includes(props.field.type),
 );
-
-function onInput(e: Event) {
-    emit("update:modelValue", (e.target as HTMLInputElement).value);
-}
 </script>

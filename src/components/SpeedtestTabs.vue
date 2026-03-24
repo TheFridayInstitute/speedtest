@@ -3,5 +3,5 @@
 </template>
 
 <script setup lang="ts">
-import TraditionalSpeedtest from "./TraditionalSpeedtest.vue";
+import { TraditionalSpeedtest } from "./speedtest";
 </script>

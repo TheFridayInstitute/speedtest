@@ -1,90 +1,81 @@
 <template>
-    <div class="glass rounded-xl overflow-hidden">
+    <Card class="overflow-hidden">
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-border px-4 py-3">
             <h3 class="text-lg font-semibold">
                 Results
                 <span class="text-muted-foreground font-normal">({{ total }})</span>
             </h3>
-            <button
-                class="text-base text-primary hover:underline"
-                @click="$emit('export')"
-            >
+            <Button variant="ghost" @click="$emit('export')">
                 Export CSV
-            </button>
+            </Button>
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-lg">
-                <thead>
-                    <tr class="border-b border-border text-left text-base text-muted-foreground">
-                        <th class="px-4 py-2">Time</th>
-                        <th class="px-4 py-2">Type</th>
-                        <th class="px-4 py-2">Name</th>
-                        <th class="px-4 py-2">Provider</th>
-                        <th class="px-4 py-2 text-right">DL</th>
-                        <th class="px-4 py-2 text-right">UL</th>
-                        <th class="px-4 py-2 text-right">Ping</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="row in rows"
-                        :key="row._id"
-                        class="border-b border-border/50 hover:bg-accent/5 transition-colors cursor-pointer"
-                        @click="$emit('select', row)"
-                    >
-                        <td class="px-4 py-2 tabular-nums">{{ formatTime(row.timestamp) }}</td>
-                        <td class="px-4 py-2">
-                            <span
-                                class="rounded-full px-2 py-0.5 text-base"
-                                :class="row.testType === 'traditional' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'"
-                            >
-                                {{ row.testType }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2">{{ row.survey?.name || '\u2014' }}</td>
-                        <td class="px-4 py-2">{{ row.session?.ipInfo?.org || '\u2014' }}</td>
-                        <td class="px-4 py-2 text-right tabular-nums">{{ fmt(row.download) }}</td>
-                        <td class="px-4 py-2 text-right tabular-nums">{{ fmt(row.upload) }}</td>
-                        <td class="px-4 py-2 text-right tabular-nums">{{ fmt(row.ping) }}</td>
-                    </tr>
-                    <tr v-if="rows.length === 0">
-                        <td colspan="7" class="px-4 py-8 text-center text-muted-foreground">
-                            {{ isLoading ? 'Loading...' : 'No results found' }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <Table class="text-lg">
+            <TableHeader>
+                <TableRow class="text-base text-muted-foreground">
+                    <TableHead>Time</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Provider</TableHead>
+                    <TableHead class="text-right">DL</TableHead>
+                    <TableHead class="text-right">UL</TableHead>
+                    <TableHead class="text-right">Ping</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                <TableRow
+                    v-for="row in rows"
+                    :key="row._id"
+                    class="cursor-pointer"
+                    @click="$emit('select', row)"
+                >
+                    <TableCell class="tabular-nums">{{ formatTime(row.timestamp) }}</TableCell>
+                    <TableCell>
+                        <Badge
+                            variant="outline"
+                            :class="row.testType === 'traditional' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'"
+                        >
+                            {{ row.testType }}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>{{ row.survey?.name || '\u2014' }}</TableCell>
+                    <TableCell>{{ row.session?.ipInfo?.org || '\u2014' }}</TableCell>
+                    <TableCell class="text-right tabular-nums">{{ fmt(row.download) }}</TableCell>
+                    <TableCell class="text-right tabular-nums">{{ fmt(row.upload) }}</TableCell>
+                    <TableCell class="text-right tabular-nums">{{ fmt(row.ping) }}</TableCell>
+                </TableRow>
+                <TableRow v-if="rows.length === 0">
+                    <TableCell colspan="7" class="py-8 text-center text-muted-foreground">
+                        {{ isLoading ? 'Loading...' : 'No results found' }}
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>
 
         <!-- Pagination -->
         <div class="flex items-center justify-between border-t border-border px-4 py-2 text-base text-muted-foreground">
             <span>Page {{ page }} of {{ totalPages }}</span>
             <div class="flex gap-2">
-                <button
-                    :disabled="page <= 1"
-                    class="rounded px-2 py-1 hover:bg-muted disabled:opacity-40"
-                    @click="$emit('update:page', page - 1)"
-                >
+                <Button variant="ghost" size="sm" :disabled="page <= 1" @click="$emit('update:page', page - 1)">
                     Prev
-                </button>
-                <button
-                    :disabled="page >= totalPages"
-                    class="rounded px-2 py-1 hover:bg-muted disabled:opacity-40"
-                    @click="$emit('update:page', page + 1)"
-                >
+                </Button>
+                <Button variant="ghost" size="sm" :disabled="page >= totalPages" @click="$emit('update:page', page + 1)">
                     Next
-                </button>
+                </Button>
             </div>
         </div>
-    </div>
+    </Card>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import type { DashboardResultRow } from "@src/types/dashboard";
+import { Button, Badge, Card } from "@mkbabb/glass-ui";
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@components/ui/table";
 
 const props = defineProps<{
     rows: DashboardResultRow[];

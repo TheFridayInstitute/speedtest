@@ -1,34 +1,36 @@
 <template>
     <div class="relative">
         <div class="relative flex items-center">
-            <input
+            <Input
                 ref="inputRef"
                 type="text"
-                class="input-pill w-full pr-10"
+                class="w-full pr-10"
                 :placeholder="placeholder"
-                :value="places.query.value"
-                @input="onInput"
+                :model-value="places.query.value"
+                @update:model-value="onInput"
                 @focus="onFocus"
                 @blur="onBlur"
             />
             <!-- Inline geolocate button -->
-            <button
+            <Button
                 type="button"
-                class="absolute right-1 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-all hover:text-foreground hover:bg-foreground/5 active:scale-90"
+                variant="ghost"
+                size="icon"
+                class="absolute right-1 h-8 w-8"
                 title="Use my location"
                 :disabled="isGeolocating"
                 @click.prevent="geolocate"
             >
                 <MapPin v-if="!isGeolocating" class="h-4 w-4" />
                 <LoaderCircle v-else class="h-4 w-4 animate-spin" />
-            </button>
+            </Button>
         </div>
 
         <!-- Predictions dropdown -->
         <Transition name="fade">
             <div
                 v-if="showDropdown && places.predictions.value.length > 0"
-                class="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-2xl border border-border/50 bg-card/95 p-1 shadow-glass-elevated backdrop-blur-glass-heavy"
+                class="glass-elevated absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-2xl p-1"
             >
                 <button
                     v-for="pred in places.predictions.value"
@@ -46,6 +48,8 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { MapPin, LoaderCircle } from "lucide-vue-next";
+import { Button } from "@mkbabb/glass-ui";
+import { Input } from "@mkbabb/glass-ui";
 import { useGooglePlaces, waitForGooglePlaces, type ParsedAddress } from "@src/composables/useGooglePlaces";
 import { useGeolocation, type GeoCoordinates } from "@src/composables/useGeolocation";
 import type { Ref } from "vue";
@@ -69,8 +73,8 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const showDropdown = ref(false);
 const isGeolocating = ref(false);
 
-function onInput(e: Event) {
-    places.search((e.target as HTMLInputElement).value);
+function onInput(value: string | number) {
+    places.search(String(value));
 }
 
 function onFocus() {

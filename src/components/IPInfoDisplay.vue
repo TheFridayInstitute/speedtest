@@ -1,7 +1,7 @@
 <template>
     <div class="z-10 flex w-full flex-wrap items-baseline gap-x-4 gap-y-1 self-start px-4 py-2">
         <div
-            class="text-3xl text-[var(--color-accent)]"
+            class="text-3xl text-th-accent"
             v-if="lookedUpIp?.row"
         >
             {{ lookedUpIp.row["Entity Name"] }},

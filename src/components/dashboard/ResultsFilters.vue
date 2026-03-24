@@ -1,62 +1,71 @@
 <template>
-    <div class="glass rounded-xl p-4 space-y-3">
+    <Card class="p-4 space-y-3">
         <h3 class="text-lg font-semibold">Filters</h3>
 
-        <label class="block">
-            <span class="text-base text-muted-foreground">From</span>
-            <input
+        <div>
+            <Label class="text-base text-muted-foreground">From</Label>
+            <Input
                 type="date"
-                class="mt-1 block w-full rounded-md border border-input bg-background px-2 py-1.5 text-lg"
-                :value="filters.dateFrom"
-                @input="update('dateFrom', ($event.target as HTMLInputElement).value)"
+                class="mt-1 text-lg"
+                :model-value="filters.dateFrom"
+                @update:model-value="update('dateFrom', String($event))"
             />
-        </label>
+        </div>
 
-        <label class="block">
-            <span class="text-base text-muted-foreground">To</span>
-            <input
+        <div>
+            <Label class="text-base text-muted-foreground">To</Label>
+            <Input
                 type="date"
-                class="mt-1 block w-full rounded-md border border-input bg-background px-2 py-1.5 text-lg"
-                :value="filters.dateTo"
-                @input="update('dateTo', ($event.target as HTMLInputElement).value)"
+                class="mt-1 text-lg"
+                :model-value="filters.dateTo"
+                @update:model-value="update('dateTo', String($event))"
             />
-        </label>
+        </div>
 
-        <label class="block">
-            <span class="text-base text-muted-foreground">Test Type</span>
-            <select
-                class="mt-1 block w-full rounded-md border border-input bg-background px-2 py-1.5 text-lg"
-                :value="filters.testType"
-                @change="update('testType', ($event.target as HTMLSelectElement).value)"
+        <div>
+            <Label class="text-base text-muted-foreground">Test Type</Label>
+            <Select
+                :model-value="filters.testType"
+                @update:model-value="(v: string) => update('testType', v)"
             >
-                <option value="">All</option>
-                <option value="traditional">Traditional</option>
-                <option value="dns">DNS</option>
-            </select>
-        </label>
+                <SelectTrigger class="mt-1 text-lg">
+                    <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="traditional">Traditional</SelectItem>
+                    <SelectItem value="dns">DNS</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
 
-        <label class="block">
-            <span class="text-base text-muted-foreground">PSU ID</span>
-            <input
+        <div>
+            <Label class="text-base text-muted-foreground">PSU ID</Label>
+            <Input
                 type="text"
-                class="mt-1 block w-full rounded-md border border-input bg-background px-2 py-1.5 text-lg"
+                class="mt-1 text-lg"
                 placeholder="e.g., 920"
-                :value="filters.psuId"
-                @input="update('psuId', ($event.target as HTMLInputElement).value)"
+                :model-value="filters.psuId"
+                @update:model-value="update('psuId', String($event))"
             />
-        </label>
+        </div>
 
-        <button
-            class="w-full rounded-md bg-muted px-3 py-1.5 text-base font-medium hover:bg-muted/80 transition-colors"
+        <Button
+            variant="ghost"
+            class="w-full"
             @click="$emit('reset')"
         >
             Clear Filters
-        </button>
-    </div>
+        </Button>
+    </Card>
 </template>
 
 <script setup lang="ts">
 import type { DashboardFilters } from "@src/types/dashboard";
+import {
+    Button, Card, Input, Label,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@mkbabb/glass-ui";
 
 const props = defineProps<{ filters: DashboardFilters }>();
 

@@ -4,7 +4,7 @@
             v-for="server in servers"
             :key="server.id"
             class="glass flex cursor-pointer items-center justify-between rounded-lg p-3 transition-all hover:opacity-80"
-            :class="{ 'ring-2 ring-[var(--color-accent)]': server.id === activeServerId }"
+            :class="{ 'ring-2 ring-th-accent': server.id === activeServerId }"
             @click="emit('select', server.id)"
         >
             <div class="flex items-center gap-2">
@@ -12,7 +12,7 @@
                     class="h-2 w-2 rounded-full"
                     :class="
                         server.id === activeServerId
-                            ? 'bg-[var(--color-accent)]'
+                            ? 'bg-th-accent'
                             : 'bg-muted-foreground/40'
                     "
                 ></div>
@@ -27,14 +27,16 @@
                 >(Traditional)</span>
             </div>
 
-            <button
+            <Button
                 v-if="servers.length > 1"
-                class="text-muted-foreground hover:text-destructive"
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7 text-muted-foreground hover:text-destructive"
                 title="Remove server"
                 @click.stop="emit('remove', server.id)"
             >
                 &times;
-            </button>
+            </Button>
         </div>
 
         <p
@@ -47,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { Button } from "@mkbabb/glass-ui";
 import type { ManagedServer } from "@src/composables/useServerManager";
 
 defineProps<{

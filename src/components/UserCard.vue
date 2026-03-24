@@ -24,7 +24,7 @@
                     </p>
                 </div>
             </div>
-            <hr class="my-2 border-border" />
+            <Separator class="my-2" />
             <div class="flex items-center justify-between px-4 py-2">
                 <span class="text-lg text-muted-foreground">Dark mode</span>
                 <DarkModeToggle
@@ -37,11 +37,8 @@
 
 <script setup lang="ts">
 import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-} from "@components/ui/popover";
-import { DarkModeToggle } from "@components/custom/dark-mode-toggle";
-import { Avatar, AvatarImage } from "@components/ui/avatar";
-import { Button } from "@components/ui/button";
+    Popover, PopoverTrigger, PopoverContent,
+    Avatar, AvatarImage, Button, Separator,
+    DarkModeToggle,
+} from "@mkbabb/glass-ui";
 </script>

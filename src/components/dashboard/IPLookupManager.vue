@@ -1,5 +1,5 @@
 <template>
-    <div class="glass rounded-xl overflow-hidden">
+    <Card class="overflow-hidden">
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-border px-4 py-3">
             <h3 class="text-lg font-semibold">
@@ -7,96 +7,85 @@
                 <span class="text-muted-foreground font-normal">({{ total }})</span>
             </h3>
             <div class="flex gap-2">
-                <button
-                    class="rounded-md bg-muted px-3 py-1.5 text-base font-medium hover:bg-muted/80 transition-colors"
-                    @click="$emit('sync')"
-                >
-                    Sync from Sheets
-                </button>
-                <button
-                    class="rounded-md bg-primary px-3 py-1.5 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                    @click="showAdd = true"
-                >
-                    Add
-                </button>
+                <Button variant="glass" @click="$emit('sync')">Sync from Sheets</Button>
+                <Button variant="accent" @click="showAdd = true">Add</Button>
             </div>
         </div>
 
         <!-- Search -->
         <div class="border-b border-border px-4 py-2">
-            <input
+            <Input
                 type="text"
-                class="w-full rounded-md border border-input bg-background px-3 py-1.5 text-lg placeholder:text-muted-foreground"
+                class="text-lg"
                 placeholder="Search by entity, CIDR..."
-                :value="search"
-                @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
+                :model-value="search"
+                @update:model-value="$emit('update:search', String($event))"
             />
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-lg">
-                <thead>
-                    <tr class="border-b border-border text-left text-base text-muted-foreground">
-                        <th class="px-4 py-2">CIDR</th>
-                        <th class="px-4 py-2">Entity Name</th>
-                        <th class="px-4 py-2">Entity ID</th>
-                        <th class="px-4 py-2">Type</th>
-                        <th class="px-4 py-2 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="row in subnets"
-                        :key="row._id"
-                        class="border-b border-border/50 hover:bg-accent/5 transition-colors"
-                    >
-                        <td class="px-4 py-2 font-mono text-base">{{ row.cidr }}</td>
-                        <td class="px-4 py-2">{{ row.entityName }}</td>
-                        <td class="px-4 py-2">{{ row.entityId }}</td>
-                        <td class="px-4 py-2 text-base">{{ row.entityType }}</td>
-                        <td class="px-4 py-2 text-right">
-                            <button
-                                class="text-base text-destructive hover:underline"
-                                @click="$emit('delete', row._id)"
-                            >
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                    <tr v-if="subnets.length === 0">
-                        <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">
-                            No subnets found
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <Table class="text-lg">
+            <TableHeader>
+                <TableRow class="text-base text-muted-foreground">
+                    <TableHead>CIDR</TableHead>
+                    <TableHead>Entity Name</TableHead>
+                    <TableHead>Entity ID</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead class="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                <TableRow v-for="row in subnets" :key="row._id">
+                    <TableCell class="font-mono text-base">{{ row.cidr }}</TableCell>
+                    <TableCell>{{ row.entityName }}</TableCell>
+                    <TableCell>{{ row.entityId }}</TableCell>
+                    <TableCell class="text-base">{{ row.entityType }}</TableCell>
+                    <TableCell class="text-right">
+                        <Button
+                            variant="link"
+                            class="text-destructive text-base"
+                            @click="$emit('delete', row._id)"
+                        >
+                            Delete
+                        </Button>
+                    </TableCell>
+                </TableRow>
+                <TableRow v-if="subnets.length === 0">
+                    <TableCell colspan="5" class="py-8 text-center text-muted-foreground">
+                        No subnets found
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>
 
         <!-- Add form (inline modal) -->
         <Transition name="fade">
             <div v-if="showAdd" class="border-t border-border px-4 py-3 bg-muted/30">
                 <h4 class="mb-2 text-base font-semibold">Add Subnet</h4>
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    <input v-model="newSubnet.prefix" placeholder="Prefix (e.g., 152.27.20.0)" class="rounded border border-input bg-background px-2 py-1 text-base" />
-                    <input v-model.number="newSubnet.prefixLength" type="number" placeholder="Length" class="rounded border border-input bg-background px-2 py-1 text-base" />
-                    <input v-model="newSubnet.entityName" placeholder="Entity Name" class="rounded border border-input bg-background px-2 py-1 text-base" />
-                    <input v-model="newSubnet.entityId" placeholder="Entity ID" class="rounded border border-input bg-background px-2 py-1 text-base" />
-                    <input v-model="newSubnet.entityType" placeholder="Entity Type" class="rounded border border-input bg-background px-2 py-1 text-base" />
-                    <input v-model="newSubnet.networkType" placeholder="Network Type" class="rounded border border-input bg-background px-2 py-1 text-base" />
+                    <Input v-model="newSubnet.prefix" placeholder="Prefix (e.g., 152.27.20.0)" class="text-base" />
+                    <Input v-model="newSubnet.prefixLength" type="number" placeholder="Length" class="text-base" />
+                    <Input v-model="newSubnet.entityName" placeholder="Entity Name" class="text-base" />
+                    <Input v-model="newSubnet.entityId" placeholder="Entity ID" class="text-base" />
+                    <Input v-model="newSubnet.entityType" placeholder="Entity Type" class="text-base" />
+                    <Input v-model="newSubnet.networkType" placeholder="Network Type" class="text-base" />
                 </div>
                 <div class="mt-2 flex justify-end gap-2">
-                    <button class="rounded px-3 py-1 text-base hover:bg-muted" @click="showAdd = false">Cancel</button>
-                    <button class="rounded bg-primary px-3 py-1 text-base text-primary-foreground" @click="onAdd">Save</button>
+                    <Button variant="ghost" @click="showAdd = false">Cancel</Button>
+                    <Button variant="accent" @click="onAdd">Save</Button>
                 </div>
             </div>
         </Transition>
-    </div>
+    </Card>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import type { SubnetRow } from "@src/types/dashboard";
+import { Button, Card, Input } from "@mkbabb/glass-ui";
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@components/ui/table";
 
 defineProps<{
     subnets: SubnetRow[];

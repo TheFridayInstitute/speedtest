@@ -1,17 +1,18 @@
 <template>
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div v-for="card in cards" :key="card.label" class="glass rounded-xl p-4">
+        <Card v-for="card in cards" :key="card.label" class="p-4">
             <p class="text-base text-muted-foreground">{{ card.label }}</p>
             <p class="mt-1 text-3xl font-semibold tabular-nums">
                 {{ card.value }}
             </p>
             <p v-if="card.unit" class="text-base text-muted-foreground">{{ card.unit }}</p>
-        </div>
+        </Card>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { Card } from "@mkbabb/glass-ui";
 import type { DashboardStats } from "@src/types/dashboard";
 
 const props = defineProps<{ stats: DashboardStats | null }>();

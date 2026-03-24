@@ -23,8 +23,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { SurveyStepConfig, SurveyFormData } from "@src/types/survey";
-import type { ValidationErrors } from "@src/composables/useSurveyValidation";
-import { isFieldVisible } from "@src/composables/useSurveyValidation";
+import type { ValidationErrors } from "./composables/useSurveyValidation";
+import { isFieldVisible } from "./composables/useSurveyValidation";
 import type { GeoCoordinates } from "@src/composables/useGeolocation";
 import SurveyField from "./SurveyField.vue";
 import AddressAutocomplete from "./AddressAutocomplete.vue";

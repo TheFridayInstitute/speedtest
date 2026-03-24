@@ -1,36 +1,38 @@
 <template>
     <div class="space-y-4">
-        <div
+        <Card
             v-for="step in reviewSteps"
             :key="step.id"
-            class="glass rounded-2xl p-4"
+            class="p-4"
         >
             <div class="mb-2 flex items-center justify-between">
                 <h4 class="text-lg">{{ step.title }}</h4>
-                <button
-                    class="btn-pill btn-pill-ghost text-base py-1 px-2"
+                <Button
+                    variant="ghost"
+                    size="sm"
                     @click="$emit('editStep', step.id)"
                 >
                     Edit
-                </button>
+                </Button>
             </div>
             <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-lg">
                 <template v-for="field in visibleFields(step)" :key="field.id">
                     <dt class="text-muted-foreground">{{ field.label }}</dt>
                     <dd :class="[
                         'font-medium',
-                        formatValue(formData[field.id]) !== '\u2014' && 'text-[var(--color-accent-opaque)] font-semibold',
+                        formatValue(formData[field.id]) !== '\u2014' && 'text-th-accent-opaque font-semibold',
                     ]">{{ formatValue(formData[field.id]) }}</dd>
                 </template>
             </dl>
-        </div>
+        </Card>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { Button, Card } from "@mkbabb/glass-ui";
 import type { SurveyStepConfig, SurveyFieldConfig, SurveyFormData } from "@src/types/survey";
-import { isFieldVisible } from "@src/composables/useSurveyValidation";
+import { isFieldVisible } from "./composables/useSurveyValidation";
 
 const props = defineProps<{
     steps: SurveyStepConfig[];

@@ -1,33 +1,35 @@
 <template>
     <div class="relative z-10 mx-auto w-full max-w-5xl space-y-4 p-4">
         <!-- Back button -->
-        <button
-            class="flex items-center gap-1 text-lg text-muted-foreground hover:text-foreground transition-colors"
+        <Button
+            variant="ghost"
+            class="gap-1 text-lg text-muted-foreground hover:text-foreground"
             @click="$emit('back')"
         >
             <ArrowLeft class="h-4 w-4" />
             Back to Speedtest
-        </button>
+        </Button>
 
         <!-- Admin token prompt (shown if no token) -->
-        <div v-if="!hasToken" class="glass-elevated rounded-xl p-6 text-center">
+        <Card v-if="!hasToken" class="p-6 text-center">
             <p class="mb-3 text-lg">Enter your admin token to access the dashboard.</p>
             <div class="mx-auto flex max-w-sm gap-2">
-                <input
+                <Input
                     v-model="tokenInput"
                     type="password"
-                    class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-lg"
+                    class="flex-1 text-lg"
                     placeholder="Admin token"
                     @keyup.enter="onSetToken"
                 />
-                <button
-                    class="rounded-md bg-primary px-4 py-2 text-lg font-medium text-primary-foreground"
+                <Button
+                    variant="accent"
+                    class="text-lg"
                     @click="onSetToken"
                 >
                     Enter
-                </button>
+                </Button>
             </div>
-        </div>
+        </Card>
 
         <template v-else>
             <!-- Stats -->
@@ -71,9 +73,10 @@
 import { ref, computed, onMounted } from "vue";
 import { ArrowLeft } from "lucide-vue-next";
 import type { DashboardFilters } from "@src/types/dashboard";
-import { useDashboardResults, setAdminToken } from "@src/composables/useDashboardResults";
-import { useDashboardStats } from "@src/composables/useDashboardStats";
-import { useDashboardSubnets } from "@src/composables/useDashboardSubnets";
+import { useDashboardResults, setAdminToken } from "./composables/useDashboardResults";
+import { useDashboardStats } from "./composables/useDashboardStats";
+import { useDashboardSubnets } from "./composables/useDashboardSubnets";
+import { Button, Card, Input } from "@mkbabb/glass-ui";
 import StatsCards from "./StatsCards.vue";
 import ResultsFilters from "./ResultsFilters.vue";
 import ResultsTable from "./ResultsTable.vue";

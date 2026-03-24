@@ -1,9 +1,9 @@
 <template>
-    <div class="glass-elevated mx-auto w-full max-w-lg rounded-2xl p-6">
+    <ScrollPane class="mx-auto w-full max-w-lg">
         <!-- Progress bar (accent-colored) -->
-        <div class="mb-6 h-1 w-full overflow-hidden rounded-full bg-muted">
+        <div class="sticky top-0 z-[2] h-1 w-full overflow-hidden bg-muted">
             <div
-                class="h-full rounded-full transition-all duration-panel"
+                class="h-full transition-all duration-panel"
                 :style="{
                     width: `${survey.progress.value * 100}%`,
                     background: 'var(--color-accent-opaque)',
@@ -11,19 +11,11 @@
             />
         </div>
 
-        <!-- Step header -->
-        <div class="mb-4">
-            <h2 class="text-3xl font-semibold">
-                {{ survey.currentStep.value?.title }}
-            </h2>
-            <p
-                v-if="survey.currentStep.value?.description"
-                class="mt-1 text-lg text-muted-foreground"
-            >
-                {{ survey.currentStep.value?.description }}
-            </p>
-        </div>
+        <ScrollPaneHeader :description="survey.currentStep.value?.description">
+            {{ survey.currentStep.value?.title }}
+        </ScrollPaneHeader>
 
+        <div class="flex flex-col gap-4 px-4 sm:px-6 pb-4 pt-2">
         <!-- Step content -->
         <Transition name="pane-swap" mode="out-in">
             <div :key="survey.currentStep.value?.id">
@@ -55,40 +47,45 @@
         </Transition>
 
         <!-- Navigation buttons -->
-        <div class="mt-6 flex items-center justify-between">
-            <button
+        <div class="mt-2 flex items-center justify-between">
+            <Button
                 v-if="config.skippable"
-                class="btn-pill btn-pill-ghost text-lg"
+                variant="ghost"
+                class="text-lg"
                 @click="$emit('skip')"
             >
                 Skip
-            </button>
+            </Button>
             <span v-else />
 
             <div class="flex gap-2">
-                <button
+                <Button
                     v-if="editingFromReview"
-                    class="btn-pill btn-pill-glass text-lg"
+                    variant="glass"
+                    class="text-lg"
                     @click="returnToReview"
                 >
                     Back to Review
-                </button>
-                <button
+                </Button>
+                <Button
                     v-else-if="!survey.isFirstStep.value"
-                    class="btn-pill btn-pill-glass text-lg"
+                    variant="glass"
+                    class="text-lg"
                     @click="survey.prevStep()"
                 >
                     Back
-                </button>
-                <button
-                    class="btn-pill btn-pill-accent text-lg"
+                </Button>
+                <Button
+                    variant="accent"
+                    class="text-lg"
                     @click="editingFromReview ? returnToReview() : onNext()"
                 >
                     {{ editingFromReview ? 'Done' : survey.isLastStep.value ? 'Submit' : 'Next' }}
-                </button>
+                </Button>
             </div>
         </div>
-    </div>
+        </div>
+    </ScrollPane>
 </template>
 
 <script setup lang="ts">
@@ -96,7 +93,8 @@ import { ref, computed } from "vue";
 import type { SurveyConfig, SurveySubmission } from "@src/types/survey";
 import type { IPInfo, LookedUpIP } from "@src/types/dns";
 import type { GeoCoordinates } from "@src/composables/useGeolocation";
-import { useSurvey } from "@src/composables/useSurvey";
+import { useSurvey } from "./composables/useSurvey";
+import { Button, ScrollPane, ScrollPaneHeader } from "@mkbabb/glass-ui";
 import FlowSelector from "./FlowSelector.vue";
 import SurveyStep from "./SurveyStep.vue";
 import SurveyReview from "./SurveyReview.vue";

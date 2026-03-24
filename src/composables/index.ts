@@ -2,7 +2,6 @@ export { useIPInfo } from "./useIPInfo";
 export { useWindowMessaging } from "./useWindowMessaging";
 export type { OnMessageCallback } from "./useWindowMessaging";
 export { useSpeedtest } from "./useSpeedtest";
-export { useDNSSpeedtest } from "./useDNSSpeedtest";
 export { useServerManager } from "./useServerManager";
 export type { ManagedServer } from "./useServerManager";
 export { useResultAggregator, median } from "./useResultAggregator";

@@ -4,6 +4,8 @@
 
 @import "tokens.css";
 @import "animations.css";
+@import "glass.css";
+@import "dock.css";
 
 /* ── Shadcn theme variables ────────────────────────── */
 
@@ -145,57 +147,21 @@ main {
 /* ── Speedtest meter container ─────────────────────── */
 
 .speedtest-container {
-    display: grid;
     position: relative;
-
-    grid-template-areas:
-        "speedtest"
-        "info";
-
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(auto, 2);
-    row-gap: var(--layout-gap);
-
-    .info-container {
-        --font-size: 3rem;
-        display: grid;
-        column-gap: var(--layout-gap);
-        grid-area: info;
-        grid-template-columns: 2fr 1fr;
-
-        .info {
-            @apply glass rounded-lg;
-            padding: var(--layout-gap);
-            box-sizing: border-box;
-
-            .header {
-                font-size: 1rem;
-            }
-
-            .unit-container {
-                --font-size-lg: var(--font-size);
-                align-items: baseline;
-                flex-direction: row;
-            }
-        }
-
-        .kind {
-            @apply glass rounded-lg;
-            display: flex;
-            align-items: center;
-            font-size: var(--font-size);
-            justify-content: center;
-        }
-    }
+    width: 100%;
+    margin: 0 auto;
 
     .speedtest {
-        @apply glass rounded-lg;
-        grid-area: speedtest;
-        z-index: var(--z-base);
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        margin-bottom: -10%;
 
         canvas {
-            padding: 0.5rem;
-            box-sizing: border-box;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
         }
     }
 }
@@ -233,7 +199,8 @@ main {
     }
 
     .progress-bar-container {
-        margin: 0.5rem 0;
+        margin: 0.75rem 0 0;
+        min-height: 1rem; /* Reserve space to prevent layout shift */
     }
 }
 
@@ -269,18 +236,24 @@ main {
     transition: all var(--ease-in-out) 1000ms;
 
     &.in-progress {
-        @apply text-foreground/25;
+        color: hsl(var(--foreground));
+    }
+
+    &.shimmer-in-progress .amount,
+    &.shimmer-in-progress .unit {
+        color: hsl(var(--foreground) / 0.4);
+        animation: shimmer-pulse 1.5s ease-in-out infinite;
     }
 
     .amount {
-        height: var(--font-size-lg);
         font-size: var(--font-size-lg);
+        line-height: 1.1;
     }
 
     .unit {
-        margin-top: calc(var(--font-size-sm) / 4);
         font-size: var(--font-size-sm);
         font-family: var(--font-mono);
+        line-height: 1.2;
     }
 }
 

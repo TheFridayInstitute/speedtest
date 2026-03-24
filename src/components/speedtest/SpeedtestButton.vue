@@ -1,0 +1,33 @@
+<template>
+    <Button
+        variant="accent"
+        size="lg"
+        class="px-8 py-3 text-2xl"
+        @click="handleClick"
+    >
+        {{ label }}
+    </Button>
+</template>
+
+<script setup lang="ts">
+import { Button } from "@mkbabb/glass-ui";
+
+withDefaults(
+    defineProps<{
+        label?: string;
+        isRunning?: boolean;
+    }>(),
+    {
+        label: "Start",
+        isRunning: false,
+    },
+);
+
+const emit = defineEmits<{
+    click: [event: MouseEvent];
+}>();
+
+function handleClick(ev: MouseEvent) {
+    emit("click", ev);
+}
+</script>

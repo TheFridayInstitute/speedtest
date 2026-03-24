@@ -60,11 +60,12 @@ var settings = {
 	garbagePhp_chunkSize: 100, // size of chunks sent by garbage.php (can be different if enable_quirks is active)
 	enable_quirks: true, // enable quirks for specific browsers. currently it overrides settings to optimize for specific browsers, unless they are already being overridden with the start command
 	ping_allowPerformanceApi: true, // if enabled, the ping test will attempt to calculate the ping more precisely using the Performance API. Currently works perfectly in Chrome, badly in Edge, and not at all in Firefox. If Performance API is not supported or the result is obviously wrong, a fallback is provided.
-	overheadCompensationFactor: 1.06, //can be changed to compensatie for transport overhead. (see doc.md for some other values)
+	overheadCompensationFactor: 1.06, //can be changed to compensate for transport overhead. (see doc.md for some other values)
 	useMebibits: false, //if set to true, speed will be reported in mebibits/s instead of megabits/s
 	telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results and timing) 3=debug (results+log)
 	url_telemetry: "results/telemetry.php", // path to the script that adds telemetry data to the database
-	telemetry_extra: "" //extra data that can be passed to the telemetry through the settings
+	telemetry_extra: "", //extra data that can be passed to the telemetry through the settings
+    forceIE11Workaround: false //when set to true, it will force the IE11 upload test on all browsers. Debug only
 };
 
 var xhr = null; // array of currently active xhr requests
@@ -122,9 +123,9 @@ this.addEventListener("message", function(e) {
 				if (typeof settings[key] !== "undefined") settings[key] = s[key];
 				else twarn("Unknown setting ignored: " + key);
 			}
+			var ua = navigator.userAgent;
 			// quirks for specific browsers. apply only if not overridden. more may be added in future releases
 			if (settings.enable_quirks || (typeof s.enable_quirks !== "undefined" && s.enable_quirks)) {
-				var ua = navigator.userAgent;
 				if (/Firefox.(\d+\.\d+)/i.test(ua)) {
 					if (typeof s.ping_allowPerformanceApi === "undefined") {
 						// ff performance API sucks
@@ -403,8 +404,8 @@ function dlTest(done) {
 				var speed = totLoaded / (t / 1000.0);
 				if (settings.time_auto) {
 					//decide how much to shorten the test. Every 200ms, the test is shortened by the bonusT calculated here
-					var bonus = (6.4 * speed) / 100000;
-					bonusT += bonus > 800 ? 800 : bonus;
+					var bonus = (5.0 * speed) / 100000;
+					bonusT += bonus > 400 ? 400 : bonus;
 				}
 				//update status
 				dlStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
@@ -422,7 +423,7 @@ function dlTest(done) {
 		200
 	);
 }
-// upload test, calls done function whent it's over
+// upload test, calls done function when it's over
 var ulCalled = false; // used to prevent multiple accidental calls to ulTest
 function ulTest(done) {
 	tverb("ulTest");
@@ -473,7 +474,7 @@ function ulTest(done) {
 						}
 					}
 					if (ie11workaround) {
-						// IE11 workarond: xhr.upload does not work properly, therefore we send a bunch of small 256k requests and use the onload event as progress. This is not precise, especially on fast connections
+						// IE11 workaround: xhr.upload does not work properly, therefore we send a bunch of small 256k requests and use the onload event as progress. This is not precise, especially on fast connections
 						xhr[i].onload = xhr[i].onerror = function() {
 							tverb("ul stream progress event (ie11wa)");
 							totLoaded += reqsmall.size;
@@ -523,7 +524,7 @@ function ulTest(done) {
 						xhr[i].send(req);
 					}
 				}.bind(this),
-				1
+				delay
 			);
 		}.bind(this);
 		// open streams
@@ -551,8 +552,8 @@ function ulTest(done) {
 					var speed = totLoaded / (t / 1000.0);
 					if (settings.time_auto) {
 						//decide how much to shorten the test. Every 200ms, the test is shortened by the bonusT calculated here
-						var bonus = (6.4 * speed) / 100000;
-						bonusT += bonus > 800 ? 800 : bonus;
+						var bonus = (5.0 * speed) / 100000;
+						bonusT += bonus > 400 ? 400 : bonus;
 					}
 					//update status
 					ulStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits

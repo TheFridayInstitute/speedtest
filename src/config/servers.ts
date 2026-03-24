@@ -4,11 +4,11 @@ import type { SpeedtestServer, DNSSpeedtestServer } from "@src/types/server";
 export const DEFAULT_TRADITIONAL_SERVERS: SpeedtestServer[] = [
     {
         name: "Friday Institute Primary",
-        server: "https://speedtest.fi.ncsu.edu/schoolwifi/scripts/librespeed/backend/",
-        dlURL: "garbage.php",
-        ulURL: "empty.php",
-        pingURL: "empty.php",
-        getIpURL: "getIP.php",
+        server: "/api/speedtest/",
+        dlURL: "garbage",
+        ulURL: "empty",
+        pingURL: "empty",
+        getIpURL: "getIP",
     },
 ];
 

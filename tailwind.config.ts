@@ -47,6 +47,11 @@ module.exports = {
                     DEFAULT: "hsl(var(--accent))",
                     foreground: "hsl(var(--accent-foreground))",
                 },
+                "th-accent": {
+                    DEFAULT: "var(--color-accent)",
+                    opaque: "var(--color-accent-opaque)",
+                    hover: "var(--color-accent-hover)",
+                },
                 popover: {
                     DEFAULT: "hsl(var(--popover))",
                     foreground: "hsl(var(--popover-foreground))",
@@ -59,6 +64,7 @@ module.exports = {
             boxShadow: {
                 card: "var(--shadow-card)",
                 cartoon: "8px 8px 0px 0px rgba(0, 0, 0, 0.8)",
+                "cartoon-light": "8px 8px 0px 0px rgba(255, 255, 255, 0.5)",
                 glass: "0 4px 16px hsl(var(--foreground) / 0.08)",
                 "glass-elevated":
                     "0 8px 32px hsl(var(--foreground) / 0.12)",

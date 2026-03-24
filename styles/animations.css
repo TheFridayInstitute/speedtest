@@ -214,14 +214,23 @@
     100% { background-position: -200% 0; }
 }
 
-.gold-shimmer,
-.gold-shimmer-text {
-    background: linear-gradient(90deg, #C0A050, #E8D5A0, #DAB860, #E8D5A0, #C0A050) !important;
-    background-size: 300% 100% !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    color: transparent !important;
-    animation: gold-shimmer-slide 4s linear infinite !important;
+@layer components {
+    .gold-shimmer,
+    .gold-shimmer-text {
+        background: linear-gradient(
+            90deg,
+            var(--color-gold-dark),
+            var(--color-gold-light),
+            var(--color-gold-mid),
+            var(--color-gold-light),
+            var(--color-gold-dark)
+        );
+        background-size: 300% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        animation: gold-shimmer-slide 4s linear infinite;
+    }
 }
 
 /* ── Shimmer pulse for in-progress numbers ───────── */

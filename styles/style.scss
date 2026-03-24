@@ -88,24 +88,31 @@
     }
 }
 
-/* ── Glass utility ─────────────────────────────────── */
+/* .glass and .glass-elevated are defined in glass.css (canonical source) */
 
-@layer components {
-    .glass {
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: var(--glass-border);
-        box-shadow: var(--glass-shadow);
-    }
+/* ── Pane utilities (from value.js pattern) ──────────── */
 
-    .glass-elevated {
-        background: var(--glass-bg-heavy);
-        backdrop-filter: var(--glass-blur-heavy);
-        -webkit-backdrop-filter: var(--glass-blur-heavy);
-        border: var(--glass-border);
-        box-shadow: var(--glass-shadow-elevated);
+/* Named scroll timeline so PaneHeader animations respond
+   to THIS container's scroll, not ancestor scroll. */
+.pane-scroll-fade {
+    scroll-timeline: --pane-scroll block;
+}
+
+.text-pane-title {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    letter-spacing: -0.025em;
+}
+@media (min-width: 640px) {
+    .text-pane-title {
+        font-size: var(--text-4xl);
     }
+}
+
+.text-pane-description {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: hsl(var(--muted-foreground) / 0.6);
 }
 
 /* ── Global layout ─────────────────────────────────── */
@@ -135,159 +142,21 @@ main {
     box-sizing: border-box;
 }
 
-/* ── Pane container ────────────────────────────────── */
-
-.pane-container {
-    .content {
-        --padding: 1rem;
-        padding: var(--padding);
-    }
-}
-
-/* ── Speedtest meter container ─────────────────────── */
-
-.speedtest-container {
-    position: relative;
-    width: 100%;
-    margin: 0 auto;
-
-    .speedtest {
-        position: relative;
-        aspect-ratio: 1;
-        overflow: hidden;
-        margin-bottom: -10%;
-
-        canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-        }
-    }
-}
-
-/* ── Info & progress container ─────────────────────── */
-
-.info-progress-container {
-    .info-container {
-        display: flex;
-        flex-direction: row;
-        gap: 0.5rem;
-
-        .info {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-
-            .header {
-                padding: 0.25rem 0;
-            }
-
-            .unit-container {
-                padding: 0.5rem;
-                height: 100%;
-                width: 100%;
-                @apply glass rounded-lg;
-                text-align: left;
-
-                .dot-container {
-                    height: 100%;
-                    width: 100%;
-                }
-            }
-        }
-    }
-
-    .progress-bar-container {
-        margin: 0.75rem 0 0;
-        min-height: 1rem; /* Reserve space to prevent layout shift */
-    }
-}
-
-/* ── Progress bar ──────────────────────────────────── */
-
-.progress-bar-container {
-    display: flex;
-    position: relative;
-    height: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-    flex-direction: row;
-
-    .progress-bar {
-        height: 1rem;
-        width: 0;
-        border-radius: 0;
-    }
-}
-
-/* ── Unit container ────────────────────────────────── */
-
-.unit-container {
-    --font-size-lg: 2rem;
-    --font-size-sm: calc(var(--font-size-lg) * 0.5);
-
-    display: flex;
-    position: relative;
-    margin: 0;
-    box-sizing: border-box;
-    flex-direction: column;
-    text-align: left;
-    transition: all var(--ease-in-out) 1000ms;
-
-    &.in-progress {
-        color: hsl(var(--foreground));
-    }
-
-    &.shimmer-in-progress .amount,
-    &.shimmer-in-progress .unit {
-        color: hsl(var(--foreground) / 0.4);
-        animation: shimmer-pulse 1.5s ease-in-out infinite;
-    }
-
-    .amount {
-        font-size: var(--font-size-lg);
-        line-height: 1.1;
-    }
-
-    .unit {
-        font-size: var(--font-size-sm);
-        font-family: var(--font-mono);
-        line-height: 1.2;
-    }
-}
-
+/* Layout styles are colocated in their respective component <style scoped> blocks:
+ * - .pane-container → StartPane.vue
+ * - .speedtest-container → SpeedtestMeter.vue
+ * - .info-progress-container, .progress-bar-container, .unit-container → SpeedtestResults.vue
+ */
 
 /* ── Landscape layout ──────────────────────────────── */
+/* NOTE: The nested selectors (.speedtest-container .info-container) span
+   component boundaries and may be stale after decomposition into
+   SpeedtestMeter.vue + SpeedtestResults.vue. Validate on landscape devices. */
 
 @media all and (orientation: landscape) and (max-height: 992px) {
     main {
         grid-template-columns: 2fr 1fr;
         grid-template-rows: 1fr auto;
-
-    }
-
-    .speedtest-container {
-        column-gap: var(--layout-gap);
-        grid-template-areas: "speedtest info";
-        grid-template-columns: 2fr 1fr;
-        grid-template-rows: 1fr;
-
-        .info-container {
-            grid-template-columns: auto;
-            grid-template-rows: 3fr 1fr;
-            row-gap: var(--layout-gap);
-
-            .info {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-
-                .unit-container {
-                    flex-direction: inherit;
-                }
-            }
-        }
     }
 
     .info-progress-container {

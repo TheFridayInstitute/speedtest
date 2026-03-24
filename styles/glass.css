@@ -6,7 +6,6 @@
         backdrop-filter: var(--glass-blur);
         -webkit-backdrop-filter: var(--glass-blur);
         border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
     }
 
     .glass-elevated {
@@ -14,7 +13,6 @@
         backdrop-filter: var(--glass-blur-heavy);
         -webkit-backdrop-filter: var(--glass-blur-heavy);
         border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow-elevated);
     }
 
     /* Shared pill input style */

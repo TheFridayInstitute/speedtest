@@ -74,32 +74,34 @@ export interface UnitInfo {
     footer?: string;
 }
 
-/** Canvas meter configuration with inner/outer rings, dial, and dot. */
+/** A single ring track (outer, mid, or inner) with its mesh and per-state colors. */
+export interface MeterRing {
+    mesh: any;
+    radius: number;
+    dlColor: CanvasColor;
+    ulColor: CanvasColor;
+}
+
+/** Canvas meter configuration with outer/mid/inner rings, dial, and dot. */
 export interface MeterObject {
     startAngle: number;
     endAngle: number;
     minValue: number;
     maxValue: number;
     lineWidth: number;
+    outerLineWidth: number;
+    midLineWidth: number;
+    innerLineWidth: number;
     backgroundColor: CanvasColor;
 
-    outerMeter?: {
-        mesh: any;
-        radius: number;
-        dlColor: CanvasColor;
-        ulColor: CanvasColor;
-    };
-
-    innerMeter?: {
-        mesh: any;
-        radius: number;
-        dlColor: CanvasColor;
-        ulColor: CanvasColor;
-    };
+    outerMeter?: MeterRing;
+    midMeter?: MeterRing;
+    innerMeter?: MeterRing;
 
     dial?: {
         color: CanvasColor;
-        mesh: any;
+        length: number;
+        width: number;
     };
 
     dot?: {

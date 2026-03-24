@@ -34,89 +34,28 @@ export function roundedArc(
     color: CanvasColor,
     lineWidth: number,
 ): Mesh {
-    const slump = -0.0;
-    const outerEdge = radius + lineWidth / 2;
-
-    const barHeight = 0.05;
-    const barWidth = lineWidth;
-
-    const base = [
-        [0, barHeight],
-        [barWidth, barHeight],
-    ];
-
-    const slerps = slerpPoints(base[0], base[1]);
-    const points = [...slerps];
-
-    let theta = beginAngle;
-    const delta = (barHeight * 2) / radius;
-    theta += delta;
-
-    const startCap = new Polygon(points, null, null, color);
+    // Single arc with native round lineCaps — no polygon end caps needed.
     const arc = new Arc(
         originX,
         originY,
         radius,
-        theta + slump,
-        0,
+        beginAngle,
+        endAngle,
         color,
         lineWidth,
     );
-    const endCap = new Polygon(
-        JSON.parse(JSON.stringify(points)),
-        null,
-        null,
-        color,
-    );
+    arc.lineCap("round");
 
-    startCap.translate(originX, originY);
-    endCap.translate(originX, originY);
-
-    const x = outerEdge * Math.cos(theta);
-    const y = outerEdge * Math.sin(theta);
-
-    startCap.scale(-1).rotate(theta, true).translate(x, y);
-
-    const roundedArcMesh = new Mesh(endCap, arc, startCap);
+    const roundedArcMesh = new Mesh(arc);
 
     /**
      * Custom draw for animated arc fill.
      * t ∈ [0, 1] controls how much of the arc is visible.
-     * The end cap follows the arc's leading edge.
      */
     roundedArcMesh.draw = function (ctx, t) {
-        let theta = lerp(t, beginAngle, endAngle - 2 * delta);
-        let theta2 = theta;
-
-        if (theta >= beginAngle - delta + slump) {
-            if (theta >= endAngle - delta) {
-                theta2 = endAngle - delta + slump;
-                theta = endAngle - delta;
-            } else {
-                theta2 = theta + delta + slump;
-                theta += delta;
-            }
-        } else {
-            theta2 = theta;
-        }
-
-        const x = outerEdge * Math.cos(theta2);
-        const y = outerEdge * Math.sin(theta2);
-
-        // Move end cap to current arc position, draw, then undo transform.
-        this.shapes[0]
-            .translate(-barWidth, 0)
-            .rotate(theta2, true)
-            .translate(x, y)
-            .draw(ctx)
-            .translate(-x, -y)
-            .rotate(-theta2, true)
-            .translate(barWidth, 0);
-
-        this.shapes[1].endAngle = theta;
-        this.shapes[1].draw(ctx);
-
-        this.shapes[2].draw(ctx);
+        const currentEnd = lerp(t, beginAngle, endAngle);
+        this.shapes[0]._endAngle = currentEnd;
+        this.shapes[0].draw(ctx);
         return this;
     };
 
@@ -131,8 +70,6 @@ export function setRoundedArcColor(mesh: Mesh, color: CanvasColor) {
     mesh.map((shape) => {
         if (shape instanceof Arc) {
             shape.color = color;
-        } else {
-            shape.fillColor = color;
         }
     });
 }

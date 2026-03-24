@@ -186,6 +186,7 @@ export class Arc extends Shape {
     _radius: number;
     _beginAngle: number;
     _endAngle: number;
+    _lineCap: CanvasLineCap = "butt";
 
     constructor(
         originX: number,
@@ -200,6 +201,11 @@ export class Arc extends Shape {
         this._radius = radius;
         this._beginAngle = beginAngle;
         this._endAngle = endAngle;
+    }
+
+    lineCap(cap: CanvasLineCap): this {
+        this._lineCap = cap;
+        return this;
     }
 
     /**
@@ -220,6 +226,7 @@ export class Arc extends Shape {
         ctx.beginPath();
         ctx.strokeStyle = this._color;
         ctx.lineWidth = this._lineWidth;
+        ctx.lineCap = this._lineCap ?? "butt";
 
         if (this._fillColor) {
             ctx.fillStyle = this._fillColor;

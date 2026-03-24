@@ -5,26 +5,49 @@
                 v-for="metric in metrics"
                 :key="metric.id"
                 class="info"
+                :class="{ 'metric-complete': isFinished(metric.id) }"
             >
-                <div class="header">{{ metric.label }}</div>
+                <div
+                    class="header"
+                    :style="{
+                        fontSize: isFinished(metric.id) ? 'var(--text-xl)' : 'var(--text-lg)',
+                        transition: 'font-size 0.3s var(--ease-standard)',
+                    }"
+                >{{ metric.label }}</div>
 
                 <div
                     class="unit-container"
-                    :class="{ 'in-progress': isInProgress(metric.id) }"
+                    :class="{
+                        'shimmer-in-progress': isActive(metric.id),
+                    }"
                 >
-                    <div class="amount font-mono" :aria-label="metric.ariaLabel">
-                        <LoadingDots v-if="isStarted(metric.id)" />
-                        <template v-else-if="resultFor(metric.id).amount">
+                    <!-- Loading dots: only when metric just started (no data yet) -->
+                    <div
+                        v-if="isStarted(metric.id)"
+                        class="amount font-mono flex items-center justify-center"
+                    >
+                        <LoadingDots />
+                    </div>
+
+                    <!-- Active / finished: show the number -->
+                    <template v-else-if="resultFor(metric.id).amount">
+                        <div
+                            class="amount font-mono"
+                            :class="{ 'gold-shimmer-text': isFinished(metric.id) }"
+                            :aria-label="metric.ariaLabel"
+                        >
                             {{ resultFor(metric.id).amount }}
-                        </template>
-                        <template v-else>&nbsp;</template>
-                    </div>
-                    <div class="unit italic">
-                        <template v-if="resultFor(metric.id).unit">
-                            {{ resultFor(metric.id).unit }}
-                        </template>
-                        <template v-else>{{ metric.defaultUnit }}</template>
-                    </div>
+                        </div>
+                        <div
+                            class="unit italic"
+                            :class="{ 'gold-shimmer-text': isFinished(metric.id) }"
+                        >
+                            {{ resultFor(metric.id).unit || metric.defaultUnit }}
+                        </div>
+                    </template>
+
+                    <!-- Not started yet: blank -->
+                    <div v-else class="amount font-mono">&nbsp;</div>
                 </div>
             </div>
         </div>
@@ -74,6 +97,16 @@ function isInProgress(metricId: string): boolean {
 
 function isStarted(metricId: string): boolean {
     return props.testStates[metricId] === TestState.started;
+}
+
+/** Currently measuring — has data flowing in. */
+function isActive(metricId: string): boolean {
+    return props.testStates[metricId] === TestState.active;
+}
+
+function isFinished(metricId: string): boolean {
+    const state = props.testStates[metricId];
+    return state === TestState.finished || state === TestState.drawFinished;
 }
 
 function resultFor(metricId: string): UnitInfo {

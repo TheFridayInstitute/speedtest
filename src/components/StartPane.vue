@@ -8,7 +8,7 @@
 
                 <hr class="my-6 h-0.5 w-full rounded-full bg-foreground/20" />
 
-                <div class="text-base text-muted-foreground">
+                <div class="text-xl text-muted-foreground">
                     <slot>{{ description }}</slot>
                 </div>
             </CardContent>

@@ -22,6 +22,9 @@ import { Speedtest } from "@utils/librespeed/speedtest";
  * per-metric state tracking, and computed display values. Contains
  * NO DOM manipulation — purely reactive state management.
  */
+/** Return type of useSpeedtest(), used for provide/inject typing. */
+export type UseSpeedtestReturn = ReturnType<typeof useSpeedtest>;
+
 export function useSpeedtest() {
     // ── Internal (non-exported) state ─────────────────────────────────
 
@@ -118,13 +121,25 @@ export function useSpeedtest() {
             testStates.prevState !== SpeedtestState.notStarted &&
             testState !== testStates.prevState
         ) {
-            // A state transition occurred: mark the new state as started,
-            // and the previous one as finished.
-            testStates[testStateName] = TestState.started;
-            testStates[prevTestStateName] = TestState.finished;
+            // A state transition occurred: mark the previous metric as finished.
+            if (prevTestStateName && prevTestStateName in testStates) {
+                testStates[prevTestStateName] = TestState.finished;
+            }
+            // Mark the new metric as started (if it's a real metric, not "finished").
+            if (testStateName && testStateName in testStates) {
+                testStates[testStateName] = TestState.started;
+            }
+            // When the overall test finishes, mark ALL metrics as finished.
+            if (testState === SpeedtestState.finished) {
+                testStates.ping = TestState.finished;
+                testStates.download = TestState.finished;
+                testStates.upload = TestState.finished;
+            }
         } else {
             // Still within the same state: mark it as active.
-            testStates[testStateName] = TestState.active;
+            if (testStateName && testStateName in testStates) {
+                testStates[testStateName] = TestState.active;
+            }
         }
 
         testStates.prevState = testState;
@@ -199,15 +214,25 @@ export function useSpeedtest() {
     function initialize(onEnd?: (aborted: boolean) => void): void {
         speedtestObject = new Speedtest();
 
+        // Set the worker URL to point to the assets directory.
+        speedtestObject.setParameter("workerURL", "./assets/speedtest_worker.js");
+
         // Disable ISP info fetching from the worker — we handle that in useIPInfo.
         speedtestObject.setParameter("getIp_ispInfo", false);
         speedtestObject.setParameter("getIp_ispInfo_distance", false);
 
         speedtestObject.onupdate = (workerData: SpeedtestData) => {
             data.value = workerData;
+            updateTestState();
         };
 
         speedtestObject.onend = (aborted: boolean) => {
+            // Mark all metrics as finished on normal end
+            if (!aborted) {
+                testStates.ping = TestState.finished;
+                testStates.download = TestState.finished;
+                testStates.upload = TestState.finished;
+            }
             isRunning.value = false;
             if (onEnd) {
                 onEnd(aborted);
@@ -253,6 +278,13 @@ export function useSpeedtest() {
                 "Speedtest not initialized. Call initialize() first.",
             );
         }
+        // Reset all metric states for a fresh test
+        testStates.ping = TestState.notStarted;
+        testStates.download = TestState.notStarted;
+        testStates.upload = TestState.notStarted;
+        testStates.prevState = SpeedtestState.notStarted;
+        data.value = null;
+
         isRunning.value = true;
         speedtestObject.start();
     }

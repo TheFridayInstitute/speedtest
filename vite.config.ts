@@ -69,6 +69,14 @@ export default defineConfig((mode) => {
         return {
             ...defaultOptions,
             root: "./src/",
+            server: {
+                proxy: {
+                    "/api": {
+                        target: "http://localhost:3200",
+                        changeOrigin: true,
+                    },
+                },
+            },
             plugins: [
                 ...defaultPlugins,
                 viteStaticCopy({

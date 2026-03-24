@@ -11,7 +11,7 @@
                     />
                 </Avatar>
                 <div>
-                    <h4 class="text-sm hover:underline">
+                    <h4 class="text-lg hover:underline">
                         <a href="https://github.com/mkbabb">@mbabb</a>
                     </h4>
                     <p>
@@ -26,7 +26,7 @@
             </div>
             <hr class="my-2 border-border" />
             <div class="flex items-center justify-between px-4 py-2">
-                <span class="text-sm text-muted-foreground">Dark mode</span>
+                <span class="text-lg text-muted-foreground">Dark mode</span>
                 <DarkModeToggle
                     class="aspect-square w-6 cursor-pointer hover:scale-105 hover:opacity-50"
                 />

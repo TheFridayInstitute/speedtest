@@ -28,8 +28,13 @@ export function useIPInfo() {
      */
     async function getIP(): Promise<string> {
         try {
-            const response = await fetch("https://ip.friday.institute");
-            return (await response.text()).trim();
+            const response = await fetch("/api/ip");
+            const text = (await response.text()).trim();
+            // Guard against Vite SPA fallback returning HTML
+            if (text.startsWith("<!") || text.startsWith("<html")) {
+                throw new Error("Got HTML instead of IP");
+            }
+            return text;
         } catch {
             const response = await fetch(
                 "https://api.ipify.org?format=json",
@@ -45,21 +50,17 @@ export function useIPInfo() {
      */
     async function getIPInfo(ip?: string): Promise<IPInfo> {
         ip = ip ?? (await getIP());
-        const response = await fetch(
-            `https://ip.friday.institute/ipinfo/${ip}`,
-        );
+        const response = await fetch(`/api/ip/info/${encodeURIComponent(ip)}`);
+        const contentType = response.headers.get("content-type") ?? "";
+        if (!contentType.includes("json")) throw new Error("Not JSON");
         return await response.json();
     }
 
-    /**
-     * Fetch entity lookup data (organization name, ID) for the given IP address.
-     * Falls back to fetching the client IP first if none is provided.
-     */
     async function lookupIP(ip?: string): Promise<LookedUpIP> {
         ip = ip ?? (await getIP());
-        const response = await fetch(
-            `https://ip.friday.institute/lookup/${ip}`,
-        );
+        const response = await fetch(`/api/ip/lookup/${encodeURIComponent(ip)}`);
+        const contentType = response.headers.get("content-type") ?? "";
+        if (!contentType.includes("json")) throw new Error("Not JSON");
         return await response.json();
     }
 

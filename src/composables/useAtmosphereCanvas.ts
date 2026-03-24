@@ -56,9 +56,18 @@ export function useAtmosphereCanvas(
     const dprMax = isSafari || isLowPower ? 1.6 : 2;
     const blurScale = isSafari || isLowPower ? 0.82 : 1;
 
+    /** Sync surface fill color and alpha scale with current dark/light mode. */
+    let alphaScale = 1.0;
+    function updateSurface() {
+        const isDark = document.documentElement.classList.contains("dark");
+        surfaceRgb = isDark ? [10, 10, 15] : [255, 255, 255];
+        // Blobs need more opacity on white, less on dark
+        alphaScale = isDark ? 0.6 : 2.2;
+    }
+
     function updatePalette(css: string) {
         const rgb = cssToRgb(css);
-        surfaceRgb = rgb;
+        updateSurface();
         baseOklch = rgbToOklch(rgb[0], rgb[1], rgb[2]);
     }
 
@@ -168,7 +177,7 @@ export function useAtmosphereCanvas(
                     Math.cos(t * (0.35 + i * 0.12) + phase) * oy +
                     Math.sin(t * 0.18 + i) * oy * 0.6;
 
-                const peakAlpha = isSmall ? cfg.peakAlphaSmall : cfg.peakAlphaLarge;
+                const peakAlpha = (isSmall ? cfg.peakAlphaSmall : cfg.peakAlphaLarge) * alphaScale;
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
                 grad.addColorStop(0, rgba(c[0], c[1], c[2], peakAlpha));
                 grad.addColorStop(cfg.gradStop2, rgba(c[0], c[1], c[2], peakAlpha * 0.6));
@@ -191,12 +200,23 @@ export function useAtmosphereCanvas(
     watch(cssColor, (css) => updatePalette(css));
 
     if (typeof window !== "undefined") {
+        // Re-resolve accent color + surface when the <html> class changes (e.g. dark ↔ light)
         const mo = new MutationObserver(() => updatePalette(cssColor.value));
         mo.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ["class"],
         });
-        onBeforeUnmount(() => mo.disconnect());
+
+        // Also react to OS-level color-scheme changes (covers cases where dark mode
+        // is driven by prefers-color-scheme without a class toggle).
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const onSchemeChange = () => updatePalette(cssColor.value);
+        mq.addEventListener("change", onSchemeChange);
+
+        onBeforeUnmount(() => {
+            mo.disconnect();
+            mq.removeEventListener("change", onSchemeChange);
+        });
     }
 
     onMounted(() => start());

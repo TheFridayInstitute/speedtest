@@ -1,28 +1,27 @@
 <template>
-    <div class="relative z-10 mx-auto grid w-full max-w-lg gap-3" style="grid-template-rows: 1fr auto auto">
-        <!-- Start pane OR meter — same grid cell, animated swap -->
-        <div class="min-h-0">
-            <Transition name="pane-swap" mode="out-in">
-                <StartPane
-                    v-if="showStartPane"
-                    key="start"
-                    title="Let's test your internet speed."
-                    :visible="true"
-                    @start="startTest"
-                >
-                    <p class="leading-relaxed">
-                        Up to <span class="font-mono">25 MB</span> of data on cellular or satellite connections may be consumed.
-                    </p>
-                    <p class="mt-3 leading-relaxed">
-                        Press
-                        <Button variant="accent" size="xs" class="mx-1 inline-flex align-baseline" @click.stop="startTest">Start</Button>
-                        to begin.
-                    </p>
-                </StartPane>
+    <div class="relative z-10 mx-auto w-full max-w-lg">
+        <Transition name="pane-swap" mode="out-in">
+            <!-- Start pane (has its own Card component) -->
+            <StartPane
+                v-if="showStartPane"
+                key="start"
+                title="Let's test your internet speed."
+                :visible="true"
+                @start="startTest"
+            >
+                <p class="leading-relaxed">
+                    Up to <span class="font-mono">25 MB</span> of data on cellular or satellite connections may be consumed.
+                </p>
+                <p class="mt-3 leading-relaxed">
+                    Press
+                    <Button variant="accent" size="xs" class="mx-1 inline-flex align-baseline" @click.stop="startTest">Start</Button>
+                    to begin.
+                </p>
+            </StartPane>
 
+            <!-- Meter + results (no card bg — the dial stands on its own) -->
+            <div v-else key="meter" class="space-y-3">
                 <SpeedtestMeter
-                    v-else
-                    key="meter"
                     :speedtest-data="speedtest.data.value"
                     :current-state-name="speedtest.currentStateName.value"
                     :test-states="speedtest.testStates"
@@ -30,95 +29,44 @@
                     :get-speedtest-state-amount="speedtest.getSpeedtestStateAmount"
                     :get-state-unit-info="speedtest.getStateUnitInfo"
                 />
-            </Transition>
-        </div>
 
-        <!-- Results row -->
-        <Transition name="pane-swap">
-            <SpeedtestResults
-                v-if="showMeter"
-                :test-states="speedtest.testStates"
-                :ping-result="speedtest.pingResult.value"
-                :download-result="speedtest.downloadResult.value"
-                :upload-result="speedtest.uploadResult.value"
-            />
+                <SpeedtestResults
+                    :test-states="speedtest.testStates"
+                    :ping-result="speedtest.pingResult.value"
+                    :download-result="speedtest.downloadResult.value"
+                    :upload-result="speedtest.uploadResult.value"
+                />
+            </div>
         </Transition>
-
-        <!-- Button — always bottom-right, never moves -->
-        <div class="flex justify-end">
-            <SpeedtestButton
-                :label="buttonLabel"
-                :is-running="speedtest.isRunning.value"
-                @click="handleButtonClick"
-            />
-        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, inject, watch } from "vue";
 import StartPane from "./StartPane.vue";
 import SpeedtestMeter from "./SpeedtestMeter.vue";
 import SpeedtestResults from "./SpeedtestResults.vue";
-import SpeedtestButton from "./SpeedtestButton.vue";
 import { Button } from "@components/ui/button";
-import { useSpeedtest } from "@src/composables/useSpeedtest";
-import { DEFAULT_TRADITIONAL_SERVERS } from "@src/config/servers";
-import { throttle } from "@utils/timing";
+import type { UseSpeedtestReturn } from "@src/composables/useSpeedtest";
 
-const speedtest = useSpeedtest();
+// ── Injected speedtest instance (owned by App.vue, persists across view changes) ──
+const speedtest = inject<UseSpeedtestReturn>("speedtest")!;
 
-const showStartPane = ref(true);
-const showMeter = ref(false);
-const testCompleted = ref(false);
+// Show the start pane unless the speedtest is (or has been) running
+const showStartPane = ref(!speedtest.isRunning.value && speedtest.data.value == null);
 
-const buttonLabel = computed(() => {
-    if (testCompleted.value && !speedtest.isRunning.value) return "Next →";
-    if (speedtest.isRunning.value) return "Stop";
-    return "Start";
-});
+// If the component mounts while a test is already running (navigated back),
+// make sure we show the meter immediately.
+watch(() => speedtest.isRunning.value, (running) => {
+    if (running) {
+        showStartPane.value = false;
+    }
+}, { immediate: true });
 
 function startTest(): void {
     showStartPane.value = false;
-    showMeter.value = true;
     speedtest.start();
 }
-
-function abortTest(): void {
-    speedtest.abort();
-    testCompleted.value = false;
-}
-
-function resetToStart(): void {
-    testCompleted.value = false;
-    showMeter.value = false;
-    showStartPane.value = true;
-    speedtest.abort();
-}
-
-function onTestEnd(aborted: boolean): void {
-    if (!aborted) {
-        testCompleted.value = true;
-    }
-}
-
-const handleButtonClick = throttle(() => {
-    if (speedtest.isRunning.value) {
-        abortTest();
-    } else if (testCompleted.value) {
-        resetToStart();
-    } else {
-        startTest();
-    }
-}, 750);
-
-onMounted(() => {
-    speedtest.initialize(onTestEnd);
-    const server = DEFAULT_TRADITIONAL_SERVERS[0];
-    if (server) {
-        speedtest.setServer(server);
-    }
-});
 </script>
 
 <style scoped>

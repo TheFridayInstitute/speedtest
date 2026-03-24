@@ -16,13 +16,13 @@
                             : 'bg-muted-foreground/40'
                     "
                 ></div>
-                <span class="font-mono text-sm">{{ server.config.name }}</span>
+                <span class="font-mono text-lg">{{ server.config.name }}</span>
                 <span
-                    class="text-xs text-muted-foreground"
+                    class="text-base text-muted-foreground"
                     v-if="server.type === 'dns'"
                 >(DNS)</span>
                 <span
-                    class="text-xs text-muted-foreground"
+                    class="text-base text-muted-foreground"
                     v-else
                 >(Traditional)</span>
             </div>
@@ -39,7 +39,7 @@
 
         <p
             v-if="servers.length === 0"
-            class="text-sm italic text-muted-foreground"
+            class="text-lg italic text-muted-foreground"
         >
             No servers configured.
         </p>

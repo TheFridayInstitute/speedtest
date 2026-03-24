@@ -2,7 +2,7 @@
     <Button
         variant="accent"
         size="lg"
-        class="px-8 py-3 text-lg"
+        class="px-8 py-3 text-2xl"
         @click="handleClick"
     >
         {{ label }}

@@ -1,0 +1,34 @@
+services:
+  api:
+    build: .
+    ports:
+      - "127.0.0.1:3200:3000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/speedtest-db
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      IPINFO_TOKEN: ${IPINFO_TOKEN}
+      SHODAN_KEY: ${SHODAN_KEY}
+      GOOGLE_SERVICE_ACCOUNT_KEY: /app/auth/service-account.json
+      PORT: "3000"
+      NODE_ENV: production
+    volumes:
+      - ./auth:/app/auth:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: mongosh --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  mongo-data:

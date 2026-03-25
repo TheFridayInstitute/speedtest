@@ -22,7 +22,9 @@
 
         <script type="module">
             import { createApp } from "vue";
+            import { createPinia } from "pinia";
             import App from "./App.vue";
+            import { router } from "./router/index.ts";
 
             import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
             import { library } from "@fortawesome/fontawesome-svg-core";
@@ -44,7 +46,10 @@
             );
 
             const app = createApp(App);
+            const pinia = createPinia();
 
+            app.use(pinia);
+            app.use(router);
             app.component("font-awesome-icon", FontAwesomeIcon).mount("#app");
         </script>
 

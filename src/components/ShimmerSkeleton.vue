@@ -24,12 +24,13 @@ withDefaults(defineProps<{
     display: inline-block;
     background: linear-gradient(
         90deg,
-        hsl(var(--foreground) / 0.06) 25%,
-        hsl(var(--foreground) / 0.15) 50%,
-        hsl(var(--foreground) / 0.06) 75%
+        hsl(var(--muted)) 25%,
+        hsl(var(--muted-foreground) / 0.3) 50%,
+        hsl(var(--muted)) 75%
     );
     background-size: 200% 100%;
     animation: shimmer-slide 1.5s linear infinite;
     border-radius: var(--radius-pill, 9999px);
+    opacity: 1;
 }
 </style>

@@ -68,7 +68,7 @@ const primaryButtonStyle = computed(() => {
     }
     // Start or Next — accent pink
     return {
-        background: 'var(--color-accent-opaque)',
+        background: 'var(--th-accent-opaque)',
         color: 'white',
     };
 });
@@ -77,7 +77,7 @@ const primaryButtonStyle = computed(() => {
 const phaseColor = computed(() => {
     if (!props.isRunning) return undefined;
     if (props.currentPhase === 'started') return undefined; // neutral while initializing
-    return 'var(--color-accent-opaque)';
+    return 'var(--th-accent-opaque)';
 });
 
 const showRetake = computed(
@@ -174,12 +174,12 @@ function onPrimary() {
                         v-else
                         :is="primaryIcon"
                         class="w-5 h-5 shrink-0"
-                        :style="testCompleted ? { color: 'var(--color-accent-opaque)' } : {}"
+                        :style="testCompleted ? { color: 'var(--th-accent-opaque)' } : {}"
                     />
                     <span
                         v-if="!isRunning"
                         class="text-lg font-medium whitespace-nowrap"
-                        :style="testCompleted ? { color: 'var(--color-accent-opaque)' } : {}"
+                        :style="testCompleted ? { color: 'var(--th-accent-opaque)' } : {}"
                     >
                         {{ testCompleted ? 'Complete' : 'Speedtest' }}
                     </span>

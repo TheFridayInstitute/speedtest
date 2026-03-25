@@ -116,6 +116,76 @@ export function useServerManager() {
         }));
     }
 
+    /**
+     * Fetch registered servers from the API, ping each, and auto-select
+     * the one with the lowest latency.
+     */
+    async function fetchAndAutoSelect(): Promise<void> {
+        try {
+            const res = await fetch("/api/servers");
+            if (!res.ok) return;
+
+            const apiServers = await res.json() as Array<{
+                serverId: string;
+                name: string;
+                host: string;
+                port: number;
+                endpoints: { garbage: string; empty: string; getIP: string };
+                status: string;
+            }>;
+
+            if (apiServers.length === 0) return;
+
+            // Replace all traditional servers with the registry entries
+            // (removes the default static config in favor of the real registry)
+            const existingDns = servers.value.filter((s) => s.type === "dns");
+            servers.value = [...existingDns];
+
+            for (const s of apiServers) {
+                // For the local/primary server, use relative URLs so CORS isn't an issue
+                const isLocal = s.host === location.hostname || s.host === "localhost";
+                const baseUrl = isLocal
+                    ? ""
+                    : `${location.protocol}//${s.host}${s.port !== 443 && s.port !== 80 ? ":" + s.port : ""}`;
+
+                const config: SpeedtestServer = {
+                    name: s.name,
+                    server: baseUrl + "/api/speedtest/",
+                    dlURL: "garbage",
+                    ulURL: "empty",
+                    pingURL: "empty",
+                    getIpURL: "getIP",
+                };
+
+                addServer("traditional", config);
+            }
+
+            // Ping all traditional servers and auto-select lowest latency
+            const traditional = traditionalServers.value;
+            if (traditional.length <= 1) return;
+
+            const latencies = await Promise.all(
+                traditional.map(async (s) => {
+                    const config = s.config as SpeedtestServer;
+                    const start = performance.now();
+                    try {
+                        await fetch(config.server + config.pingURL, { method: "HEAD", mode: "no-cors" });
+                        return { id: s.id, latency: performance.now() - start };
+                    } catch {
+                        return { id: s.id, latency: Infinity };
+                    }
+                }),
+            );
+
+            latencies.sort((a, b) => a.latency - b.latency);
+            if (latencies[0] && latencies[0].latency < Infinity) {
+                setActiveServer(latencies[0].id);
+            }
+        } catch {
+            // API unavailable — use default servers
+        }
+    }
+
     return {
         /** The full list of managed servers. */
         servers,
@@ -131,5 +201,7 @@ export function useServerManager() {
         removeServer,
         /** Set the active server by ID. */
         setActiveServer,
+        /** Fetch servers from API and auto-select best one. */
+        fetchAndAutoSelect,
     };
 }

@@ -54,7 +54,7 @@ export function useMeterRenderer(
 
         const bgColor = getComputedVariable("--meter-background-color");
         const dialColor = getComputedVariable("--meter-dial-color");
-        const accentColor = getComputedVariable("--color-accent-opaque");
+        const accentColor = getComputedVariable("--th-accent-opaque");
 
         rings = createRings(config, bgColor, el);
         dial = createDial(config, dialColor);

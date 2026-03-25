@@ -73,9 +73,9 @@
             </PopoverContent>
         </Popover>
 
-        <!-- Right side: @mbabb -->
+        <!-- Right side: dark mode toggle -->
         <div class="pointer-events-auto flex items-center gap-3">
-            <UserCard />
+            <DarkModeToggle class="h-5 w-5" />
         </div>
     </div>
 </template>
@@ -86,7 +86,7 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
     Button, Separator,
 } from "@mkbabb/glass-ui";
-import UserCard from "./UserCard.vue";
+import { DarkModeToggle } from "@mkbabb/glass-ui";
 import type { IPInfo, LookedUpIP } from "@src/types/dns";
 import type { ManagedServer } from "@src/composables/useServerManager";
 

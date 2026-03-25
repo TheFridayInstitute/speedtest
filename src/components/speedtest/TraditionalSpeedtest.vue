@@ -19,7 +19,7 @@
                 </p>
             </StartPane>
 
-            <!-- Meter + results (no card bg — the dial stands on its own) -->
+            <!-- Meter + results -->
             <div v-else key="meter" class="space-y-3">
                 <SpeedtestMeter />
 

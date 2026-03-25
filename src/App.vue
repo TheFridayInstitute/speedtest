@@ -1,55 +1,39 @@
 <template>
     <div class="relative flex h-dvh w-full flex-col overflow-hidden">
         <AppHeader
+            v-if="!isDashboardRoute"
             :servers="serverManager.traditionalServers.value"
             :active-server-id="serverManager.activeServer.value?.id ?? null"
             :client-ip="clientIp"
             :ip-info="ipInfo"
             :looked-up-ip="lookedUpIp"
             @select-server="serverManager.setActiveServer"
-            @dashboard="currentView = 'dashboard'"
+            @dashboard="router.push({ name: 'admin' })"
         />
 
         <canvas ref="atmosphereCanvas" class="pointer-events-none fixed inset-0 -z-10 h-full w-full" />
 
         <!-- Scrollable content area — header and dock stay pinned -->
-        <div class="flex min-h-0 flex-1 w-full items-center justify-center overflow-hidden p-4 pb-[calc(var(--dock-h)+var(--dock-inset)*2)]">
+        <div
+            class="flex min-h-0 flex-1 w-full overflow-hidden"
+            :class="isDashboardRoute
+                ? ''
+                : 'items-center justify-center p-4 pb-[calc(var(--dock-h)+var(--dock-inset)*2)]'"
+        >
 
-        <!-- View switcher -->
-        <Transition name="pane-swap" mode="out-in">
-            <SpeedtestTabs
-                v-if="currentView === 'speedtest'"
-                key="speedtest"
-            />
-
-            <SurveyWizard
-                v-else-if="currentView === 'survey'"
-                key="survey"
-                ref="surveyRef"
-                :config="surveyConfig"
-                :ip-info="ipInfo"
-                :looked-up-ip="lookedUpIp"
-                :geo-bias="geolocation.coordinates.value"
-                @submit="onSurveySubmit"
-                @skip="onSurveySkip"
-            />
-
-            <ThankYou
-                v-else-if="currentView === 'thankyou'"
-                key="thankyou"
-                @edit="currentView = 'survey'"
-            />
-
-            <DashboardView
-                v-else-if="currentView === 'dashboard'"
-                key="dashboard"
-                @back="currentView = 'speedtest'"
-            />
-        </Transition>
+        <!-- Router-managed views -->
+        <RouterView v-slot="{ Component, route: viewRoute }">
+            <!-- Only animate transitions for speedtest flow pages, not dashboard layouts -->
+            <Transition v-if="!isDashboardRoute" name="pane-swap" mode="out-in">
+                <component :is="Component" :key="viewRoute.path" />
+            </Transition>
+            <component v-else :is="Component" />
+        </RouterView>
         </div>
 
-        <!-- Dock: centralized controls -->
+        <!-- Dock: centralized controls (hidden on dashboard routes) -->
         <Dock
+            v-if="!isDashboardRoute"
             :current-view="currentView"
             :is-running="isSpeedtestRunning"
             :test-completed="isSpeedtestCompleted"
@@ -61,7 +45,7 @@
             @retake="onDockRetake"
             @back="onDockBack"
             @forward="onDockForward"
-            @dashboard="currentView = 'dashboard'"
+            @dashboard="router.push({ name: 'admin' })"
         />
 
         <ToastProvider :is-dark="isDark" />
@@ -70,13 +54,10 @@
 
 <script setup lang="ts">
 import { ref, computed, provide, watch } from "vue";
+import { useRouter, useRoute, RouterView } from "vue-router";
 import { useDark } from "@vueuse/core";
 
 import AppHeader from "@src/components/AppHeader.vue";
-import SpeedtestTabs from "@src/components/SpeedtestTabs.vue";
-import SurveyWizard from "@src/components/survey/SurveyWizard.vue";
-import ThankYou from "@src/components/survey/ThankYou.vue";
-import DashboardView from "@src/components/dashboard/DashboardView.vue";
 import { Dock } from "@src/components/dock";
 import ToastProvider from "@src/components/ToastProvider.vue";
 
@@ -90,15 +71,23 @@ import { useSpeedtest } from "@src/composables/useSpeedtest";
 import { useAppNavigation } from "@src/composables/useAppNavigation";
 import type { SpeedtestResults } from "@src/composables/useAppNavigation";
 
-import { DEFAULT_SURVEY_CONFIG } from "@src/config/survey";
 import {
     DEFAULT_TRADITIONAL_SERVERS,
     DEFAULT_DNS_SERVERS,
 } from "@src/config/servers";
 
-import type { SurveySubmission } from "@src/types/survey";
+import "@styles/style.css";
 
-import "@styles/style.scss";
+// ── Router ───────────────────────────────────────────────────────────
+
+const router = useRouter();
+const route = useRoute();
+
+/** Hide the main header and dock on dashboard/admin routes (they have their own nav). */
+const isDashboardRoute = computed(() => {
+    const name = route.name;
+    return typeof name === "string" && (name.startsWith("dashboard") || name.startsWith("admin"));
+});
 
 // ── Speedtest composable (lives at app level so it survives view changes) ──
 
@@ -121,14 +110,18 @@ const isDark = useDark({ disableTransition: false });
 // ── API client ────────────────────────────────────────────────────────
 
 const api = useAPI();
+provide("api", api);
 
 // ── IP info ────────────────────────────────────────────────────────────
 
-const { clientIp, ipInfo, lookedUpIp } = useIPInfo();
+const ipInfoProvider = useIPInfo();
+const { clientIp, ipInfo, lookedUpIp } = ipInfoProvider;
+provide("ipInfoProvider", ipInfoProvider);
 
 // ── Geolocation (requested lazily when address field is focused) ──────
 
 const geolocation = useGeolocation();
+provide("geolocation", geolocation);
 
 // ── Server manager ─────────────────────────────────────────────────────
 
@@ -141,6 +134,9 @@ for (const server of DEFAULT_DNS_SERVERS) {
     serverManager.addServer("dns", server);
 }
 
+// Fetch additional servers from API and auto-select best one
+serverManager.fetchAndAutoSelect();
+
 // ── Window messaging (iframe support) ──────────────────────────────────
 
 useWindowMessaging();
@@ -152,16 +148,15 @@ const atmosphereCanvas = ref<HTMLCanvasElement | null>(null);
 const accentColor = computed(() => {
     if (typeof document === "undefined") return "#808080";
     return getComputedStyle(document.documentElement)
-        .getPropertyValue("--color-accent-opaque")
+        .getPropertyValue("--th-accent-opaque")
         .trim() || "#808080";
 });
 
 useAtmosphereCanvas(atmosphereCanvas, accentColor);
 
-// ── Navigation (dock controls + view state) ──────────────────────────
+// ── Navigation (dock controls + router-based view state) ─────────────
 
 const surveyRef = ref<any>(null);
-const surveyConfig = DEFAULT_SURVEY_CONFIG;
 
 const nav = useAppNavigation({
     speedtest,
@@ -170,7 +165,7 @@ const nav = useAppNavigation({
     isSpeedtestCompleted,
     onSpeedtestComplete(results) {
         lastSpeedtestResults = results;
-        nav.currentView.value = "survey";
+        router.push({ name: "survey" });
     },
 });
 
@@ -210,38 +205,6 @@ async function submitSpeedtestResults(results: SpeedtestResults) {
     } catch {
         // Backend unavailable — results will be lost, but that's acceptable
     }
-}
-
-async function onSurveySubmit(submission: SurveySubmission) {
-    try {
-        await api.submitSurvey({
-            flow: submission.flowType,
-            name: submission.answers.name,
-            address: submission.answers.address,
-            provider: submission.answers.provider,
-            psuId: submission.answers.psuId,
-            psuName: submission.answers.psuName,
-            entityName: submission.answers.psuName,
-            entityId: submission.answers.psuId,
-            schoolName: submission.answers.schoolName,
-            schoolNumber: submission.answers.schoolNumber,
-            classroomName: submission.answers.classroomName,
-            classroomNumber: submission.answers.classroomNumber,
-            connectionType: submission.answers.connectionType,
-        });
-    } catch {
-        // Best-effort
-    }
-    currentView.value = "thankyou";
-}
-
-async function onSurveySkip() {
-    try {
-        await api.skipSurvey();
-    } catch {
-        // Best-effort
-    }
-    currentView.value = "speedtest";
 }
 </script>
 

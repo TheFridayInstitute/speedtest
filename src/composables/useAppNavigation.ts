@@ -1,4 +1,5 @@
-import { ref, computed, nextTick, type Ref } from "vue";
+import { computed, nextTick, type Ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import type { UseSpeedtestReturn } from "./useSpeedtest";
 
 export type AppView = "speedtest" | "survey" | "dashboard" | "thankyou";
@@ -18,15 +19,26 @@ export interface SpeedtestResults {
     jitter: number;
 }
 
+/** Map route names to AppView values for the dock. */
+function routeToView(routeName: string | symbol | null | undefined): AppView {
+    if (!routeName || typeof routeName !== "string") return "speedtest";
+    if (routeName === "survey") return "survey";
+    if (routeName === "thankyou") return "thankyou";
+    if (routeName.startsWith("dashboard") || routeName.startsWith("admin")) return "dashboard";
+    return "speedtest";
+}
+
 export function useAppNavigation(opts: AppNavigationOptions) {
     const { speedtest, surveyRef, isSpeedtestRunning, isSpeedtestCompleted, onSpeedtestComplete } = opts;
+    const router = useRouter();
+    const route = useRoute();
 
-    const currentView = ref<AppView>("speedtest");
+    /** Computed view derived from the current route, for dock compatibility. */
+    const currentView = computed<AppView>(() => routeToView(route.name));
 
     const canGoBack = computed(() => {
-        return currentView.value === "survey"
-            || currentView.value === "thankyou"
-            || currentView.value === "dashboard";
+        const view = currentView.value;
+        return view === "survey" || view === "thankyou" || view === "dashboard";
     });
 
     function startSpeedtest(): void {
@@ -44,38 +56,41 @@ export function useAppNavigation(opts: AppNavigationOptions) {
     }
 
     function onDockBack() {
-        if (currentView.value === "survey") {
-            const survey = surveyRef.value?.survey;
+        const view = currentView.value;
+        if (view === "survey") {
+            const survey = surveyRef.value?.surveyRef?.survey ?? surveyRef.value?.survey;
             if (survey && !survey.isFirstStep.value) {
                 survey.prevStep();
             } else {
-                currentView.value = "speedtest";
+                router.push({ name: "speedtest" });
             }
-        } else if (currentView.value === "thankyou") {
-            currentView.value = "survey";
-        } else if (currentView.value === "dashboard") {
-            currentView.value = "speedtest";
+        } else if (view === "thankyou") {
+            router.push({ name: "survey" });
+        } else if (view === "dashboard") {
+            router.push({ name: "speedtest" });
         }
     }
 
     function onDockForward() {
-        if (currentView.value === "speedtest") {
-            currentView.value = "survey";
-        } else if (currentView.value === "survey") {
-            const survey = surveyRef.value?.survey;
+        const view = currentView.value;
+        if (view === "speedtest") {
+            router.push({ name: "survey" });
+        } else if (view === "survey") {
+            const survey = surveyRef.value?.surveyRef?.survey ?? surveyRef.value?.survey;
             if (survey && !survey.isLastStep.value) {
                 survey.nextStep();
             } else if (survey?.isLastStep.value) {
-                surveyRef.value?.submitFromDock?.();
+                const wizard = surveyRef.value?.surveyRef ?? surveyRef.value;
+                wizard?.submitFromDock?.();
             }
-        } else if (currentView.value === "thankyou") {
-            currentView.value = "speedtest";
+        } else if (view === "thankyou") {
+            router.push({ name: "speedtest" });
         }
     }
 
     function onDockStart() {
         if (currentView.value !== "speedtest") {
-            currentView.value = "speedtest";
+            router.push({ name: "speedtest" });
         }
         nextTick(() => startSpeedtest());
     }
@@ -94,7 +109,7 @@ export function useAppNavigation(opts: AppNavigationOptions) {
     function onDockRetake() {
         isSpeedtestCompleted.value = false;
         isSpeedtestRunning.value = false;
-        currentView.value = "speedtest";
+        router.push({ name: "speedtest" });
         nextTick(() => startSpeedtest());
     }
 

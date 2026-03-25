@@ -172,51 +172,208 @@ admin.get("/results/export", async (c) => {
     return c.text(csvLines.join("\n"));
 });
 
-/** Aggregate statistics. */
+/** Aggregate statistics (supports optional filters). */
 admin.get("/stats", async (c) => {
     const db = await getDb();
 
-    const [totalResults, totalSessions, totalSurveys, trieSize] =
-        await Promise.all([
-            db.collection("test_results").countDocuments(),
-            db.collection("test_sessions").countDocuments(),
-            db.collection("surveys").countDocuments({ skipped: false }),
-            Promise.resolve(getTrie().size),
-        ]);
+    const dateFrom = c.req.query("dateFrom");
+    const dateTo = c.req.query("dateTo");
+    const testType = c.req.query("testType");
+    const entityId = c.req.query("entityId");
+    const psuId = c.req.query("psuId");
 
-    // Average speeds
-    const avgPipeline = await db
-        .collection("test_results")
-        .aggregate([
-            { $match: { testType: "traditional" } },
+    const hasFilters = !!(dateFrom || dateTo || testType || entityId || psuId);
+
+    if (!hasFilters) {
+        // Original unfiltered behavior
+        const [totalResults, totalSessions, totalSurveys, trieSize] =
+            await Promise.all([
+                db.collection("test_results").countDocuments(),
+                db.collection("test_sessions").countDocuments(),
+                db.collection("surveys").countDocuments({ skipped: false }),
+                Promise.resolve(getTrie().size),
+            ]);
+
+        const avgPipeline = await db
+            .collection("test_results")
+            .aggregate([
+                { $match: { testType: "traditional" } },
+                {
+                    $group: {
+                        _id: null,
+                        avgDownload: { $avg: "$download" },
+                        avgUpload: { $avg: "$upload" },
+                        avgPing: { $avg: "$ping" },
+                    },
+                },
+            ])
+            .toArray();
+
+        const avg = avgPipeline[0] ?? {
+            avgDownload: 0,
+            avgUpload: 0,
+            avgPing: 0,
+        };
+
+        return c.json({
+            totalResults,
+            totalSessions,
+            totalSurveys,
+            trieEntries: trieSize,
+            averages: {
+                download: Math.round((avg.avgDownload ?? 0) * 100) / 100,
+                upload: Math.round((avg.avgUpload ?? 0) * 100) / 100,
+                ping: Math.round((avg.avgPing ?? 0) * 100) / 100,
+            },
+        });
+    }
+
+    // Filtered stats
+    const matchStage: Record<string, any> = {};
+    if (dateFrom || dateTo) {
+        matchStage.timestamp = {};
+        if (dateFrom) matchStage.timestamp.$gte = new Date(dateFrom);
+        if (dateTo) matchStage.timestamp.$lte = new Date(dateTo);
+    }
+    if (testType) matchStage.testType = testType;
+
+    const pipeline: any[] = [{ $match: matchStage }];
+
+    // Join sessions for entity/psu filters
+    if (entityId || psuId) {
+        pipeline.push(
             {
-                $group: {
-                    _id: null,
-                    avgDownload: { $avg: "$download" },
-                    avgUpload: { $avg: "$upload" },
-                    avgPing: { $avg: "$ping" },
+                $lookup: {
+                    from: "test_sessions",
+                    localField: "sessionId",
+                    foreignField: "_id",
+                    as: "session",
                 },
             },
-        ])
+            {
+                $unwind: {
+                    path: "$session",
+                    preserveNullAndEmptyArrays: false,
+                },
+            },
+        );
+
+        const postFilter: Record<string, any> = {};
+        if (entityId)
+            postFilter["session.entityLookup.entityId"] = entityId;
+        if (psuId) postFilter["session.entityLookup.psuId"] = psuId;
+        pipeline.push({ $match: postFilter });
+    }
+
+    pipeline.push({
+        $group: {
+            _id: null,
+            totalResults: { $sum: 1 },
+            avgDownload: { $avg: "$download" },
+            avgUpload: { $avg: "$upload" },
+            avgPing: { $avg: "$ping" },
+            avgJitter: { $avg: "$jitter" },
+        },
+    });
+
+    const results = await db
+        .collection("test_results")
+        .aggregate(pipeline)
         .toArray();
 
-    const avg = avgPipeline[0] ?? {
+    const stats = results[0] ?? {
+        totalResults: 0,
         avgDownload: 0,
         avgUpload: 0,
         avgPing: 0,
+        avgJitter: 0,
     };
 
     return c.json({
-        totalResults,
-        totalSessions,
-        totalSurveys,
-        trieEntries: trieSize,
+        totalResults: stats.totalResults,
         averages: {
-            download: Math.round((avg.avgDownload ?? 0) * 100) / 100,
-            upload: Math.round((avg.avgUpload ?? 0) * 100) / 100,
-            ping: Math.round((avg.avgPing ?? 0) * 100) / 100,
+            download: Math.round((stats.avgDownload ?? 0) * 100) / 100,
+            upload: Math.round((stats.avgUpload ?? 0) * 100) / 100,
+            ping: Math.round((stats.avgPing ?? 0) * 100) / 100,
+            jitter: Math.round((stats.avgJitter ?? 0) * 100) / 100,
         },
     });
+});
+
+/** Paginated sessions list with filters. */
+admin.get("/sessions", async (c) => {
+    const db = await getDb();
+    const page = parseInt(c.req.query("page") ?? "1", 10);
+    const limit = Math.min(parseInt(c.req.query("limit") ?? "50", 10), 200);
+    const skip = (page - 1) * limit;
+
+    const dateFrom = c.req.query("dateFrom");
+    const dateTo = c.req.query("dateTo");
+    const entityId = c.req.query("entityId");
+    const ip = c.req.query("ip");
+
+    // Build match stage for sessions
+    const matchStage: Record<string, any> = {};
+    if (dateFrom || dateTo) {
+        matchStage.createdAt = {};
+        if (dateFrom) matchStage.createdAt.$gte = new Date(dateFrom);
+        if (dateTo) matchStage.createdAt.$lte = new Date(dateTo);
+    }
+    if (entityId) matchStage["entityLookup.entityId"] = entityId;
+    if (ip) matchStage.clientIp = ip;
+
+    const pipeline: any[] = [
+        { $match: matchStage },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        // Join result counts
+        {
+            $lookup: {
+                from: "test_results",
+                localField: "_id",
+                foreignField: "sessionId",
+                as: "results",
+            },
+        },
+        // Join survey status
+        {
+            $lookup: {
+                from: "surveys",
+                localField: "_id",
+                foreignField: "sessionId",
+                as: "survey",
+            },
+        },
+        {
+            $unwind: { path: "$survey", preserveNullAndEmptyArrays: true },
+        },
+        {
+            $project: {
+                _id: 1,
+                clientIp: 1,
+                ipInfo: 1,
+                h3Indices: 1,
+                entityLookup: 1,
+                userAgent: 1,
+                createdAt: 1,
+                lastSeenAt: 1,
+                resultCount: { $size: "$results" },
+                hasSurvey: {
+                    $cond: [{ $ifNull: ["$survey", false] }, true, false],
+                },
+                surveyFlow: "$survey.flow",
+                surveySkipped: "$survey.skipped",
+            },
+        },
+    ];
+
+    const [data, total] = await Promise.all([
+        db.collection("test_sessions").aggregate(pipeline).toArray(),
+        db.collection("test_sessions").countDocuments(matchStage),
+    ]);
+
+    return c.json({ data, total, page, limit });
 });
 
 export default admin;

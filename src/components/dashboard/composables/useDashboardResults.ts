@@ -1,10 +1,11 @@
 import { ref, watch, type Ref } from "vue";
 import type { DashboardFilters, DashboardResultRow } from "@src/types/dashboard";
 import { authHeaders } from "@src/utils/auth";
+import { useDashboardFilterStore } from "@src/stores/useDashboardFilterStore";
 
 /**
  * Fetches and paginates dashboard result rows.
- * Separated from stats/subnets to keep each composable focused.
+ * Syncs with the global filter store for cross-filtering (chart brush → table).
  */
 export function useDashboardResults() {
     const rows: Ref<DashboardResultRow[]> = ref([]);
@@ -22,6 +23,44 @@ export function useDashboardResults() {
         entityId: "",
         flow: "",
     });
+
+    // Cross-filter: sync global filter store into local filters
+    try {
+        const filterStore = useDashboardFilterStore();
+        watch(
+            () => ({
+                ...filterStore.effectiveDateRange,
+                testType: filterStore.testType,
+                psuId: filterStore.psuId,
+                entityId: filterStore.entityId,
+                provider: filterStore.provider,
+                flow: filterStore.flow,
+            }),
+            (state) => {
+                if (state.from !== (filters.value.dateFrom || null)) {
+                    filters.value.dateFrom = state.from ?? "";
+                }
+                if (state.to !== (filters.value.dateTo || null)) {
+                    filters.value.dateTo = state.to ?? "";
+                }
+                if (state.testType !== (filters.value.testType || null)) {
+                    filters.value.testType = state.testType ?? "";
+                }
+                if (state.psuId !== (filters.value.psuId || null)) {
+                    filters.value.psuId = state.psuId ?? "";
+                }
+                if (state.entityId !== (filters.value.entityId || null)) {
+                    filters.value.entityId = state.entityId ?? "";
+                }
+                if (state.flow !== (filters.value.flow || null)) {
+                    filters.value.flow = state.flow ?? "";
+                }
+            },
+            { immediate: true },
+        );
+    } catch {
+        // Pinia not available (e.g., in tests) — skip cross-filter sync
+    }
 
     async function fetch(): Promise<void> {
         isLoading.value = true;
@@ -52,8 +91,8 @@ export function useDashboardResults() {
         }
     }
 
-    // Re-fetch when page or filters change
-    watch([page, filters], fetch, { deep: true });
+    // Fetch immediately and re-fetch when page or filters change
+    watch([page, filters], fetch, { deep: true, immediate: true });
 
     return { rows, total, page, pageSize, isLoading, error, filters, fetch };
 }

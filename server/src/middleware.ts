@@ -165,3 +165,68 @@ export async function hashIP(ip: string): Promise<string> {
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
 }
+
+// ── Response caching (in-memory, for dashboard endpoints) ─────────────
+
+const CACHE_MAP = new Map<string, { data: string; contentType: string; expiresAt: number }>();
+const CACHE_MAP_CAP = 500;
+
+// Sweep expired entries every 60s
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of CACHE_MAP) {
+        if (now > entry.expiresAt) CACHE_MAP.delete(key);
+    }
+}, 60_000);
+
+/**
+ * Creates a caching middleware with the specified TTL.
+ * Only caches GET requests with 200 status.
+ */
+export function responseCache(ttlMs: number): MiddlewareHandler {
+    return async (c, next) => {
+        if (c.req.method !== "GET") {
+            await next();
+            return;
+        }
+
+        const key = c.req.url;
+        const cached = CACHE_MAP.get(key);
+        if (cached && Date.now() < cached.expiresAt) {
+            c.header("Content-Type", cached.contentType);
+            c.header("X-Cache", "HIT");
+            return c.body(cached.data);
+        }
+
+        await next();
+
+        // Cache the response if successful
+        if (c.res.status === 200) {
+            const clone = c.res.clone();
+            const body = await clone.text();
+            const contentType = clone.headers.get("Content-Type") ?? "application/json";
+
+            if (CACHE_MAP.size >= CACHE_MAP_CAP) {
+                // Evict oldest entry
+                const oldestKey = CACHE_MAP.keys().next().value;
+                if (oldestKey) CACHE_MAP.delete(oldestKey);
+            }
+
+            CACHE_MAP.set(key, {
+                data: body,
+                contentType,
+                expiresAt: Date.now() + ttlMs,
+            });
+            c.header("X-Cache", "MISS");
+        }
+    };
+}
+
+/** Invalidate all cached dashboard responses. Called when new results arrive. */
+export function invalidateDashboardCache() {
+    for (const key of CACHE_MAP.keys()) {
+        if (key.includes("/api/dashboard/")) {
+            CACHE_MAP.delete(key);
+        }
+    }
+}

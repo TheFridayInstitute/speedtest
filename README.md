@@ -1,16 +1,16 @@
 # speedtest
 
-A broadband speed measurement and analytics platform I built for North Carolina's statewide broadband survey. Integrates LibreSpeed for speed testing with a Vue 3 dashboard, H3 hex-binned mapping, and a Hono/MongoDB backend.
+Broadband speed measurement and analytics platform built for North Carolina's statewide broadband survey. Integrates LibreSpeed for speed testing with a Vue 3 dashboard, H3 hex-binned mapping, and a Hono/MongoDB backend.
 
 Deployed at [speedtest.mbabb.friday.institute](https://speedtest.mbabb.friday.institute)
 
 ## Background
 
-I built this at the Friday Institute's Technology Infrastructure Lab at NC State, where I serve as lead software engineer. Ray Zeisz leads the lab. We partnered with NCDIT's Broadband Infrastructure Office to develop a speed measurement tool for North Carolina's broadband survey---a statewide effort to map actual internet performance rather than relying on ISP-reported coverage data.
+Built at the Friday Institute's Technology Infrastructure Lab at NC State, led by Ray Zeisz. Developed in partnership with NCDIT's Broadband Infrastructure Office with NCDIT's Broadband Infrastructure Office as a speed measurement tool for North Carolina's broadband survey---a statewide effort to map actual internet performance rather than relying on ISP-reported coverage data.
 
 The survey launched in July 2020 as a 5-minute questionnaire in English and Spanish with our integrated speedtest. We embedded the test directly into Qualtrics surveys via iframe postMessage bridges, capturing download/upload speeds alongside qualitative responses. The dashboard results were released January 28, 2021.
 
-Between June 2022 and May 2023, we submitted nearly 43,000 challenges to the FCC's National Broadband Map, identifying 115,000+ additional NC locations without high-speed internet---more than any other state. I also built parallel address scrapers that checked actual service eligibility from T-Mobile, Verizon 5G, CenturyLink, Brightspeed, and Windstream (~750k records total). This data directly contributed to North Carolina's BEAD allocation exceeding $1.5 billion.
+Between June 2022 and May 2023, we submitted nearly 43,000 challenges to the FCC's National Broadband Map, identifying 115,000+ additional NC locations without high-speed internet---more than any other state. Parallel address scrapers checked actual service eligibility from T-Mobile, Verizon 5G, CenturyLink, Brightspeed, and Windstream (~750k records total). This data directly contributed to North Carolina's BEAD allocation exceeding $1.5 billion.
 
 ## Features
 

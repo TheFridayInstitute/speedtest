@@ -45,7 +45,7 @@ EC2 speedtest servers run separately as lightweight containers (`Dockerfile.spee
 
 ### Vue 3 + Router + Pinia
 
-The frontend is a single-page app built with Vue 3's Composition API. I use `vue-router` for client-side routing and Pinia for shared state.
+The frontend is a single-page app built with Vue 3's Composition API. The frontend uses `vue-router` for client-side routing and Pinia for shared state.
 
 **Routes** (`src/router/index.ts`):
 
@@ -70,7 +70,7 @@ The frontend is a single-page app built with Vue 3's Composition API. I use `vue
 
 ### Glass-UI and Tailwind v4
 
-The design system is built on my `glass-ui` library (`@mkbabb/glass-ui`), consumed as a local file dependency. Glass-ui provides glassmorphic component primitives---backdrop-blur panels, frosted overlays, shimmer effects. I compose with its CSS utility classes rather than reimplementing glass effects.
+The design system is built on the `glass-ui` library (`@mkbabb/glass-ui`), consumed as a local file dependency. Glass-ui provides glassmorphic component primitives---backdrop-blur panels, frosted overlays, shimmer effects. Composed with its CSS utility classes rather than reimplementing glass effects.
 
 Tailwind v4 handles utility styling. The entry point is `styles/style.css` which imports Tailwind and extends `@theme` with our design tokens. `styles/tokens.css` defines the color palette, font stack, shadow system, and spacing scale. `styles/glass.css` contains glass-ui overrides specific to this project, and `styles/dock.css` styles the macOS-style dock component.
 
@@ -155,7 +155,7 @@ The `manager.ts` module handles trie lifecycle---rebuilding from the database wh
 
 ### ECharts
 
-I use Apache ECharts 6 through `vue-echarts` for all chart components in `src/components/dashboard/charts/`:
+Apache ECharts 6 through `vue-echarts` for all chart components in `src/components/dashboard/charts/`:
 
 - `TimeSeriesChart.vue` --- line/area chart of median speeds over time, with brush selection for date range filtering
 - `DistributionChart.vue` --- histogram of speed distributions with configurable bin sizes

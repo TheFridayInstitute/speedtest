@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getDb } from "../db.js";
+import { eventBus } from "../events/bus.js";
 import type { AppEnv, TestResultDoc } from "../types.js";
 
 const results = new Hono<AppEnv>();
@@ -30,6 +31,24 @@ results.post("/", async (c) => {
     };
 
     const inserted = await db.collection("test_results").insertOne(result);
+
+    // Emit event for SSE subscribers
+    // Look up the session to get H3 index for spatial streaming
+    const session = await db
+        .collection("test_sessions")
+        .findOne({ _id: sessionId as any });
+    const h3Index = session?.h3Indices?.res5 ?? null;
+
+    eventBus.emit("new_result", {
+        resultId: inserted.insertedId.toString(),
+        sessionId,
+        download: result.download,
+        upload: result.upload,
+        ping: result.ping,
+        jitter: result.jitter,
+        timestamp: result.timestamp.toISOString(),
+        h3Index,
+    });
 
     return c.json(
         { id: inserted.insertedId, sessionId, testType: result.testType },

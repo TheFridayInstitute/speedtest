@@ -36,6 +36,17 @@ export async function getDb(): Promise<Db> {
             timestamp: -1,
         }),
         db.collection("test_results").createIndex({ timestamp: -1 }),
+        // Compound for dashboard time-series aggregation
+        db.collection("test_results").createIndex({ timestamp: -1, testType: 1 }),
+
+        // H3 geo indexes on sessions (for dashboard hex-map queries)
+        db.collection("test_sessions").createIndex({ "ipInfo.loc": 1, createdAt: -1 }),
+        db.collection("test_sessions").createIndex({ "h3Indices.res5": 1 }),
+        db.collection("test_sessions").createIndex({ "h3Indices.res7": 1 }),
+
+        // speedtest_servers registry
+        db.collection("speedtest_servers").createIndex({ serverId: 1 }, { unique: true }),
+        db.collection("speedtest_servers").createIndex({ active: 1, lastHeartbeat: -1 }),
 
         // surveys
         db.collection("surveys").createIndex(

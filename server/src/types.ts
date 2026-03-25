@@ -12,11 +12,19 @@ export type AppEnv = {
 
 // ── MongoDB documents ─────────────────────────────────────────────────
 
+export interface H3Indices {
+    res4: string;
+    res5: string;
+    res6: string;
+    res7: string;
+}
+
 export interface TestSessionDoc {
     _id: string; // UUID, used as session token
     clientIp: string;
     ipHash: string;
     ipInfo: IPInfoData | null;
+    h3Indices: H3Indices | null;
     entityLookup: EntityLookupData | null;
     userAgent: string;
     createdAt: Date;

@@ -91,8 +91,8 @@ The script does the following:
 | | Address |
 |---|---|
 | Deploy host (VPN) | `mbabb.fridayinstitute.net:1022` |
-| Public URL | `https://speedtest.mbabb.fi.ncsu.edu` |
-| API health check | `https://speedtest.mbabb.fi.ncsu.edu/api/` |
+| Public URL | `https://speedtest.mbabb.friday.institute` |
+| API health check | `https://speedtest.mbabb.friday.institute/api/` |
 
 Override the deploy target:
 

@@ -6,11 +6,11 @@ Deployed at [speedtest.mbabb.friday.institute](https://speedtest.mbabb.friday.in
 
 ## Background
 
-Built at the Friday Institute's Technology Infrastructure Lab at NC State, led by Ray Zeisz. Developed in partnership with NCDIT's Broadband Infrastructure Office as a speed measurement tool for North Carolina's broadband survey---a statewide effort to map actual internet performance rather than relying on ISP-reported coverage data.
+Built at the Friday Institute's Technology Infrastructure Lab at NC State, in partnership with NCDIT's Broadband Infrastructure Office. The goal: a speed measurement tool for North Carolina's broadband survey—a statewide effort to map actual internet performance rather than relying on ISP-reported coverage data.
 
-The survey launched in July 2020 as a 5-minute questionnaire in English and Spanish with our integrated speedtest. We embedded the test directly into Qualtrics surveys via iframe postMessage bridges, capturing download/upload speeds alongside qualitative responses. The dashboard results were released January 28, 2021.
+The survey launched in July 2020 as a 5-minute questionnaire in English and Spanish with an integrated speedtest, embedded directly into Qualtrics surveys via iframe postMessage bridges to capture download/upload speeds alongside qualitative responses. Dashboard results were released January 28, 2021.
 
-Between June 2022 and May 2023, we submitted nearly 43,000 challenges to the FCC's National Broadband Map, identifying 115,000+ additional NC locations without high-speed internet---more than any other state. Parallel address scrapers checked actual service eligibility from T-Mobile, Verizon 5G, CenturyLink, Brightspeed, and Windstream (~750k records total). This data directly contributed to North Carolina's BEAD allocation exceeding $1.5 billion.
+Between June 2022 and May 2023, nearly 43,000 challenges were submitted to the FCC's National Broadband Map, identifying 115,000+ additional NC locations without high-speed internet—more than any other state. Parallel address scrapers checked actual service eligibility from T-Mobile, Verizon 5G, CenturyLink, Brightspeed, and Windstream (~750k records total). This data contributed directly to North Carolina's BEAD allocation exceeding $1.5 billion.
 
 ## Features
 

@@ -6,7 +6,7 @@
                 class="h-full transition-all duration-panel"
                 :style="{
                     width: `${survey.progress.value * 100}%`,
-                    background: 'var(--color-accent-opaque)',
+                    background: 'var(--th-accent-opaque)',
                 }"
             />
         </div>

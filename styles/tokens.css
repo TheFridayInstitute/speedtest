@@ -18,9 +18,9 @@
     --ul-color-1: lab(72% 30 55);
     --ul-color-2: lab(58% 45 50);
 
-    --color-accent: lab(92% 88.80 20 / 82.70%);
-    --color-accent-opaque: lab(92% 88.80 20);
-    --color-accent-hover: lab(82% 78 18 / 90%);
+    --th-accent: lab(92% 88.80 20 / 82.70%);
+    --th-accent-opaque: lab(92% 88.80 20);
+    --th-accent-hover: lab(82% 78 18 / 90%);
 
     --meter-background-color: rgb(0 0 0 / 0.12);
     --meter-dial-color: hsl(var(--foreground) / 0.6);
@@ -35,16 +35,7 @@
     --layout-gap: 0.5rem;
     --border-radius-primary: 0.75rem;
 
-    /* ── Glassmorphism ─────────────────────────────── */
-    --glass-bg: hsl(var(--card) / 0.75);
-    --glass-bg-heavy: hsl(var(--card) / 0.95);
-    --glass-blur: blur(4px);
-    --glass-blur-light: blur(1px);
-    --glass-blur-heavy: blur(8px) saturate(1.15);
-    --glass-border: hsl(var(--border) / 0.5);
-    --glass-shadow: 0 2px 8px hsl(var(--foreground) / 0.06);
-    --glass-shadow-elevated: 0 4px 16px hsl(var(--foreground) / 0.1),
-        0 0 0 1px hsl(var(--foreground) / 0.06);
+    /* Glass tokens come from @mkbabb/glass-ui/styles — do not override here */
 
     /* ── Radii ────────────────────────────────────── */
     --radius-pill: 9999px;
@@ -95,9 +86,18 @@
     --color-gold-mid: #DAB860;
     --color-gold-light: #E8D5A0;
 
+    /* Chart color palette — OKLCH harmonized */
+    --chart-download: oklch(0.55 0.19 260);
+    --chart-upload: oklch(0.62 0.17 168);
+    --chart-ping: oklch(0.72 0.15 75);
+    --chart-jitter: oklch(0.62 0.18 15);
+    --chart-lavender: oklch(0.60 0.15 290);
+    --chart-gold: oklch(0.75 0.14 90);
+
     /* Shadows */
-    --shadow-card: 4px 4px 0px 0px hsl(var(--foreground) / 0.25);
-    --shadow-card-dark: 4px 4px 0px 0px hsl(var(--foreground) / 0.4);
+    --shadow-color: 0 0% 0%;
+    --shadow-card: 4px 4px 0px 0px hsl(var(--shadow-color) / 0.45);
+    --shadow-card-dark: 4px 4px 0px 0px hsl(var(--shadow-color) / 0.6);
 }
 
 .dark {

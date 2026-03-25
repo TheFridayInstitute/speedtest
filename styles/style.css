@@ -1,13 +1,107 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-@import "tokens.css";
-@import "animations.css";
-@import "glass.css";
-@import "dock.css";
+/* Glass-UI design system (tokens → theme → components) */
+@import "@mkbabb/glass-ui/styles";
+
+/* Local overrides (after glass-ui) */
+@import "./tokens.css";
+@import "./animations.css";
+@import "./glass.css";
+@import "./dock.css";
+
+/* ── Source scanning for glass-ui dependency ─────── */
+@source "../../glass-ui/src";
+
+/* ── Project-specific @theme extensions ──────────── */
+/* glass-ui/theme.css already provides colors, radius, container, and base fonts.
+   We only extend with speedtest-specific tokens here. */
+
+@theme {
+    /* Font overrides */
+    --font-serif: "Instrument Serif", serif;
+    --font-mono: "Fira Code", monospace;
+
+    /* th-accent colors (mapped from speedtest tokens) */
+    --color-th-accent: var(--th-accent);
+    --color-th-accent-opaque: var(--th-accent-opaque);
+    --color-th-accent-hover: var(--th-accent-hover);
+
+    /* Box shadows */
+    --shadow-card: var(--shadow-card);
+    --shadow-cartoon: 8px 8px 0px 0px rgba(0, 0, 0, 0.8);
+    --shadow-cartoon-light: 8px 8px 0px 0px rgba(255, 255, 255, 0.5);
+    --shadow-glass: 0 4px 16px hsl(var(--foreground) / 0.08);
+    --shadow-glass-elevated: 0 8px 32px hsl(var(--foreground) / 0.12);
+
+    /* Z-index scale */
+    --z-base: 1;
+    --z-meter: 10;
+    --z-overlay: 50;
+    --z-header: 100;
+    --z-modal: 999;
+
+    /* Transition timing */
+    --ease-spring: cubic-bezier(0.22, 1.6, 0.36, 1);
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-dock: cubic-bezier(0.18, 1.4, 0.4, 1);
+
+    /* Transition duration */
+    --duration-fast: 0.15s;
+    --duration-normal: 0.25s;
+    --duration-slow: 0.35s;
+    --duration-panel: 0.5s;
+
+    /* Backdrop blur */
+    --backdrop-blur-glass: 12px;
+    --backdrop-blur-glass-heavy: 16px;
+
+    /* Animations */
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
+    --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
+}
+
+@keyframes accordion-down {
+    from {
+        height: 0;
+    }
+    to {
+        height: var(--radix-accordion-content-height);
+    }
+}
+
+@keyframes accordion-up {
+    from {
+        height: var(--radix-accordion-content-height);
+    }
+    to {
+        height: 0;
+    }
+}
+
+@keyframes collapsible-down {
+    from {
+        height: 0;
+    }
+    to {
+        height: var(--radix-collapsible-content-height);
+    }
+}
+
+@keyframes collapsible-up {
+    from {
+        height: var(--radix-collapsible-content-height);
+    }
+    to {
+        height: 0;
+    }
+}
 
 /* ── Shadcn theme variables ────────────────────────── */
+/* glass-ui/tokens.css provides the default light/dark palette.
+   We override only what differs for speedtest. */
 
 @layer base {
     :root {
@@ -90,30 +184,7 @@
 
 /* .glass and .glass-elevated are defined in glass.css (canonical source) */
 
-/* ── Pane utilities (from value.js pattern) ──────────── */
-
-/* Named scroll timeline so PaneHeader animations respond
-   to THIS container's scroll, not ancestor scroll. */
-.pane-scroll-fade {
-    scroll-timeline: --pane-scroll block;
-}
-
-.text-pane-title {
-    font-family: var(--font-display);
-    font-size: var(--text-3xl);
-    letter-spacing: -0.025em;
-}
-@media (min-width: 640px) {
-    .text-pane-title {
-        font-size: var(--text-4xl);
-    }
-}
-
-.text-pane-description {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    color: hsl(var(--muted-foreground) / 0.6);
-}
+/* Pane utilities come from @mkbabb/glass-ui/styles (scroll-pane.css + typography.css) */
 
 /* ── Global layout ─────────────────────────────────── */
 

@@ -8,11 +8,14 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 # ── Config ─────────────────────────────────────────────────────────────
+# Deploy host: mbabb.fridayinstitute.net — private VPN address (SSH access)
+# Public URL:  speedtest.mbabb.fi.ncsu.edu — public-facing app URL
 
 DEPLOY_HOST="${DEPLOY_HOST:-mbabb.fridayinstitute.net}"
 DEPLOY_PORT="${DEPLOY_PORT:-1022}"
 DEPLOY_USER="${DEPLOY_USER:-mbabb}"
 REMOTE_DIR="~/speedtest"
+PUBLIC_URL="https://speedtest.mbabb.fi.ncsu.edu"
 
 SSH_CMD="ssh -o StrictHostKeyChecking=no -p $DEPLOY_PORT"
 SCP_CMD="scp -o StrictHostKeyChecking=no -P $DEPLOY_PORT"
@@ -93,7 +96,7 @@ ENDSSH
 log "Waiting for server to start..."
 sleep 5
 
-HEALTH=$(curl -s -o /dev/null -w "%{http_code}" "https://mbabb.fi.ncsu.edu/api/" 2>/dev/null || echo "000")
+HEALTH=$(curl -s -o /dev/null -w "%{http_code}" "${PUBLIC_URL}/api/" 2>/dev/null || echo "000")
 if [ "$HEALTH" = "200" ]; then
     log "Server is healthy!"
 else
@@ -101,5 +104,6 @@ else
 fi
 
 log "Done."
-echo "  Frontend: https://mbabb.fi.ncsu.edu/"
-echo "  API:      https://mbabb.fi.ncsu.edu/api/"
+echo "  Frontend: ${PUBLIC_URL}/"
+echo "  API:      ${PUBLIC_URL}/api/"
+echo "  Deploy:   ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PORT} (VPN)"

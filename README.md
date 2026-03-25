@@ -6,7 +6,7 @@ Deployed at [speedtest.mbabb.friday.institute](https://speedtest.mbabb.friday.in
 
 ## Background
 
-Built at the Friday Institute's Technology Infrastructure Lab at NC State, led by Ray Zeisz. Developed in partnership with NCDIT's Broadband Infrastructure Office with NCDIT's Broadband Infrastructure Office as a speed measurement tool for North Carolina's broadband survey---a statewide effort to map actual internet performance rather than relying on ISP-reported coverage data.
+Built at the Friday Institute's Technology Infrastructure Lab at NC State, led by Ray Zeisz. Developed in partnership with NCDIT's Broadband Infrastructure Office as a speed measurement tool for North Carolina's broadband survey---a statewide effort to map actual internet performance rather than relying on ISP-reported coverage data.
 
 The survey launched in July 2020 as a 5-minute questionnaire in English and Spanish with our integrated speedtest. We embedded the test directly into Qualtrics surveys via iframe postMessage bridges, capturing download/upload speeds alongside qualitative responses. The dashboard results were released January 28, 2021.
 

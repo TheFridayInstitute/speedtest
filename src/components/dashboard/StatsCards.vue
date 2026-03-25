@@ -1,11 +1,14 @@
 <template>
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card v-for="card in cards" :key="card.label" class="p-4">
-            <p class="text-base text-muted-foreground">{{ card.label }}</p>
-            <p class="mt-1 text-3xl font-semibold tabular-nums">
+            <p class="text-sm text-muted-foreground">{{ card.label }}</p>
+            <p
+                class="mt-1 text-3xl font-semibold tabular-nums"
+                :style="card.color ? { color: card.color } : {}"
+            >
                 {{ card.value }}
             </p>
-            <p v-if="card.unit" class="text-base text-muted-foreground">{{ card.unit }}</p>
+            <p v-if="card.unit" class="text-sm text-muted-foreground">{{ card.unit }}</p>
         </Card>
     </div>
 </template>
@@ -21,10 +24,10 @@ const cards = computed(() => {
     const s = props.stats;
     if (!s) return [];
     return [
-        { label: "Total Tests", value: s.totalResults, unit: "" },
-        { label: "Avg Download", value: s.averages.download, unit: "Mbps" },
-        { label: "Avg Upload", value: s.averages.upload, unit: "Mbps" },
-        { label: "Avg Ping", value: s.averages.ping, unit: "ms" },
+        { label: "Total Tests", value: s.totalResults.toLocaleString(), unit: "", color: "" },
+        { label: "Avg Download", value: Math.round(s.averages.download), unit: "Mbps", color: "#5B6BC0" },
+        { label: "Avg Upload", value: Math.round(s.averages.upload), unit: "Mbps", color: "#26A69A" },
+        { label: "Avg Ping", value: Math.round(s.averages.ping), unit: "ms", color: "#FFA726" },
     ];
 });
 </script>

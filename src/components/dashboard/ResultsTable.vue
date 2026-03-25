@@ -107,6 +107,6 @@ function formatTime(ts: string): string {
 
 function fmt(val: number | null): string {
     if (val == null) return "\u2014";
-    return val.toFixed(1);
+    return `${Math.round(val)}`;
 }
 </script>

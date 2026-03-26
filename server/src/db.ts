@@ -19,12 +19,8 @@ export async function getDb(): Promise<Db> {
 
     // Create indexes
     await Promise.all([
-        // test_sessions
+        // test_sessions (no TTL — sessions persist for dashboard joins)
         db.collection("test_sessions").createIndex({ createdAt: -1 }),
-        db.collection("test_sessions").createIndex(
-            { expiresAt: 1 },
-            { expireAfterSeconds: 0 },
-        ),
         db.collection("test_sessions").createIndex({
             "entityLookup.entityId": 1,
             createdAt: -1,
@@ -82,6 +78,13 @@ export async function getDb(): Promise<Db> {
         // sync_metadata
         db.collection("sync_metadata").createIndex({ name: 1 }),
     ]);
+
+    // Drop legacy TTL index if it exists (sessions now persist permanently)
+    try {
+        await db.collection("test_sessions").dropIndex("expiresAt_1");
+    } catch {
+        // Index doesn't exist — fine
+    }
 
     console.log("Connected to MongoDB");
     return db;

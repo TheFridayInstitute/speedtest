@@ -3,7 +3,10 @@ import type { Ref } from "vue";
 
 /**
  * Composable that provides a typed API client for the Hono backend.
- * Manages session tokens and provides methods for all API endpoints.
+ *
+ * Session lifecycle: createSession() is called at the start of every test,
+ * producing a 1:1 mapping between sessions and test results. The survey
+ * (if completed) attaches to the most recent session.
  */
 export function useAPI() {
     const SESSION_KEY = "speedtest-session";
@@ -61,7 +64,7 @@ export function useAPI() {
 
     // ── Session ───────────────────────────────────────────────────────
 
-    /** Create a new test session. Returns the session token. */
+    /** Create a new test session. Called at the start of every test. */
     async function createSession(): Promise<string> {
         const { sessionId } = await request<{ sessionId: string }>(
             "/api/sessions",
@@ -72,15 +75,9 @@ export function useAPI() {
         return sessionId;
     }
 
-    /** Ensure a session exists, creating one if needed. */
-    async function ensureSession(): Promise<string> {
-        if (sessionToken.value) return sessionToken.value;
-        return createSession();
-    }
-
     // ── Results ───────────────────────────────────────────────────────
 
-    /** Submit a speedtest result. In dev mode, log but don't record. */
+    /** Submit a speedtest result. Session must already exist (from createSession). */
     async function submitResult(result: {
         testType: "traditional" | "dns";
         serverId: string;
@@ -97,7 +94,6 @@ export function useAPI() {
             console.log("[DEV] Speedtest result (not recorded):", result);
             return;
         }
-        await ensureSession();
         await request("/api/results", {
             method: "POST",
             body: JSON.stringify(result),
@@ -106,11 +102,10 @@ export function useAPI() {
 
     // ── Survey ────────────────────────────────────────────────────────
 
-    /** Submit a survey response. */
+    /** Submit a survey response. Links to the most recent test session. */
     async function submitSurvey(
         survey: Record<string, unknown>,
     ): Promise<void> {
-        await ensureSession();
         await request("/api/surveys", {
             method: "POST",
             body: JSON.stringify(survey),
@@ -119,7 +114,6 @@ export function useAPI() {
 
     /** Skip the survey. */
     async function skipSurvey(): Promise<void> {
-        await ensureSession();
         await request("/api/surveys/skip", { method: "POST" });
     }
 
@@ -136,7 +130,6 @@ export function useAPI() {
         isLoading,
         error,
         createSession,
-        ensureSession,
         submitResult,
         submitSurvey,
         skipSurvey,

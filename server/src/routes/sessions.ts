@@ -79,7 +79,7 @@ sessions.post("/", async (c) => {
         userAgent: c.req.header("User-Agent") ?? "",
         createdAt: now,
         lastSeenAt: now,
-        expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24h
+        expiresAt: new Date(now.getTime() + 2 * 60 * 60 * 1000), // 2h
     };
 
     await db.collection("test_sessions").insertOne(session as any);

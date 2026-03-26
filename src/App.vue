@@ -203,6 +203,7 @@ const nav = useAppNavigation({
     surveyRef,
     isSpeedtestRunning,
     isSpeedtestCompleted,
+    createSession: api.createSession,
     onSpeedtestComplete(results) {
         lastSpeedtestResults = results;
         router.push({ name: "survey" });
@@ -239,7 +240,6 @@ if (defaultServer) speedtest.setServer(defaultServer);
 
 async function submitSpeedtestResults(results: SpeedtestResults) {
     try {
-        await api.ensureSession();
         await api.submitResult({
             testType: "traditional",
             serverId: "primary",

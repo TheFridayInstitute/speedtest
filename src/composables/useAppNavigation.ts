@@ -1,4 +1,4 @@
-import { computed, nextTick, unref, type Ref } from "vue";
+import { computed, ref, nextTick, unref, type Ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import type { UseSpeedtestReturn } from "./useSpeedtest";
 import type { SurveyDockState } from "@src/components/dock/Dock.vue";
@@ -11,6 +11,7 @@ interface AppNavigationOptions {
     isSpeedtestRunning: Ref<boolean>;
     isSpeedtestCompleted: Ref<boolean>;
     onSpeedtestComplete: (results: SpeedtestResults) => void;
+    createSession: () => Promise<string>;
 }
 
 export interface SpeedtestResults {
@@ -30,7 +31,8 @@ function routeToView(routeName: string | symbol | null | undefined): AppView {
 }
 
 export function useAppNavigation(opts: AppNavigationOptions) {
-    const { speedtest, surveyRef, isSpeedtestRunning, isSpeedtestCompleted, onSpeedtestComplete } = opts;
+    const { speedtest, surveyRef, isSpeedtestRunning, isSpeedtestCompleted, onSpeedtestComplete, createSession } = opts;
+    const isCreatingSession = ref(false);
     const router = useRouter();
     const route = useRoute();
 
@@ -102,9 +104,18 @@ export function useAppNavigation(opts: AppNavigationOptions) {
         }
     }
 
-    function onDockStart() {
+    async function onDockStart() {
+        if (isCreatingSession.value) return;
         if (currentView.value !== "speedtest") {
             router.push({ name: "speedtest" });
+        }
+        isCreatingSession.value = true;
+        try {
+            await createSession();
+        } catch {
+            // Session creation failed — proceed anyway (result submission will fail gracefully)
+        } finally {
+            isCreatingSession.value = false;
         }
         nextTick(() => startSpeedtest());
     }
@@ -115,14 +126,22 @@ export function useAppNavigation(opts: AppNavigationOptions) {
     }
 
     function onDockNext() {
-        // Navigate to survey — speedtest continues in background if still running
         router.push({ name: "survey" });
     }
 
-    function onDockRetake() {
+    async function onDockRetake() {
+        if (isCreatingSession.value) return;
         isSpeedtestCompleted.value = false;
         isSpeedtestRunning.value = false;
         router.push({ name: "speedtest" });
+        isCreatingSession.value = true;
+        try {
+            await createSession();
+        } catch {
+            // Proceed anyway
+        } finally {
+            isCreatingSession.value = false;
+        }
         nextTick(() => startSpeedtest());
     }
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="relative w-full" :style="{ minHeight: '320px' }">
+    <div class="relative w-full min-h-[220px] sm:min-h-[320px]">
         <div
             v-if="loading"
             class="absolute inset-0 z-10 flex items-center justify-center"
@@ -7,7 +7,7 @@
             <div class="text-sm text-muted-foreground">Loading...</div>
         </div>
 
-        <div v-if="!data?.length && !loading" class="flex h-full min-h-[320px] items-center justify-center">
+        <div v-if="!data?.length && !loading" class="flex h-full min-h-[220px] sm:min-h-[320px] items-center justify-center">
             <p class="text-sm text-muted-foreground">No box plot data</p>
         </div>
 
@@ -16,14 +16,14 @@
             :option="chartOption"
             :theme="'speedtest'"
             :autoresize="true"
-            class="h-full w-full"
-            style="min-height: 320px"
+            class="h-full w-full min-h-[220px] sm:min-h-[320px]"
         />
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useMediaQuery } from "@vueuse/core";
 import { use } from "echarts/core";
 import { BoxplotChart } from "echarts/charts";
 import { GridComponent, TooltipComponent } from "echarts/components";
@@ -61,6 +61,8 @@ const props = withDefaults(
         loading: false,
     },
 );
+
+const isMobile = useMediaQuery("(max-width: 639px)");
 
 // ── Metric config ─────────────────────────────────────────────────────
 
@@ -122,7 +124,7 @@ const chartOption = computed(() => {
         },
 
         grid: {
-            left: isHorizontal ? 80 : 50,
+            left: isHorizontal ? (isMobile.value ? 60 : 80) : (isMobile.value ? 35 : 50),
             right: 20,
             top: 20,
             bottom: isHorizontal ? 30 : 50,

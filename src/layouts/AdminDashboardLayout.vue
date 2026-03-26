@@ -25,16 +25,30 @@
         <template v-else>
             <!-- Top nav -->
             <nav class="sticky top-0 z-header flex items-center gap-3 border-b border-border px-4 py-2">
-                <UnderlineTabs
-                    :options="tabs"
-                    :model-value="activeTab"
-                    class="text-base"
-                    @update:model-value="navigateTo"
-                />
+                <!-- Mobile dropdown -->
+                <div class="sm:hidden w-fit">
+                    <Select :model-value="activeTab" @update:model-value="navigateTo">
+                        <SelectTrigger class="text-sm w-auto min-w-[5rem]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="tab in tabs" :key="tab.value" :value="tab.value">
+                                {{ tab.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <!-- Desktop tabs -->
+                <div class="hidden sm:contents">
+                    <UnderlineTabs
+                        :options="tabs"
+                        :model-value="activeTab"
+                        class="text-base"
+                        @update:model-value="navigateTo"
+                    />
+                </div>
 
                 <div class="flex-1" />
-
-                <DarkModeToggle class="h-5 w-5 shrink-0" />
 
                 <Button
                     variant="glass"
@@ -42,8 +56,8 @@
                     class="shrink-0 text-sm"
                     @click="onLogout"
                 >
-                    <LogOut class="mr-1 h-3.5 w-3.5" />
-                    Logout
+                    <LogOut class="h-3.5 w-3.5 sm:mr-1" />
+                    <span class="hidden sm:inline">Logout</span>
                 </Button>
                 <Button
                     variant="ghost"
@@ -51,9 +65,10 @@
                     class="shrink-0 text-sm text-muted-foreground"
                     @click="router.push({ name: 'speedtest' })"
                 >
-                    <ArrowLeft class="mr-1 h-3.5 w-3.5" />
-                    Back
+                    <ArrowLeft class="h-3.5 w-3.5 sm:mr-1" />
+                    <span class="hidden sm:inline">Back</span>
                 </Button>
+                <AppHeader />
             </nav>
 
             <!-- Content -->
@@ -68,7 +83,8 @@
 import { ref, computed } from "vue";
 import { useRouter, useRoute, RouterView } from "vue-router";
 import { ArrowLeft, LogOut } from "lucide-vue-next";
-import { Button, Card, Input, UnderlineTabs, DarkModeToggle } from "@mkbabb/glass-ui";
+import { Button, Card, Input, UnderlineTabs, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@mkbabb/glass-ui";
+import AppHeader from "@src/components/AppHeader.vue";
 import { setAdminToken } from "@src/components/dashboard/composables/useDashboardResults";
 
 const router = useRouter();

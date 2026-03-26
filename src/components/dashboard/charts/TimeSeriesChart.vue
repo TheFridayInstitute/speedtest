@@ -1,5 +1,5 @@
 <template>
-    <div class="relative w-full" :style="{ minHeight: '360px' }">
+    <div class="relative w-full min-h-[240px] sm:min-h-[360px]">
         <div
             v-if="loading"
             class="absolute inset-0 z-10 flex items-center justify-center"
@@ -11,8 +11,7 @@
             :option="chartOption"
             :theme="'speedtest'"
             :autoresize="true"
-            class="h-full w-full"
-            style="min-height: 360px"
+            class="h-full w-full min-h-[240px] sm:min-h-[360px]"
             @brushend="onBrushEnd"
         />
     </div>
@@ -20,6 +19,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useMediaQuery } from "@vueuse/core";
 import { use } from "echarts/core";
 import { LineChart, BarChart } from "echarts/charts";
 import {
@@ -77,6 +77,8 @@ const props = withDefaults(
     },
 );
 
+const isMobile = useMediaQuery("(max-width: 639px)");
+
 // ── Store ─────────────────────────────────────────────────────────────
 
 const filterStore = useDashboardFilterStore();
@@ -126,6 +128,7 @@ const chartOption = computed(() => {
         },
 
         legend: {
+            show: !isMobile.value,
             data: ["Download", "Upload", "Ping", "Jitter"],
             top: 0,
             right: 0,
@@ -133,8 +136,8 @@ const chartOption = computed(() => {
         },
 
         grid: {
-            left: 60,
-            right: 60,
+            left: isMobile.value ? 40 : 60,
+            right: isMobile.value ? 16 : 60,
             top: props.compact ? 20 : 40,
             bottom: props.compact ? 20 : 80,
             containLabel: false,
@@ -245,7 +248,7 @@ const chartOption = computed(() => {
         dataZoom: [
             {
                 type: "slider" as const,
-                show: !props.compact,
+                show: !props.compact && !isMobile.value,
                 xAxisIndex: 0,
                 bottom: 10,
                 height: 24,

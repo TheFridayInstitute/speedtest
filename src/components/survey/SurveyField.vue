@@ -20,7 +20,7 @@
         <Textarea
             v-else-if="field.type === 'textarea'"
             :id="field.id"
-            class="min-h-[80px] py-2.5"
+            class="min-h-20 py-2.5"
             :placeholder="field.placeholder"
             :model-value="String(modelValue ?? '')"
             @update:model-value="emit('update:modelValue', $event)"

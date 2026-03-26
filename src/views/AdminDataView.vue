@@ -2,9 +2,8 @@
     <div class="space-y-4">
         <UnderlineTabs
             :options="subTabs"
-            :model-value="activeTab"
+            v-model="activeTab"
             class="text-base"
-            @update:model-value="activeTab = $event"
         />
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">

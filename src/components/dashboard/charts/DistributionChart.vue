@@ -1,5 +1,5 @@
 <template>
-    <div class="relative w-full" :style="{ minHeight: '320px' }">
+    <div class="relative w-full min-h-[220px] sm:min-h-[320px]">
         <div
             v-if="loading"
             class="absolute inset-0 z-10 flex items-center justify-center"
@@ -7,7 +7,7 @@
             <div class="text-sm text-muted-foreground">Loading...</div>
         </div>
 
-        <div v-if="!data && !loading" class="flex h-full min-h-[320px] items-center justify-center">
+        <div v-if="!data && !loading" class="flex h-full min-h-[220px] sm:min-h-[320px] items-center justify-center">
             <p class="text-sm text-muted-foreground">No distribution data</p>
         </div>
 
@@ -16,13 +16,12 @@
                 :option="chartOption"
                 :theme="'speedtest'"
                 :autoresize="true"
-                class="h-full w-full"
-                style="min-height: 320px"
+                class="h-full w-full min-h-[220px] sm:min-h-[320px]"
             />
 
             <!-- Box plot summary floating card -->
             <div
-                class="absolute right-3 top-3 rounded-lg border-2 border-border/50 bg-background/80 px-3 py-2 text-sm shadow-lg backdrop-blur-sm"
+                class="absolute right-3 top-3 hidden rounded-lg border-2 border-border/50 bg-background/80 px-3 py-2 text-sm shadow-lg backdrop-blur-sm sm:block"
             >
                 <div class="mb-1 font-semibold text-foreground">
                     {{ metricLabel }} Summary
@@ -60,6 +59,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useMediaQuery } from "@vueuse/core";
 import { use } from "echarts/core";
 import { BarChart } from "echarts/charts";
 import {
@@ -108,6 +108,8 @@ const props = withDefaults(
     },
 );
 
+const isMobile = useMediaQuery("(max-width: 639px)");
+
 // ── Metric config ─────────────────────────────────────────────────────
 
 const metricColor = computed(() => CHART_COLORS[props.metric] ?? CHART_COLORS.download);
@@ -152,7 +154,7 @@ const chartOption = computed(() => {
         },
 
         grid: {
-            left: 50,
+            left: isMobile.value ? 35 : 50,
             right: 20,
             top: 20,
             bottom: 50,

@@ -58,19 +58,6 @@ export function generateInnerColorStops(
     value: [number, string],
 ): [number, string] {
     const [stop, color] = value;
-
-    try {
-        const rgb = RGBColor.fromString(color.trim());
-        return [stop, `rgba(${Math.round(rgb.r)}, ${Math.round(rgb.g)}, ${Math.round(rgb.b)}, 0.3)`];
-    } catch {
-        // Fallback: canvas-based color resolution for formats value.js can't parse
-        const canvas = document.createElement("canvas");
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext("2d")!;
-        ctx.fillStyle = color.trim();
-        ctx.fillRect(0, 0, 1, 1);
-        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-        return [stop, `rgba(${r}, ${g}, ${b}, 0.3)`];
-    }
+    const rgb = RGBColor.fromString(color.trim());
+    return [stop, `rgba(${Math.round(rgb.r)}, ${Math.round(rgb.g)}, ${Math.round(rgb.b)}, 0.3)`];
 }

@@ -65,12 +65,8 @@
             </Transition>
         </div>
 
-        <!-- Bottom area: current test progress bar + active number — fades out on complete but preserves space -->
-        <div
-            class="flex flex-col items-center w-full transition-opacity"
-            :class="allComplete ? 'opacity-0 pointer-events-none' : 'opacity-100'"
-            :style="{ transitionDuration: 'var(--duration-panel)' }"
-        >
+        <!-- Bottom area: current test progress bar + active number -->
+        <div class="flex flex-col items-center w-full">
                 <!-- Current test progress bar -->
                 <div class="z-10 -mt-1 mb-2 h-2.5 w-4/5 max-w-xs rounded-full" :style="{ background: 'var(--meter-background-color)' }">
                     <div
@@ -183,7 +179,8 @@ const completedMetrics = computed(() =>
 );
 
 const activeMetric = computed(() =>
-    metrics.find((m) => isActiveOrStarted(m.id)) ?? null,
+    metrics.find((m) => isActiveOrStarted(m.id))
+    ?? (allComplete.value ? metrics[metrics.length - 1] : null),
 );
 
 const allComplete = computed(() =>

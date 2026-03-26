@@ -90,11 +90,15 @@ const chartRef = ref<InstanceType<typeof VChart> | null>(null);
 // ── Chart option ──────────────────────────────────────────────────────
 
 const chartOption = computed(() => {
-    const timestamps = props.buckets.map((b) => b.timestamp);
     const downloadData = props.buckets.map((b) => [b.timestamp, b.download.avg]);
     const uploadData = props.buckets.map((b) => [b.timestamp, b.upload.avg]);
     const pingData = props.buckets.map((b) => [b.timestamp, b.ping.avg]);
     const jitterData = props.buckets.map((b) => [b.timestamp, b.jitter.avg]);
+
+    // Show symbols when few data points so single-point series are visible
+    const sparse = props.buckets.length <= 5;
+    const symbolSize = sparse ? 8 : 4;
+    const symbol = sparse ? "circle" : "none";
 
     const chartColors = CHART_COLORS;
 
@@ -181,7 +185,8 @@ const chartOption = computed(() => {
                 yAxisIndex: 0,
                 data: downloadData,
                 smooth: true,
-                symbol: "none",
+                symbol,
+                symbolSize,
                 lineStyle: { width: 2, color: chartColors.download },
                 itemStyle: { color: chartColors.download },
                 areaStyle: {
@@ -203,7 +208,8 @@ const chartOption = computed(() => {
                 yAxisIndex: 0,
                 data: uploadData,
                 smooth: true,
-                symbol: "none",
+                symbol,
+                symbolSize,
                 lineStyle: { width: 2, color: chartColors.upload },
                 itemStyle: { color: chartColors.upload },
                 areaStyle: {
@@ -225,7 +231,8 @@ const chartOption = computed(() => {
                 yAxisIndex: 1,
                 data: pingData,
                 smooth: true,
-                symbol: "none",
+                symbol,
+                symbolSize,
                 lineStyle: { width: 2, color: chartColors.ping },
                 itemStyle: { color: chartColors.ping },
                 animationDuration: 600,
@@ -237,7 +244,8 @@ const chartOption = computed(() => {
                 yAxisIndex: 1,
                 data: jitterData,
                 smooth: true,
-                symbol: "none",
+                symbol,
+                symbolSize,
                 lineStyle: { width: 2, color: chartColors.jitter, type: "dashed" as const },
                 itemStyle: { color: chartColors.jitter },
                 animationDuration: 600,

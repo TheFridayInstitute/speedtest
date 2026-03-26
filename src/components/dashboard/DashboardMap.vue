@@ -1,5 +1,5 @@
 <template>
-    <div class="relative h-full w-full">
+    <div class="relative h-full min-h-[400px] w-full">
         <!-- No API key fallback -->
         <div v-if="!hasMapKey" class="flex h-full items-center justify-center p-8">
             <Card class="max-w-sm p-6 text-center">
@@ -20,6 +20,16 @@
             class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/40"
         >
             <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+
+        <!-- Empty state overlay -->
+        <div
+            v-else-if="!isFetching && hexData.length === 0 && hasMapKey"
+            class="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center"
+        >
+            <div class="rounded-lg bg-background/80 px-4 py-2 text-sm text-muted-foreground backdrop-blur-sm">
+                No geocoded survey data in this date range
+            </div>
         </div>
 
         <!-- Controls overlay (top-right, collapsible) -->

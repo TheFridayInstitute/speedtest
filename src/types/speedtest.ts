@@ -118,6 +118,17 @@ export interface ProgressBarObject {
     backgroundColor: CanvasColor;
 }
 
+/** Encapsulated speedtest status for passing to UI components. */
+export interface SpeedtestStatus {
+    isRunning: boolean;
+    isCompleted: boolean;
+    currentPhase?: string;
+    testStates: TestStateObject;
+    pingResult: UnitInfo;
+    downloadResult: UnitInfo;
+    uploadResult: UnitInfo;
+}
+
 /** Message structure for iframe postMessage communication. */
 export interface WindowMessage {
     message: "start" | "complete" | "next";

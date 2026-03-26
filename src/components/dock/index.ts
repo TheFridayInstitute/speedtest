@@ -5,3 +5,4 @@ export { default as DockLayerGroup } from "./DockLayerGroup.vue";
 
 // App-specific
 export { default as Dock } from "./Dock.vue";
+export type { SurveyDockState } from "./Dock.vue";

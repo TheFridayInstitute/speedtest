@@ -11,18 +11,28 @@ import {
     Upload,
     Activity,
     Loader,
+    Check,
 } from "lucide-vue-next";
 import GlassDock from "./GlassDock.vue";
+import type { SpeedtestStatus } from "@src/types/speedtest";
 
 export type AppView = "speedtest" | "survey" | "dashboard" | "thankyou";
 
+export interface SurveyDockState {
+    isFirstStep: boolean;
+    isLastStep: boolean;
+    editingFromReview: boolean;
+}
+
 const props = defineProps<{
     currentView: AppView;
-    isRunning: boolean;
-    testCompleted: boolean;
+    speedtestStatus: SpeedtestStatus;
     canGoBack: boolean;
-    currentPhase?: string;
+    surveyState?: SurveyDockState;
 }>();
+
+const isRunning = computed(() => props.speedtestStatus.isRunning);
+const testCompleted = computed(() => props.speedtestStatus.isCompleted);
 
 /** Map speedtest phase names to lucide icons. */
 const phaseIconMap: Record<string, any> = {
@@ -44,51 +54,29 @@ const emit = defineEmits<{
 
 const dockRef = useTemplateRef<InstanceType<typeof GlassDock>>("dockRef");
 
-const primaryLabel = computed(() => {
-    if (props.currentView === "survey") return null; // survey has its own buttons
-    if (props.currentView === "dashboard") return null;
-    if (props.currentView === "thankyou") return null;
-    if (props.isRunning) return "Stop";
-    if (props.testCompleted) return "Next";
-    return "Start";
-});
+const isSpeedtestView = computed(() => props.currentView === "speedtest");
+const isSurvey = computed(() => props.currentView === "survey" && !!props.surveyState);
+const isSurveyView = computed(() => props.currentView === "survey");
 
-const primaryIcon = computed(() => {
-    if (props.isRunning) return Square;
-    if (props.testCompleted) return ArrowRight;
-    return Play;
-});
+// ── Survey primary button ──────────────────────────────────────────────
 
-const primaryButtonStyle = computed(() => {
-    if (props.isRunning) {
-        return {
-            background: 'hsl(var(--destructive))',
-            color: 'hsl(var(--destructive-foreground))',
-        };
+const surveyLabel = computed(() => {
+    if (isSurvey.value) {
+        const s = props.surveyState!;
+        if (s.editingFromReview) return "Done";
+        return s.isLastStep ? "Submit" : "Next";
     }
-    // Start or Next — accent pink
-    return {
-        background: 'var(--th-accent-opaque)',
-        color: 'white',
-    };
+    if (isSurveyView.value) return "Next";
+    return null;
 });
 
-/** Color for the phase icon — accent pink during active phases. */
-const phaseColor = computed(() => {
-    if (!props.isRunning) return undefined;
-    if (props.currentPhase === 'started') return undefined; // neutral while initializing
-    return 'var(--th-accent-opaque)';
+const surveyIcon = computed(() => {
+    if (isSurvey.value) {
+        const s = props.surveyState!;
+        if (s.isLastStep || s.editingFromReview) return Check;
+    }
+    return ArrowRight;
 });
-
-const showRetake = computed(
-    () => props.testCompleted && !props.isRunning && props.currentView === "speedtest",
-);
-
-function onPrimary() {
-    if (props.isRunning) emit("stop");
-    else if (props.testCompleted) emit("next");
-    else emit("start");
-}
 </script>
 
 <template>
@@ -96,8 +84,8 @@ function onPrimary() {
         class="fixed bottom-[var(--dock-inset,1rem)] inset-x-0 z-40 flex items-center justify-center pointer-events-none"
     >
         <div class="pointer-events-auto">
-            <GlassDock ref="dockRef" :collapse-delay="3000" :start-collapsed="false" position="inline">
-                <!-- Back button -->
+            <GlassDock ref="dockRef" :collapse-delay="3000" :start-collapsed="false" position="inline" :always-expanded="true">
+                <!-- Back button (always) -->
                 <button
                     class="dock-icon-btn"
                     title="Back"
@@ -107,80 +95,99 @@ function onPrimary() {
                     <ArrowLeft class="w-5 h-5" />
                 </button>
 
-                <div v-if="primaryLabel || showRetake" class="dock-separator" />
+                <div class="dock-separator" />
 
-                <!-- Primary action (Start / Stop / Next) -->
-                <button
-                    v-if="primaryLabel"
-                    class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
-                    :title="primaryLabel"
-                    :style="primaryButtonStyle"
-                    @click="onPrimary"
-                >
-                    <!-- Phase icon when running -->
-                    <component
-                        v-if="isRunning && currentPhase && phaseIconMap[currentPhase]"
-                        :is="phaseIconMap[currentPhase]"
-                        class="w-4 h-4"
-                        :class="{ 'animate-spin': currentPhase === 'started' }"
-                    />
-                    <component
-                        v-else
-                        :is="primaryIcon"
-                        class="w-4 h-4"
-                    />
-                    <span v-if="!isRunning" class="text-lg font-medium">{{ primaryLabel }}</span>
-                </button>
+                <!-- ═══ SPEEDTEST VIEW ═══ -->
+                <template v-if="isSpeedtestView">
+                    <!-- Stop (only while running) -->
+                    <button
+                        v-if="isRunning"
+                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-2"
+                        title="Stop"
+                        :style="{ background: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' }"
+                        @click="emit('stop')"
+                    >
+                        <Square class="w-4 h-4" />
+                        <span class="text-base font-medium">Stop</span>
+                    </button>
 
-                <!-- Retake (only when completed) -->
-                <button
-                    v-if="showRetake"
-                    class="dock-icon-btn flex items-center gap-1.5 !w-auto px-2"
-                    title="Retake"
-                    @click="emit('retake')"
-                >
-                    <RotateCcw class="w-4 h-4" />
-                    <span class="text-base">Retake</span>
-                </button>
+                    <!-- Retake (only when completed, not running) -->
+                    <button
+                        v-if="testCompleted && !isRunning"
+                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-2"
+                        title="Retake"
+                        @click="emit('retake')"
+                    >
+                        <RotateCcw class="w-4 h-4" />
+                        <span class="text-base">Retake</span>
+                    </button>
 
-                <div v-if="primaryLabel || showRetake" class="dock-separator" />
+                    <!-- Start (only when idle) -->
+                    <button
+                        v-if="!isRunning && !testCompleted"
+                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
+                        title="Start"
+                        :style="{ background: 'var(--th-accent-opaque)', color: 'white' }"
+                        @click="emit('start')"
+                    >
+                        <Play class="w-4 h-4" />
+                        <span class="text-lg font-medium">Start</span>
+                    </button>
 
-                <!-- Forward -->
-                <button
-                    class="dock-icon-btn"
-                    title="Next view"
-                    @click="emit('forward')"
-                >
-                    <ArrowRight class="w-5 h-5" />
-                </button>
+                    <!-- Next → (always visible on speedtest view, goes to survey) -->
+                    <button
+                        v-if="isRunning || testCompleted"
+                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
+                        title="Next"
+                        :style="{ background: 'var(--th-accent-opaque)', color: 'white' }"
+                        @click="emit('next')"
+                    >
+                        <ArrowRight class="w-4 h-4" />
+                        <span class="text-lg font-medium">Next</span>
+                    </button>
+                </template>
+
+                <!-- ═══ SURVEY VIEW ═══ -->
+                <template v-else-if="isSurveyView">
+                    <button
+                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
+                        title="Next"
+                        :style="{ background: 'var(--th-accent-opaque)', color: 'white' }"
+                        @click="emit('forward')"
+                    >
+                        <component :is="surveyIcon" class="w-4 h-4" />
+                        <span class="text-lg font-medium">{{ surveyLabel }}</span>
+                    </button>
+                </template>
+
+                <!-- ═══ THANKYOU / OTHER ═══ -->
+                <template v-else-if="currentView === 'thankyou'">
+                    <button
+                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
+                        @click="emit('forward')"
+                    >
+                        <ArrowRight class="w-4 h-4" />
+                        <span class="text-lg font-medium">New Test</span>
+                    </button>
+                </template>
 
                 <div class="dock-separator" />
 
-                <!-- Dashboard -->
+                <!-- Dashboard (always) -->
                 <button class="dock-icon-btn" title="Dashboard" @click="emit('dashboard')">
                     <LayoutDashboard class="w-5 h-5" />
                 </button>
 
                 <template #collapsed>
-                    <!-- Phase icon when running -->
                     <component
-                        v-if="isRunning && currentPhase && phaseIconMap[currentPhase]"
-                        :is="phaseIconMap[currentPhase]"
+                        v-if="isRunning && speedtestStatus.currentPhase && phaseIconMap[speedtestStatus.currentPhase]"
+                        :is="phaseIconMap[speedtestStatus.currentPhase]"
                         class="w-5 h-5 shrink-0"
-                        :class="{ 'animate-spin': currentPhase === 'started' }"
-                        :style="phaseColor ? { color: phaseColor } : {}"
+                        :class="{ 'animate-spin': speedtestStatus.currentPhase === 'started' }"
+                        :style="{ color: 'var(--th-accent-opaque)' }"
                     />
-                    <component
-                        v-else
-                        :is="primaryIcon"
-                        class="w-5 h-5 shrink-0"
-                        :style="testCompleted ? { color: 'var(--th-accent-opaque)' } : {}"
-                    />
-                    <span
-                        v-if="!isRunning"
-                        class="text-lg font-medium whitespace-nowrap"
-                        :style="testCompleted ? { color: 'var(--th-accent-opaque)' } : {}"
-                    >
+                    <Play v-else class="w-5 h-5 shrink-0" />
+                    <span class="text-lg font-medium whitespace-nowrap">
                         {{ testCompleted ? 'Complete' : 'Speedtest' }}
                     </span>
                 </template>
@@ -188,3 +195,4 @@ function onPrimary() {
         </div>
     </div>
 </template>
+

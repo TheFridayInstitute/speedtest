@@ -118,7 +118,6 @@ export function useMeterRenderer(
     }
 
     // ── Completion animation ──────────────────────────────────────────
-    // Dial spins smoothly, rings stay filled with gradient (no gold)
 
     async function playCompletion(): Promise<void> {
         if (!canvas || !config || !rings || !dial || !lastStateName) return;
@@ -126,21 +125,44 @@ export function useMeterRenderer(
         const c = canvas, cfg = config, r = rings, d = dial, sn = lastStateName;
 
         // Smooth 2-revolution spin ending at the endAngle (2500ms)
-        const startTheta = cfg.endAngle; // start from where the dial is (full)
+        const startTheta = cfg.endAngle;
         await smoothAnimate(0, 1, 2500, (_v, t) => {
             c.clear();
-            // Rings stay filled with their gradient at t=1
             drawRings(c, r, sn, 1);
-            // Spin the dial: 2 full revolutions, ending at endAngle
             const spinAngle = startTheta + t * Math.PI * 4;
             drawDial(c, d, spinAngle);
             return false;
         }, easeOutCubic);
 
-        // Final resting frame — dial at endAngle, rings filled with gradient
         isPlayingCompletion = false;
         isCompleted = true;
         drawFrame(sn, 1);
+    }
+
+    // ── Abort animation — smooth return to zero ──────────────────────
+
+    async function playAbortReset(): Promise<void> {
+        if (!canvas || !config || !rings || !dial) return;
+        isPlayingCompletion = true;
+        const c = canvas, cfg = config, r = rings, d = dial;
+        const sn = lastStateName;
+        const startT = smoothT;
+
+        await smoothAnimate(0, 1, 600, (_v, t) => {
+            const currentT = startT * (1 - t);
+            c.clear();
+            drawRings(c, r, sn, currentT);
+            const theta = lerp(Math.max(currentT, 0), cfg.startAngle, cfg.endAngle);
+            drawDial(c, d, theta);
+            return false;
+        }, easeOutCubic);
+
+        // Fully reset
+        isPlayingCompletion = false;
+        isCompleted = false;
+        smoothT = 0;
+        lastStateName = undefined;
+        drawFrame(undefined, 0);
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────
@@ -160,15 +182,13 @@ export function useMeterRenderer(
             renderLoop?.start();
         } else {
             renderLoop?.stop();
-            // Only play completion if test finished normally (not aborted)
-            // Check if we actually have results
             if (lastStateName && config && props.speedtestData) {
                 const amount = props.getSpeedtestStateAmount(lastStateName);
                 if (amount > 0) {
                     playCompletion();
                 } else {
-                    // Aborted/stopped — just draw current state, no animation
-                    drawFrame(lastStateName, smoothT);
+                    // Aborted — animate back to default
+                    playAbortReset();
                 }
             }
         }

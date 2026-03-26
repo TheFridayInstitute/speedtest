@@ -1,9 +1,18 @@
 import { Hono } from "hono";
 import { ObjectId } from "mongodb";
-import { getDb } from "../db.js";
-import { adminAuth } from "../middleware.js";
-import { rebuildTrieFromDb } from "../trie/manager.js";
-import type { AppEnv, SubnetDoc } from "../types.js";
+import { getDb } from "../db.ts";
+import { adminAuth } from "../middleware.ts";
+import { rebuildTrieFromDb } from "../trie/manager.ts";
+import type { AppEnv, SubnetDoc } from "../types.ts";
+import {
+    subnetBodySchema,
+    subnetUpdateSchema,
+    subnetListQuerySchema,
+    parseBody,
+    parseQuery,
+    isResponse,
+} from "../validation/index.ts";
+import { auditLog } from "../logging/index.ts";
 
 const subnets = new Hono<AppEnv>();
 
@@ -12,18 +21,19 @@ subnets.use("*", adminAuth);
 
 /** List all subnet mappings (paginated). */
 subnets.get("/", async (c) => {
-    const db = await getDb();
-    const page = parseInt(c.req.query("page") ?? "1", 10);
-    const limit = Math.min(parseInt(c.req.query("limit") ?? "50", 10), 200);
-    const search = c.req.query("search");
+    const query = parseQuery(c, subnetListQuerySchema);
+    if (isResponse(query)) return query;
+    const { page, limit, search } = query;
     const skip = (page - 1) * limit;
+    const db = await getDb();
 
     const filter: Record<string, any> = { active: true };
     if (search) {
+        const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         filter.$or = [
-            { entityName: { $regex: search, $options: "i" } },
-            { entityId: { $regex: search, $options: "i" } },
-            { cidr: { $regex: search, $options: "i" } },
+            { entityName: { $regex: escaped, $options: "i" } },
+            { entityId: { $regex: escaped, $options: "i" } },
+            { cidr: { $regex: escaped, $options: "i" } },
         ];
     }
 
@@ -43,18 +53,19 @@ subnets.get("/", async (c) => {
 
 /** Create a new subnet mapping. */
 subnets.post("/", async (c) => {
+    const body = await parseBody(c, subnetBodySchema);
+    if (isResponse(body)) return body;
     const db = await getDb();
-    const body = await c.req.json();
     const now = new Date();
 
     const doc: SubnetDoc = {
         prefix: body.prefix,
-        prefixLength: parseInt(body.prefixLength, 10),
+        prefixLength: body.prefixLength,
         cidr: `${body.prefix}/${body.prefixLength}`,
-        entityName: body.entityName ?? "",
-        entityId: body.entityId ?? "",
-        entityType: body.entityType ?? "",
-        networkType: body.networkType ?? "",
+        entityName: body.entityName,
+        entityId: body.entityId,
+        entityType: body.entityType,
+        networkType: body.networkType,
         metadata: body.metadata ?? {},
         source: "manual",
         active: true,
@@ -65,6 +76,7 @@ subnets.post("/", async (c) => {
     try {
         const inserted = await db.collection("subnets").insertOne(doc);
         await rebuildTrieFromDb(db);
+        auditLog({ action: "create", resource: "subnet", resourceId: doc.cidr, requestId: c.get("requestId") });
         return c.json({ id: inserted.insertedId, cidr: doc.cidr }, 201);
     } catch (err: any) {
         if (err?.code === 11000) {
@@ -76,8 +88,9 @@ subnets.post("/", async (c) => {
 
 /** Update a subnet mapping. */
 subnets.put("/:id", async (c) => {
+    const body = await parseBody(c, subnetUpdateSchema);
+    if (isResponse(body)) return body;
     const db = await getDb();
-    const body = await c.req.json();
     const id = c.req.param("id");
 
     const update: Record<string, any> = {
@@ -98,6 +111,7 @@ subnets.put("/:id", async (c) => {
     }
 
     await rebuildTrieFromDb(db);
+    auditLog({ action: "update", resource: "subnet", resourceId: id, requestId: c.get("requestId") });
     return c.json({ updated: true });
 });
 
@@ -118,6 +132,7 @@ subnets.delete("/:id", async (c) => {
     }
 
     await rebuildTrieFromDb(db);
+    auditLog({ action: "delete", resource: "subnet", resourceId: id, requestId: c.get("requestId") });
     return c.json({ deleted: true });
 });
 
@@ -160,11 +175,12 @@ subnets.post("/import", async (c) => {
             );
             created++;
         } catch (err: any) {
-            errors.push(`Row ${JSON.stringify(row)}: ${err.message}`);
+            errors.push(`Row ${rows.indexOf(row) + 1}: ${err.message}`);
         }
     }
 
     await rebuildTrieFromDb(db);
+    auditLog({ action: "import", resource: "subnet", details: { created, errorCount: errors.length }, requestId: c.get("requestId") });
     return c.json({ created, errors });
 });
 

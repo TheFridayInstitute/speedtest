@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { getDb } from "../db.js";
-import { eventBus } from "../events/bus.js";
-import type { AppEnv, TestResultDoc } from "../types.js";
+import { getDb } from "../db.ts";
+import { eventBus } from "../events/bus.ts";
+import type { AppEnv, TestResultDoc } from "../types.ts";
+import { resultBodySchema, parseBody, isResponse } from "../validation/index.ts";
 
 const results = new Hono<AppEnv>();
 
@@ -12,14 +13,15 @@ results.post("/", async (c) => {
         return c.json({ error: "Session token required" }, 401);
     }
 
-    const body = await c.req.json();
+    const body = await parseBody(c, resultBodySchema);
+    if (isResponse(body)) return body;
     const db = await getDb();
 
     const result: TestResultDoc = {
         sessionId,
-        testType: body.testType ?? "traditional",
-        serverId: body.serverId ?? "",
-        serverName: body.serverName ?? "",
+        testType: body.testType,
+        serverId: body.serverId,
+        serverName: body.serverName,
         download: body.download ?? null,
         upload: body.upload ?? null,
         ping: body.ping ?? null,

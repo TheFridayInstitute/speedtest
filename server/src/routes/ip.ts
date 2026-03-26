@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import { getDb } from "../db.js";
-import { resolveIP } from "../middleware.js";
-import { getTrie } from "../trie/manager.js";
-import type { AppEnv, EnrichedIPInfo, IPInfoData, ShodanData } from "../types.js";
+import { getDb } from "../db.ts";
+import { resolveIP } from "../middleware.ts";
+import { getTrie } from "../trie/manager.ts";
+import type { AppEnv, EnrichedIPInfo, IPInfoData, ShodanData } from "../types.ts";
+import { ipParamSchema } from "../validation/index.ts";
 
 const ip = new Hono<AppEnv>();
 
@@ -16,7 +17,11 @@ ip.get("/", (c) => {
 // ── GET /info/:ip — enriched IP metadata ──────────────────────────────
 
 ip.get("/info/:ip", async (c) => {
-    const targetIp = c.req.param("ip");
+    const parsed = ipParamSchema.safeParse({ ip: c.req.param("ip") });
+    if (!parsed.success) {
+        return c.json({ error: "Invalid IP address format" }, 400);
+    }
+    const targetIp = parsed.data.ip;
 
     // Skip external lookups for localhost/private IPs
     const isLocal = targetIp === "::1" || targetIp === "127.0.0.1" || targetIp.startsWith("192.168.") || targetIp.startsWith("10.");
@@ -50,9 +55,9 @@ ip.get("/info/:ip", async (c) => {
         const token = process.env.IPINFO_TOKEN;
         if (token) {
             try {
-                const resp = await fetch(
-                    `https://ipinfo.io/${targetIp}?token=${token}`,
-                );
+                const resp = await fetch(`https://ipinfo.io/${targetIp}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 if (resp.ok) {
                     ipInfoData = (await resp.json()) as IPInfoData;
                     // Cache it
@@ -131,7 +136,11 @@ ip.get("/info/:ip", async (c) => {
 // ── GET /lookup/:ip — entity lookup (backward-compatible) ─────────────
 
 ip.get("/lookup/:ip", async (c) => {
-    const targetIp = c.req.param("ip");
+    const parsed = ipParamSchema.safeParse({ ip: c.req.param("ip") });
+    if (!parsed.success) {
+        return c.json({ error: "Invalid IP address format" }, 400);
+    }
+    const targetIp = parsed.data.ip;
     const trie = getTrie();
     const result = trie.lookup(targetIp);
 
@@ -161,6 +170,7 @@ async function fetchShodan(
     db: any,
 ): Promise<void> {
     try {
+        // Shodan API requires key as query param (no header auth support)
         const resp = await fetch(
             `https://api.shodan.io/shodan/host/${ip}?key=${apiKey}`,
         );

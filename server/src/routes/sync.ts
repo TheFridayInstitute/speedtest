@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import { getDb } from "../db.js";
-import { adminAuth } from "../middleware.js";
-import { syncFromSheet, syncAllSheets } from "../sync/sheets-sync.js";
-import type { AppEnv, SyncMetadataDoc } from "../types.js";
+import { getDb } from "../db.ts";
+import { adminAuth } from "../middleware.ts";
+import { syncFromSheet, syncAllSheets } from "../sync/sheets-sync.ts";
+import type { AppEnv, SyncMetadataDoc } from "../types.ts";
+import { syncConfigSchema, parseBody, isResponse } from "../validation/index.ts";
 
 const sync = new Hono<AppEnv>();
 
@@ -38,21 +39,15 @@ sync.get("/", async (c) => {
 
 /** Create a new sync configuration. */
 sync.post("/", async (c) => {
+    const body = await parseBody(c, syncConfigSchema);
+    if (isResponse(body)) return body;
     const db = await getDb();
-    const body = await c.req.json();
 
     const doc: Omit<SyncMetadataDoc, "_id"> = {
-        name: body.name ?? "",
-        spreadsheetId: body.spreadsheetId ?? "",
-        range: body.range ?? "Sheet1",
-        columnMapping: body.columnMapping ?? {
-            prefix: "Prefix",
-            prefixLength: "Length",
-            entityName: "Entity Name",
-            entityId: "Entity ID",
-            entityType: "Entity Type",
-            networkType: "Type",
-        },
+        name: body.name,
+        spreadsheetId: body.spreadsheetId,
+        range: body.range,
+        columnMapping: body.columnMapping,
         lastSyncAt: null,
         lastSyncResult: null,
         syncEnabled: true,

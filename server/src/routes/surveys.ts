@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { getDb } from "../db.js";
-import type { AppEnv, SurveyDoc } from "../types.js";
+import { getDb } from "../db.ts";
+import type { AppEnv, SurveyDoc } from "../types.ts";
+import { surveyBodySchema, parseBody, isResponse } from "../validation/index.ts";
 
 const surveys = new Hono<AppEnv>();
 
@@ -11,7 +12,8 @@ surveys.post("/", async (c) => {
         return c.json({ error: "Session token required" }, 401);
     }
 
-    const body = await c.req.json();
+    const body = await parseBody(c, surveyBodySchema);
+    if (isResponse(body)) return body;
     const db = await getDb();
     const now = new Date();
 
@@ -26,7 +28,7 @@ surveys.post("/", async (c) => {
 
         // Common
         name: body.name ?? "",
-        address: body.address ?? null,
+        address: (body.address as SurveyDoc["address"]) ?? null,
         provider: session?.ipInfo?.org ?? body.provider ?? null,
         entityName:
             session?.entityLookup?.entityName ?? body.entityName ?? null,

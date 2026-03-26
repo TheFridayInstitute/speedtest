@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { getDb } from "../db.js";
-import { adminAuth } from "../middleware.js";
-import type { AppEnv } from "../types.js";
+import { getDb } from "../db.ts";
+import { adminAuth } from "../middleware.ts";
+import type { AppEnv } from "../types.ts";
+import { registerServerSchema, deployServerSchema, parseBody, isResponse } from "../validation/index.ts";
 
 const servers = new Hono<AppEnv>();
 
@@ -42,16 +43,17 @@ servers.put("/:serverId/heartbeat", async (c) => {
     const secret = c.req.header("X-Server-Secret");
     const expectedSecret = process.env.SERVER_SECRET;
 
-    // In production, require matching secret
-    if (process.env.NODE_ENV === "production" && expectedSecret && secret !== expectedSecret) {
+    // Require matching secret when one is configured
+    if (expectedSecret && secret !== expectedSecret) {
         return c.json({ error: "Forbidden" }, 403);
     }
 
     const body = await c.req.json<{ currentLoad?: number; capacity?: number }>().catch(() => ({ currentLoad: undefined, capacity: undefined }));
     const db = await getDb();
 
-    await db.collection("speedtest_servers").updateOne(
-        { serverId },
+    // Only accept heartbeats from registered servers
+    const result = await db.collection("speedtest_servers").updateOne(
+        { serverId, active: true },
         {
             $set: {
                 currentLoad: body.currentLoad ?? 0,
@@ -61,6 +63,10 @@ servers.put("/:serverId/heartbeat", async (c) => {
         },
         { upsert: false },
     );
+
+    if (result.matchedCount === 0) {
+        return c.json({ error: "Server not registered" }, 404);
+    }
 
     return c.json({ ok: true });
 });
@@ -108,17 +114,8 @@ adminServers.get("/", async (c) => {
 
 /** Register a new server manually. */
 adminServers.post("/", async (c) => {
-    const body = await c.req.json<{
-        serverId: string;
-        name: string;
-        region: string;
-        host: string;
-        port?: number;
-    }>();
-
-    if (!body.serverId || !body.host) {
-        return c.json({ error: "serverId and host are required" }, 400);
-    }
+    const body = await parseBody(c, registerServerSchema);
+    if (isResponse(body)) return body;
 
     const db = await getDb();
 
@@ -150,18 +147,11 @@ adminServers.post("/", async (c) => {
 
 /** Deploy a new EC2 speedtest server. */
 adminServers.post("/deploy", async (c) => {
-    const body = await c.req.json<{
-        region?: string;
-        instanceType?: string;
-        name: string;
-    }>();
-
-    if (!body.name) {
-        return c.json({ error: "name is required" }, 400);
-    }
+    const body = await parseBody(c, deployServerSchema);
+    if (isResponse(body)) return body;
 
     try {
-        const { deploySpeedtestServer } = await import("../infra/ec2-deployer.js");
+        const { deploySpeedtestServer } = await import("../infra/ec2-deployer.ts");
         const centralApiUrl = process.env.CENTRAL_API_URL ?? `http://localhost:${process.env.PORT ?? 3200}`;
         const result = await deploySpeedtestServer({
             region: body.region ?? "us-east-1",
@@ -194,7 +184,8 @@ adminServers.post("/deploy", async (c) => {
 
         return c.json(result, 201);
     } catch (err) {
-        return c.json({ error: (err as Error).message }, 500);
+        console.error("EC2 deploy error:", err);
+        return c.json({ error: "Deployment failed" }, 500);
     }
 });
 

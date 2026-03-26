@@ -48,6 +48,6 @@ defineEmits<{
 .pane-slide-enter-to,
 .pane-slide-leave-from {
     opacity: 1;
-    max-height: 500px;
+    max-height: var(--start-pane-max-height);
 }
 </style>

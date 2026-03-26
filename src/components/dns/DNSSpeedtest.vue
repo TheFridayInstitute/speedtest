@@ -113,6 +113,6 @@ function handleButtonClick(): void {
 .dns-reveal-enter-to,
 .dns-reveal-leave-from {
     opacity: 1;
-    max-height: 800px;
+    max-height: var(--dns-panel-max-height);
 }
 </style>

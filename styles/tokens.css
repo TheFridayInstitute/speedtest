@@ -42,8 +42,14 @@
 
     /* ── Dock ─────────────────────────────────────── */
     --dock-h: calc(2.5rem + 0.75rem + 3px);
-    --dock-inset: 1rem;
+    --dock-inset: 0.5rem;
     --dock-gap: 1rem;
+    --dock-footer-space: calc(var(--dock-h) + var(--dock-inset) * 2);
+
+    /* ── Component magic-number tokens ───────────── */
+    --meter-overflow-offset: -10%;
+    --dns-panel-max-height: 800px;
+    --start-pane-max-height: 500px;
 
     /* ── Z-index scale ─────────────────────────────── */
     --z-base: 1;
@@ -101,6 +107,6 @@
 }
 
 .dark {
-    --meter-background-color: rgb(255 255 255 / 0.06);
-    --meter-dial-color: hsl(var(--foreground) / 0.85);
+    --meter-background-color: rgb(255 255 255 / 0.15);
+    --meter-dial-color: rgb(255 255 255 / 0.9);
 }

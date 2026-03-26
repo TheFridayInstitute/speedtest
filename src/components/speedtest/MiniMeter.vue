@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center gap-2 rounded-full bg-card/70 backdrop-blur-md border border-border/40 px-3 py-1 shadow-sm text-sm">
+    <div class="flex items-center gap-1.5 rounded-full bg-card/70 backdrop-blur-md border border-border/40 px-2.5 py-1 shadow-sm">
         <component
             v-if="status.isRunning && status.currentPhase && phaseIconMap[status.currentPhase]"
             :is="phaseIconMap[status.currentPhase]"
@@ -7,9 +7,12 @@
             :class="{ 'animate-spin': status.currentPhase === 'started' }"
         />
         <template v-for="metric in metrics" :key="metric.id">
-            <div v-if="metric.show" class="flex items-baseline gap-0.5">
-                <span class="font-mono font-semibold tabular-nums" :style="{ color: metric.color }">{{ metric.amount }}</span>
-                <span class="text-xs text-muted-foreground">{{ metric.unit }}</span>
+            <div v-if="metric.show" class="flex flex-col items-center leading-none shrink-0">
+                <span class="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{{ metric.label }}</span>
+                <div class="flex items-baseline gap-0.5">
+                    <span class="font-mono text-sm font-semibold tabular-nums" :style="{ color: metric.color }">{{ metric.amount }}</span>
+                    <span class="text-[9px] text-muted-foreground">{{ metric.unit }}</span>
+                </div>
             </div>
         </template>
         <div
@@ -46,9 +49,9 @@ function isActiveOrBeyond(metricId: string): boolean {
 const metrics = computed(() => {
     const s = props.status;
     return [
-        { id: "ping", amount: s.pingResult?.amount ?? "", unit: s.pingResult?.unit ?? "ms", color: CHART_COLORS.ping, show: isActiveOrBeyond("ping") && s.pingResult?.amount },
-        { id: "download", amount: s.downloadResult?.amount ?? "", unit: s.downloadResult?.unit ?? "Mbps", color: CHART_COLORS.download, show: isActiveOrBeyond("download") && s.downloadResult?.amount },
-        { id: "upload", amount: s.uploadResult?.amount ?? "", unit: s.uploadResult?.unit ?? "Mbps", color: CHART_COLORS.upload, show: isActiveOrBeyond("upload") && s.uploadResult?.amount },
+        { id: "ping", label: "Ping", amount: s.pingResult?.amount ?? "", unit: s.pingResult?.unit ?? "ms", color: CHART_COLORS.ping, show: isActiveOrBeyond("ping") && s.pingResult?.amount },
+        { id: "download", label: "DL", amount: s.downloadResult?.amount ?? "", unit: s.downloadResult?.unit ?? "Mbps", color: CHART_COLORS.download, show: isActiveOrBeyond("download") && s.downloadResult?.amount },
+        { id: "upload", label: "UL", amount: s.uploadResult?.amount ?? "", unit: s.uploadResult?.unit ?? "Mbps", color: CHART_COLORS.upload, show: isActiveOrBeyond("upload") && s.uploadResult?.amount },
     ];
 });
 </script>

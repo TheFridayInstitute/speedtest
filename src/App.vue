@@ -1,33 +1,42 @@
 <template>
     <div class="relative flex h-dvh w-full flex-col overflow-hidden">
-        <AppHeader
-            v-if="!isDashboardRoute"
-            :servers="serverManager.traditionalServers.value"
-            :active-server-id="serverManager.activeServer.value?.id ?? null"
-            :client-ip="clientIp"
-            :ip-info="ipInfo"
-            :looked-up-ip="lookedUpIp"
-            @select-server="serverManager.setActiveServer"
-            @dashboard="router.push({ name: 'admin' })"
-        />
+        <!-- Header bar: in flow, i button right, mini meter centered -->
+        <div v-if="!isDashboardRoute" class="z-header flex w-full items-center px-2 py-2 shrink-0">
+            <div class="w-9" />
+            <div class="flex-1 flex justify-center">
+                <Transition name="fade" mode="out-in">
+                    <MiniMeter v-if="showMiniMeter" :status="speedtestStatus" />
+                </Transition>
+            </div>
+            <AppHeader
+                :servers="serverManager.traditionalServers.value"
+                :active-server-id="serverManager.activeServer.value?.id ?? null"
+                :client-ip="clientIp"
+                :ip-info="ipInfo"
+                :looked-up-ip="lookedUpIp"
+                @select-server="serverManager.setActiveServer"
+            />
+        </div>
 
         <canvas ref="atmosphereCanvas" class="pointer-events-none fixed inset-0 -z-10 h-full w-full" />
 
-        <!-- Scrollable content area — header and dock stay pinned -->
-        <div
-            class="flex min-h-0 flex-1 w-full overflow-hidden"
-            :class="isDashboardRoute
-                ? ''
-                : 'items-center justify-center p-4 pb-[calc(var(--dock-h)+var(--dock-inset)*2)]'"
-        >
-
-        <!-- Router-managed views -->
+        <!-- Scrollable content area — dock stays pinned -->
+        <div class="flex min-h-0 flex-1 w-full overflow-hidden">
         <RouterView v-slot="{ Component, route: viewRoute }">
-            <!-- Only animate transitions for speedtest flow pages, not dashboard layouts -->
-            <Transition v-if="!isDashboardRoute" name="pane-swap" mode="out-in">
-                <component :is="Component" :key="viewRoute.path" />
+            <Transition name="fade" mode="out-in">
+                <div
+                    :key="viewRoute.path"
+                    class="flex min-h-0 w-full flex-1"
+                    :class="viewRoute.name && typeof viewRoute.name === 'string' && (viewRoute.name.startsWith('dashboard') || viewRoute.name.startsWith('admin'))
+                        ? ''
+                        : 'items-center justify-center px-2 py-2 sm:px-4 sm:py-4 pb-[var(--dock-footer-space)]'"
+                >
+                    <component
+                        :is="Component"
+                        :ref="setViewRef"
+                    />
+                </div>
             </Transition>
-            <component v-else :is="Component" />
         </RouterView>
         </div>
 
@@ -35,10 +44,9 @@
         <Dock
             v-if="!isDashboardRoute"
             :current-view="currentView"
-            :is-running="isSpeedtestRunning"
-            :test-completed="isSpeedtestCompleted"
+            :speedtest-status="speedtestStatus"
             :can-go-back="canGoBack"
-            :current-phase="speedtest.currentStateName.value"
+            :survey-state="surveyState"
             @start="onDockStart"
             @stop="onDockStop"
             @next="onDockNext"
@@ -58,6 +66,7 @@ import { useRouter, useRoute, RouterView } from "vue-router";
 import { useDark } from "@vueuse/core";
 
 import AppHeader from "@src/components/AppHeader.vue";
+import MiniMeter from "@src/components/speedtest/MiniMeter.vue";
 import { Dock } from "@src/components/dock";
 import ToastProvider from "@src/components/ToastProvider.vue";
 
@@ -70,6 +79,7 @@ import { useGeolocation } from "@src/composables/useGeolocation";
 import { useSpeedtest } from "@src/composables/useSpeedtest";
 import { useAppNavigation } from "@src/composables/useAppNavigation";
 import type { SpeedtestResults } from "@src/composables/useAppNavigation";
+import type { SpeedtestStatus } from "@src/types/speedtest";
 
 import {
     DEFAULT_TRADITIONAL_SERVERS,
@@ -102,6 +112,17 @@ watch(() => speedtest.isRunning.value, (v) => {
 });
 
 provide("speedtest", speedtest);
+
+/** Single reactive object encapsulating speedtest status for UI components. */
+const speedtestStatus = computed<SpeedtestStatus>(() => ({
+    isRunning: isSpeedtestRunning.value,
+    isCompleted: isSpeedtestCompleted.value,
+    currentPhase: speedtest.currentStateName.value,
+    testStates: speedtest.testStates,
+    pingResult: speedtest.pingResult.value,
+    downloadResult: speedtest.downloadResult.value,
+    uploadResult: speedtest.uploadResult.value,
+}));
 
 // ── Dark mode ──────────────────────────────────────────────────────────
 
@@ -158,6 +179,11 @@ useAtmosphereCanvas(atmosphereCanvas, accentColor);
 
 const surveyRef = ref<any>(null);
 
+/** Capture the survey view ref when on the survey route. */
+function setViewRef(el: any) {
+    surveyRef.value = route.name === "survey" ? el : null;
+}
+
 const nav = useAppNavigation({
     speedtest,
     surveyRef,
@@ -169,7 +195,11 @@ const nav = useAppNavigation({
     },
 });
 
-const { currentView, canGoBack, onDockBack, onDockForward, onDockStart, onDockStop, onDockNext, onDockRetake } = nav;
+const { currentView, canGoBack, surveyState, onDockBack, onDockForward, onDockStart, onDockStop, onDockNext, onDockRetake } = nav;
+
+const showMiniMeter = computed(() =>
+    currentView.value !== "speedtest" && (speedtestStatus.value.isRunning || speedtestStatus.value.isCompleted),
+);
 
 // ── Speedtest initialization ─────────────────────────────────────────
 
@@ -209,18 +239,12 @@ async function submitSpeedtestResults(results: SpeedtestResults) {
 </script>
 
 <style scoped>
-.pane-swap-enter-active,
-.pane-swap-leave-active {
-    transition:
-        opacity var(--duration-panel, 0.5s) var(--ease-dock, ease),
-        transform var(--duration-panel, 0.5s) var(--ease-dock, ease);
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
 }
-.pane-swap-enter-from {
+.fade-enter-from,
+.fade-leave-to {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
-}
-.pane-swap-leave-to {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
 }
 </style>

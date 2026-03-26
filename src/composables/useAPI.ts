@@ -80,7 +80,7 @@ export function useAPI() {
 
     // ── Results ───────────────────────────────────────────────────────
 
-    /** Submit a speedtest result. */
+    /** Submit a speedtest result. In dev mode, log but don't record. */
     async function submitResult(result: {
         testType: "traditional" | "dns";
         serverId: string;
@@ -93,6 +93,10 @@ export function useAPI() {
         dnsUid?: string;
         raw?: Record<string, unknown>;
     }): Promise<void> {
+        if (import.meta.env.DEV) {
+            console.log("[DEV] Speedtest result (not recorded):", result);
+            return;
+        }
         await ensureSession();
         await request("/api/results", {
             method: "POST",

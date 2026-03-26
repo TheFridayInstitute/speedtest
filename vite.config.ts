@@ -37,11 +37,13 @@ const defaultPlugins = [
 ];
 
 export default defineConfig((mode) => {
-    // API proxy — needed in ALL modes when running `vite dev`
+    // API proxy — needed in ALL modes when running `vite dev`.
+    // Use VITE_API_TARGET env var to proxy to a remote server:
+    //   VITE_API_TARGET=https://speedtest.mbabb.friday.institute npm run dev
     const serverConfig = {
         proxy: {
             "/api": {
-                target: "http://localhost:3200",
+                target: process.env.VITE_API_TARGET || "http://localhost:3200",
                 changeOrigin: true,
             },
         },

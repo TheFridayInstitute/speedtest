@@ -44,7 +44,7 @@
                             class="w-full accent-primary"
                             @input="$emit('update:h3Resolution', Number(($event.target as HTMLInputElement).value))"
                         />
-                        <div class="flex justify-between text-[10px] text-muted-foreground">
+                        <div class="flex justify-between text-micro text-muted-foreground">
                             <span>4 (coarse)</span>
                             <span>7 (fine)</span>
                         </div>

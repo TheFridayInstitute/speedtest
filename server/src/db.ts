@@ -36,8 +36,12 @@ export async function getDb(): Promise<Db> {
             timestamp: -1,
         }),
         db.collection("test_results").createIndex({ timestamp: -1 }),
-        // Compound for dashboard time-series aggregation
+        // Compound for dashboard/admin filtered queries
         db.collection("test_results").createIndex({ timestamp: -1, testType: 1 }),
+        db.collection("test_results").createIndex({ testType: 1, timestamp: -1 }),
+
+        // Session IP lookup (admin IP filter)
+        db.collection("test_sessions").createIndex({ clientIp: 1 }),
 
         // H3 geo indexes on sessions (for dashboard hex-map queries)
         db.collection("test_sessions").createIndex({ "ipInfo.loc": 1, createdAt: -1 }),

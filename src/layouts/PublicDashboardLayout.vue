@@ -1,5 +1,5 @@
 <template>
-    <div class="relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden">
+    <div class="relative z-10 mx-auto flex h-full w-full max-w-screen-2xl flex-col overflow-hidden">
         <!-- Top nav -->
         <nav class="sticky top-0 z-header flex items-center gap-3 border-b border-border px-4 py-2">
             <UnderlineTabs

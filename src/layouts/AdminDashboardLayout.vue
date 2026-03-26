@@ -1,5 +1,5 @@
 <template>
-    <div class="relative z-10 mx-auto flex h-full w-full flex-col overflow-hidden">
+    <div class="relative z-10 mx-auto flex h-full w-full max-w-screen-2xl flex-col overflow-hidden">
         <!-- Auth gate -->
         <template v-if="!hasToken">
             <div class="flex flex-1 items-center justify-center p-4">

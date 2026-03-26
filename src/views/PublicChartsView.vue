@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full max-w-7xl space-y-4 overflow-y-auto px-2">
+    <div class="w-full space-y-4 px-2">
         <MetricGaugeCards :summary="summary" :loading="loading" />
 
         <Card class="p-4">
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { Card, UnderlineTabs } from "@mkbabb/glass-ui";
 import { useDashboardFilterStore } from "@src/stores/useDashboardFilterStore";
 import { MetricGaugeCards, TimeSeriesChart, DistributionChart } from "@src/components/dashboard/charts";
@@ -122,5 +122,9 @@ watch(
 
 onMounted(() => {
     fetchAll();
+});
+
+onUnmounted(() => {
+    if (debounceTimer) clearTimeout(debounceTimer);
 });
 </script>

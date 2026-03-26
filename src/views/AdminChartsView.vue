@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full max-w-7xl space-y-4 overflow-y-auto px-2">
+    <div class="w-full space-y-4 px-2">
         <MetricGaugeCards :summary="summary" :loading="loading" />
 
         <Card class="p-4">

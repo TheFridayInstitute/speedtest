@@ -36,8 +36,8 @@
         <!-- Embedded mini chart (30-day trend) -->
         <Card class="p-4">
             <h3 class="mb-2 text-sm font-medium text-muted-foreground">30-Day Trend</h3>
-            <div class="aspect-[3/1] min-h-0 w-full">
-                <TimeSeriesChart :buckets="timeSeries" :loading="loading" />
+            <div class="aspect-[3/1] min-h-[200px] w-full">
+                <TimeSeriesChart :buckets="timeSeries" :loading="loading" :compact="true" />
             </div>
         </Card>
 

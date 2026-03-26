@@ -14,16 +14,14 @@
 import { ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import SurveyWizard from "@src/components/survey/SurveyWizard.vue";
-import { useAPI } from "@src/composables/useAPI";
-import { useIPInfo } from "@src/composables/useIPInfo";
-import { useGeolocation } from "@src/composables/useGeolocation";
+import { APIKey, IPInfoKey, GeolocationKey } from "@src/composables/injectionKeys";
 import { DEFAULT_SURVEY_CONFIG } from "@src/config/survey";
 import type { SurveySubmission } from "@src/types/survey";
 
 const router = useRouter();
-const api = inject<ReturnType<typeof useAPI>>("api")!;
-const { ipInfo, lookedUpIp } = inject<ReturnType<typeof useIPInfo>>("ipInfoProvider")!;
-const geolocation = inject<ReturnType<typeof useGeolocation>>("geolocation")!;
+const api = inject(APIKey)!;
+const { ipInfo, lookedUpIp } = inject(IPInfoKey)!;
+const geolocation = inject(GeolocationKey)!;
 
 const surveyConfig = DEFAULT_SURVEY_CONFIG;
 const surveyRef = ref<any>(null);

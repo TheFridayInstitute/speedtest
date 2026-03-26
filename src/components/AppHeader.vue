@@ -16,44 +16,44 @@
                     <span class="text-base uppercase tracking-wider text-muted-foreground">Theme</span>
                     <DarkModeToggle class="h-5 w-5" />
                 </div>
-                <Separator class="my-3" />
-                <section>
-                    <h4 class="text-base uppercase tracking-wider text-muted-foreground">Server</h4>
-                    <Select
-                        :model-value="activeServerId ?? undefined"
-                        @update:model-value="(id: string) => emit('selectServer', id)"
-                    >
-                        <SelectTrigger class="mt-1 text-lg">
-                            <SelectValue placeholder="Select server" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="server in servers" :key="server.id" :value="server.id">
-                                {{ server.config.name }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </section>
-                <Separator v-if="clientIp" class="my-3" />
-                <section v-if="clientIp">
+                <template v-if="resolvedServers.length > 0">
+                    <Separator class="my-3" />
+                    <section>
+                        <h4 class="text-base uppercase tracking-wider text-muted-foreground">Server</h4>
+                        <Select
+                            :model-value="resolvedActiveServerId ?? undefined"
+                            @update:model-value="onSelectServer"
+                        >
+                            <SelectTrigger class="mt-1 text-lg">
+                                <SelectValue placeholder="Select server" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="server in resolvedServers" :key="server.id" :value="server.id">
+                                    {{ server.config.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </section>
+                </template>
+                <Separator v-if="resolvedClientIp" class="my-3" />
+                <section v-if="resolvedClientIp">
                     <h4 class="text-base uppercase tracking-wider text-muted-foreground">Connection</h4>
-                    <p class="mt-1 font-mono text-lg">{{ clientIp }}</p>
-                    <p v-if="ipInfo?.org" class="mt-0.5 text-lg italic text-muted-foreground">{{ ipInfo.org }}</p>
+                    <p class="mt-1 font-mono text-lg">{{ resolvedClientIp }}</p>
+                    <p v-if="resolvedIpInfo?.org" class="mt-0.5 text-lg italic text-muted-foreground">{{ resolvedIpInfo.org }}</p>
                 </section>
-                <Separator v-if="lookedUpIp?.row && clientIp" class="my-3" />
-                <section v-if="lookedUpIp?.row">
+                <Separator v-if="resolvedLookedUpIp?.row && resolvedClientIp" class="my-3" />
+                <section v-if="resolvedLookedUpIp?.row">
                     <h4 class="text-base uppercase tracking-wider text-muted-foreground">Entity</h4>
-                    <p class="mt-1 text-lg text-th-accent">{{ lookedUpIp.row["Entity Name"] }}</p>
-                    <p class="mt-0.5 font-mono text-base text-muted-foreground">{{ lookedUpIp.row["Entity ID"] }}</p>
+                    <p class="mt-1 text-lg text-th-accent">{{ resolvedLookedUpIp.row["Entity Name"] }}</p>
+                    <p class="mt-0.5 font-mono text-base text-muted-foreground">{{ resolvedLookedUpIp.row["Entity ID"] }}</p>
                 </section>
-                <p v-if="!clientIp && servers.length === 0 && !lookedUpIp?.row" class="text-lg italic text-muted-foreground">
-                    Loading connection info...
-                </p>
             </PopoverContent>
         </Popover>
     </div>
 </template>
 
 <script setup lang="ts">
+import { computed, inject } from "vue";
 import {
     Popover, PopoverTrigger, PopoverContent,
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -62,8 +62,9 @@ import {
 import { DarkModeToggle } from "@mkbabb/glass-ui";
 import type { IPInfo, LookedUpIP } from "@src/types/dns";
 import type { ManagedServer } from "@src/composables/useServerManager";
+import { ServerManagerKey, IPInfoKey } from "@src/composables/injectionKeys";
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         servers?: ManagedServer[];
         activeServerId?: string | null;
@@ -83,4 +84,29 @@ withDefaults(
 const emit = defineEmits<{
     selectServer: [id: string];
 }>();
+
+// Inject from App.vue when props aren't provided (e.g. on dashboard routes)
+const injectedServerManager = inject(ServerManagerKey, null as any);
+const injectedIpInfo = inject(IPInfoKey, null as any);
+
+const resolvedServers = computed(() =>
+    props.servers.length > 0 ? props.servers : (injectedServerManager?.traditionalServers?.value ?? []),
+);
+const resolvedActiveServerId = computed(() =>
+    props.activeServerId ?? injectedServerManager?.activeServer?.value?.id ?? null,
+);
+const resolvedClientIp = computed(() =>
+    props.clientIp || injectedIpInfo?.clientIp?.value || "",
+);
+const resolvedIpInfo = computed(() =>
+    props.ipInfo ?? injectedIpInfo?.ipInfo?.value ?? null,
+);
+const resolvedLookedUpIp = computed(() =>
+    props.lookedUpIp ?? injectedIpInfo?.lookedUpIp?.value ?? null,
+);
+
+function onSelectServer(id: string) {
+    emit("selectServer", id);
+    injectedServerManager?.setActiveServer?.(id);
+}
 </script>

@@ -4,3 +4,7 @@ export type { OnMessageCallback } from "./useWindowMessaging";
 export { useSpeedtest } from "./useSpeedtest";
 export { useServerManager } from "./useServerManager";
 export type { ManagedServer } from "./useServerManager";
+export { useAPI } from "./useAPI";
+export { useAppNavigation } from "./useAppNavigation";
+export { useGeolocation } from "./useGeolocation";
+export * from "./injectionKeys";

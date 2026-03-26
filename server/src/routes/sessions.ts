@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { latLngToCell } from "h3-js";
-import { getDb } from "../db.js";
-import { resolveIP, hashIP } from "../middleware.js";
-import type { AppEnv, H3Indices, TestSessionDoc } from "../types.js";
+import { getDb } from "../db.ts";
+import { resolveIP, hashIP } from "../middleware.ts";
+import type { AppEnv, H3Indices, TestSessionDoc } from "../types.ts";
 
 const sessions = new Hono<AppEnv>();
 
@@ -27,9 +27,9 @@ sessions.post("/", async (c) => {
 
     if (ipInfoToken && !isLocal) {
         try {
-            const resp = await fetch(
-                `https://ipinfo.io/${ip}?token=${ipInfoToken}`,
-            );
+            const resp = await fetch(`https://ipinfo.io/${ip}`, {
+                headers: { Authorization: `Bearer ${ipInfoToken}` },
+            });
             if (resp.ok) {
                 ipInfo = await resp.json();
 

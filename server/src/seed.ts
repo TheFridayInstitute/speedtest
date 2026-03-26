@@ -4,9 +4,9 @@
  */
 import { readFileSync } from "node:fs";
 import "dotenv/config";
-import { getDb, closeDb } from "./db.js";
-import { rebuildTrieFromDb } from "./trie/manager.js";
-import type { SubnetDoc } from "./types.js";
+import { getDb, closeDb } from "./db.ts";
+import { rebuildTrieFromDb } from "./trie/manager.ts";
+import type { SubnetDoc } from "./types.ts";
 
 async function main() {
     const csvPath = process.argv[2];

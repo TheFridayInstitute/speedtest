@@ -1,7 +1,7 @@
 import { GoogleAuth } from "google-auth-library";
 import type { Db } from "mongodb";
-import { rebuildTrieFromDb } from "../trie/manager.js";
-import type { SyncMetadataDoc, SyncResult, SubnetDoc } from "../types.js";
+import { rebuildTrieFromDb } from "../trie/manager.ts";
+import type { SyncMetadataDoc, SyncResult, SubnetDoc } from "../types.ts";
 
 /**
  * Fetch a Google Sheet range using the Sheets API v4.

@@ -1,6 +1,6 @@
 import type { Db } from "mongodb";
-import { CIDRTrie, type SubnetEntry } from "./cidr-trie.js";
-import type { SubnetDoc } from "../types.js";
+import { CIDRTrie, type SubnetEntry } from "./cidr-trie.ts";
+import type { SubnetDoc } from "../types.ts";
 
 let currentTrie = new CIDRTrie();
 

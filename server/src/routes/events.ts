@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { eventBus } from "../events/bus.js";
-import { adminAuth } from "../middleware.js";
-import type { AppEnv } from "../types.js";
+import { eventBus } from "../events/bus.ts";
+import { adminAuth } from "../middleware.ts";
+import type { AppEnv } from "../types.ts";
 
 const events = new Hono<AppEnv>();
 

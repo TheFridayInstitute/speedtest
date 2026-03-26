@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { invalidateDashboardCache } from "../middleware.js";
+import { invalidateDashboardCache } from "../middleware.ts";
 
 export const eventBus = new EventEmitter();
 eventBus.setMaxListeners(100);

@@ -21,6 +21,7 @@ interface DeployOptions {
     name: string;
     centralApiUrl: string;
     serverSecret?: string;
+    keyName?: string;
 }
 
 interface DeployResult {
@@ -96,7 +97,7 @@ async function getLatestAmiId(ec2: EC2Client): Promise<string> {
 }
 
 export async function deploySpeedtestServer(opts: DeployOptions): Promise<DeployResult> {
-    const { region, instanceType = "t3.micro", name, centralApiUrl, serverSecret } = opts;
+    const { region, instanceType = "t3.micro", name, centralApiUrl, serverSecret, keyName } = opts;
     const serverId = `speedtest-${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`;
 
     const ec2 = new EC2Client({ region });
@@ -178,7 +179,15 @@ setInterval(async () => {
     });
   } catch {}
 }, 30000);
-setTimeout(() => { /* initial heartbeat */ }, 5000);
+setTimeout(async () => {
+  try {
+    await fetch(process.env.CENTRAL_API_URL + '/api/internal/servers/' + process.env.SERVER_ID + '/heartbeat', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Server-Secret': process.env.SERVER_SECRET || '' },
+      body: JSON.stringify({ currentLoad: 0, capacity: 50 })
+    });
+  } catch {}
+}, 5000);
 SERVEREOF
     node server.js
   "
@@ -191,6 +200,7 @@ SERVEREOF
             MinCount: 1,
             MaxCount: 1,
             SecurityGroupIds: [sgId],
+            KeyName: keyName,
             UserData: userData,
             TagSpecifications: [
                 {

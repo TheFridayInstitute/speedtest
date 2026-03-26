@@ -159,6 +159,7 @@ adminServers.post("/deploy", async (c) => {
             name: body.name,
             centralApiUrl,
             serverSecret: process.env.SERVER_SECRET,
+            keyName: process.env.EC2_KEY_NAME,
         });
 
         // Register in DB

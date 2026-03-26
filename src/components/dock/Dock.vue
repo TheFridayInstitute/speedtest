@@ -116,7 +116,7 @@ const surveyIcon = computed(() => {
                         title="Retake"
                         @click="emit('retake')"
                     >
-                        <RotateCcw class="w-4 h-4" />
+                        <RotateCcw class="w-4.5 h-4.5" />
                     </button>
 
                     <!-- Start (only when idle) -->

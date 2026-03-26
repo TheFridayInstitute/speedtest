@@ -221,7 +221,7 @@ SERVEREOF
             InstanceType: instanceType as any,
             MinCount: 1,
             MaxCount: 1,
-            KeyName: keyName,
+            ...(keyName ? { KeyName: keyName } : {}),
             UserData: userData,
             NetworkInterfaces: [{
                 DeviceIndex: 0,

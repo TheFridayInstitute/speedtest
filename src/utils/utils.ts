@@ -1,6 +1,11 @@
 /**
  * DOM and formatting utilities.
+ *
+ * Unit conversion and color parsing delegate to @mkbabb/value.js.
  */
+
+import { convertToPixels } from "@mkbabb/value.js";
+import { RGBColor } from "@mkbabb/value.js";
 
 /** Strip trailing zeros from a numeric string: "22.0" → "22", "5.50" → "5.5" */
 export function stripTrailingZeros(s: string): string {
@@ -8,27 +13,18 @@ export function stripTrailingZeros(s: string): string {
     return s.replace(/\.?0+$/, "");
 }
 
-/** Convert an em or px string value to pixels. */
-export function emToPixels(em: string): number {
-    em = em.toLowerCase();
-    let emNumber = 1;
+/** Convert a CSS length string (e.g. "1.5em", "16px") to pixels. */
+export function emToPixels(value: string): number {
+    value = value.toLowerCase().trim();
+    const num = parseFloat(value);
+    if (isNaN(num)) return 0;
 
-    if (em.indexOf("px") !== -1) {
-        emNumber = parseFloat(em.split("px")[0]);
-        return emNumber;
-    } else if (em.indexOf("em") !== -1) {
-        emNumber = parseFloat(em.split("em")[0]);
-    }
+    if (value.endsWith("px")) return num;
+    if (value.endsWith("em")) return convertToPixels(num, "em");
+    if (value.endsWith("rem")) return convertToPixels(num, "rem");
 
-    const fontSize = parseFloat(
-        window
-            .getComputedStyle(document.body)
-            .getPropertyValue("font-size")
-            .toLowerCase()
-            .replace(/[a-z]/g, ""),
-    );
-
-    return emNumber * fontSize;
+    // Bare number — assume em
+    return convertToPixels(num, "em");
 }
 
 /** Get the computed value of a CSS custom property. */
@@ -49,26 +45,32 @@ export function generateColorStops(
         .fill(0)
         .map((_, index) => {
             const stop = index * step;
-            const tmpColorName = `--${colorName}-${index}`;
-            const color: string = getComputedVariable(tmpColorName);
+            const color: string = getComputedVariable(`--${colorName}-${index}`);
             return [stop, color] as [number, string];
         });
 }
 
 /**
  * Create a semi-transparent version of a color stop.
- * Parses the color and applies 0.3 opacity for inner meter rings.
+ * Parses the CSS color via value.js and applies 0.3 alpha.
  */
 export function generateInnerColorStops(
     value: [number, string],
 ): [number, string] {
     const [stop, color] = value;
-    const canvas = document.createElement("canvas");
-    canvas.width = 1;
-    canvas.height = 1;
-    const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = color.trim();
-    ctx.fillRect(0, 0, 1, 1);
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-    return [stop, `rgba(${r}, ${g}, ${b}, 0.3)`];
+
+    try {
+        const rgb = RGBColor.fromString(color.trim());
+        return [stop, `rgba(${Math.round(rgb.r)}, ${Math.round(rgb.g)}, ${Math.round(rgb.b)}, 0.3)`];
+    } catch {
+        // Fallback: canvas-based color resolution for formats value.js can't parse
+        const canvas = document.createElement("canvas");
+        canvas.width = 1;
+        canvas.height = 1;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = color.trim();
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        return [stop, `rgba(${r}, ${g}, ${b}, 0.3)`];
+    }
 }

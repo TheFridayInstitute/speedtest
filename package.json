@@ -52,6 +52,7 @@
   "dependencies": {
     "@mkbabb/glass-ui": "file:../glass-ui",
     "@mkbabb/keyframes.js": "^1.2.0",
+    "@mkbabb/value.js": "^0.5.1",
     "@unovis/ts": "^1.4.3-beta.0",
     "@unovis/vue": "^1.4.3-beta.0",
     "@vee-validate/zod": "^4.13.2",

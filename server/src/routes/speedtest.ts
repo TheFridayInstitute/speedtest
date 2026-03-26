@@ -1,10 +1,15 @@
 import crypto from "node:crypto";
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
-import type { AppEnv } from "../types.js";
-import { resolveIP } from "../middleware.js";
+import type { AppEnv } from "../types.ts";
+import { resolveIP } from "../middleware.ts";
 
 const speedtest = new Hono<AppEnv>();
+
+// ── Concurrency limiter for garbage streams ──────────────────────────
+
+const GARBAGE_CONCURRENT_LIMIT = 5;
+const GARBAGE_STREAMS = new Map<string, number>();
 
 // ── No-cache headers (shared) ─────────────────────────────────────────
 
@@ -44,6 +49,12 @@ speedtest.all("/empty", (c) => {
 //   ckSize: number of 1MB chunks (default 4, max 1024)
 
 speedtest.get("/garbage", (c) => {
+    const ip = resolveIP(c);
+    const active = GARBAGE_STREAMS.get(ip) ?? 0;
+    if (active >= GARBAGE_CONCURRENT_LIMIT) {
+        return c.json({ error: "Too many concurrent streams" }, 429);
+    }
+
     let ckSize = parseInt(c.req.query("ckSize") ?? "4", 10);
     if (isNaN(ckSize) || ckSize <= 0) ckSize = 4;
     if (ckSize > 1024) ckSize = 1024;
@@ -59,15 +70,23 @@ speedtest.get("/garbage", (c) => {
         Object.assign(headers, corsSpeedtestHeaders());
     }
 
+    GARBAGE_STREAMS.set(ip, active + 1);
+
     return stream(c, async (s) => {
-        // Set headers on the raw response
-        for (const [key, value] of Object.entries(headers)) {
-            c.header(key, value);
-        }
-        // Stream random chunks
-        for (let i = 0; i < ckSize; i++) {
-            const chunk = crypto.randomBytes(1048576); // 1 MB
-            await s.write(chunk);
+        try {
+            // Set headers on the raw response
+            for (const [key, value] of Object.entries(headers)) {
+                c.header(key, value);
+            }
+            // Stream random chunks
+            for (let i = 0; i < ckSize; i++) {
+                const chunk = crypto.randomBytes(1048576); // 1 MB
+                await s.write(chunk);
+            }
+        } finally {
+            const remaining = (GARBAGE_STREAMS.get(ip) ?? 1) - 1;
+            if (remaining <= 0) GARBAGE_STREAMS.delete(ip);
+            else GARBAGE_STREAMS.set(ip, remaining);
         }
     });
 });
@@ -95,9 +114,9 @@ speedtest.get("/getIP", async (c) => {
             // Fetch from our own ipinfo endpoint (internal)
             const ipInfoToken = process.env.IPINFO_TOKEN;
             if (ipInfoToken) {
-                const resp = await fetch(
-                    `https://ipinfo.io/${ip}?token=${ipInfoToken}`,
-                );
+                const resp = await fetch(`https://ipinfo.io/${ip}`, {
+                    headers: { Authorization: `Bearer ${ipInfoToken}` },
+                });
                 if (resp.ok) {
                     const data = await resp.json();
                     ispInfo = (data as any).org ?? "";

@@ -20,7 +20,7 @@
                     :is-loading="resultsComposable.isLoading.value"
                     @update:page="resultsComposable.page.value = $event"
                     @export="onExport"
-                    @select="() => {}"
+                    @select="onSelectResult"
                 />
             </template>
 
@@ -37,6 +37,8 @@
                 />
             </template>
         </div>
+
+        <ResultDetailSheet v-model:open="detailOpen" :row="selectedRow" />
     </div>
 </template>
 
@@ -49,9 +51,18 @@ import { useAdminDashboardDataStore } from "@src/stores/useAdminDashboardDataSto
 import ResultsFilters from "@src/components/dashboard/ResultsFilters.vue";
 import ResultsTable from "@src/components/dashboard/ResultsTable.vue";
 import AdminSessionsTable from "@src/components/admin/AdminSessionsTable.vue";
+import ResultDetailSheet from "@src/components/dashboard/ResultDetailSheet.vue";
+import type { DashboardResultRow } from "@src/types/dashboard";
 
 const activeTab = ref("results");
 const ipFilter = ref("");
+const detailOpen = ref(false);
+const selectedRow = ref<DashboardResultRow | null>(null);
+
+function onSelectResult(row: DashboardResultRow) {
+    selectedRow.value = row;
+    detailOpen.value = true;
+}
 
 const subTabs = [
     { label: "Results", value: "results" },

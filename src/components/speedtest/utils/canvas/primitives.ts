@@ -6,7 +6,8 @@
  * and segmented progress bars.
  */
 
-import { slerpPoints, lerp } from "@utils/math";
+import { lerp } from "@mkbabb/keyframes.js";
+import { slerpPoints } from "@utils/math";
 import type { CanvasColor } from "./core";
 import { Polygon, Arc, Rectangle, Mesh } from "./shapes";
 

@@ -1,10 +1,25 @@
 <template>
     <div class="space-y-4">
-        <UnderlineTabs
-            :options="subTabs"
-            v-model="activeTab"
-            class="text-base"
-        />
+        <!-- Mobile: dropdown, Desktop: underline tabs -->
+        <div class="sm:hidden w-fit">
+            <Select v-model="activeTab">
+                <SelectTrigger class="text-sm w-auto min-w-[5rem]">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem v-for="tab in subTabs" :key="tab.value" :value="tab.value">
+                        {{ tab.label }}
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+        <div class="hidden sm:block">
+            <UnderlineTabs
+                :options="subTabs"
+                v-model="activeTab"
+                class="text-base"
+            />
+        </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
             <!-- Shared filter sidebar (always visible, Pinia-backed) -->
@@ -45,7 +60,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
-import { UnderlineTabs } from "@mkbabb/glass-ui";
+import { UnderlineTabs, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@mkbabb/glass-ui";
 import { useDashboardFilterStore } from "@src/stores/useDashboardFilterStore";
 import { useDashboardResults } from "@src/components/dashboard/composables/useDashboardResults";
 import { useAdminDashboardDataStore } from "@src/stores/useAdminDashboardDataStore";

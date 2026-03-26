@@ -12,6 +12,12 @@ import type {
     UnitInfo,
 } from "@src/types/speedtest";
 
+/** Strip trailing zeros from a numeric string: "22.0" → "22", "5.50" → "5.5" */
+function stripTrailingZeros(s: string): string {
+    if (!s.includes(".")) return s;
+    return s.replace(/\.?0+$/, "");
+}
+
 // @ts-ignore — LibreSpeed is a plain JS module without type declarations.
 import { Speedtest } from "@utils/librespeed/speedtest";
 
@@ -173,7 +179,7 @@ export function useSpeedtest() {
                 unitInfo.unit = "Gbps";
                 amount /= 1000;
             }
-            unitInfo.amount = amount.toPrecision(3);
+            unitInfo.amount = stripTrailingZeros(amount.toPrecision(3));
         } else if (stateName === "ping") {
             if (amount < 1000) {
                 unitInfo.unit = "ms";
@@ -181,7 +187,7 @@ export function useSpeedtest() {
                 unitInfo.unit = "s";
                 amount /= 1000;
             }
-            unitInfo.amount = amount.toPrecision(3);
+            unitInfo.amount = String(Math.round(amount));
         }
 
         return unitInfo;

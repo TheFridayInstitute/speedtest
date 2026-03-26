@@ -4,7 +4,7 @@
         <TransitionGroup
             name="badge"
             tag="div"
-            class="flex flex-wrap items-center justify-center gap-3 min-h-[2rem]"
+            class="flex flex-wrap items-center justify-center gap-3 h-[2rem]"
         >
             <div
                 v-for="metric in completedMetrics"

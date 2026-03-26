@@ -42,14 +42,11 @@ async function getVpcAndSubnet(ec2: EC2Client): Promise<{ vpcId: string; subnetI
 
     const subnets = await ec2.send(
         new DescribeSubnetsCommand({
-            Filters: [
-                { Name: "vpc-id", Values: [vpc.VpcId] },
-                { Name: "map-public-ip-on-launch", Values: ["true"] },
-            ],
+            Filters: [{ Name: "vpc-id", Values: [vpc.VpcId] }],
         }),
     );
     const subnet = subnets.Subnets?.[0];
-    if (!subnet?.SubnetId) throw new Error("No public subnet found in VPC");
+    if (!subnet?.SubnetId) throw new Error("No subnet found in VPC");
 
     return { vpcId: vpc.VpcId, subnetId: subnet.SubnetId };
 }
@@ -224,10 +221,14 @@ SERVEREOF
             InstanceType: instanceType as any,
             MinCount: 1,
             MaxCount: 1,
-            SubnetId: subnetId,
-            SecurityGroupIds: [sgId],
             KeyName: keyName,
             UserData: userData,
+            NetworkInterfaces: [{
+                DeviceIndex: 0,
+                SubnetId: subnetId,
+                Groups: [sgId],
+                AssociatePublicIpAddress: true,
+            }],
             TagSpecifications: [
                 {
                     ResourceType: "instance",

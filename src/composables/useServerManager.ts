@@ -134,13 +134,7 @@ export function useServerManager() {
                 status: string;
             }>;
 
-            if (apiServers.length === 0) return;
-
-            // Replace all traditional servers with the registry entries
-            // (removes the default static config in favor of the real registry)
-            const existingDns = servers.value.filter((s) => s.type === "dns");
-            servers.value = [...existingDns];
-
+            // Merge API servers into existing list (keep defaults)
             for (const s of apiServers) {
                 // For the local/primary server, use relative URLs so CORS isn't an issue
                 const isLocal = s.host === location.hostname || s.host === "localhost";

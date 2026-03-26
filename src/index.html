@@ -53,7 +53,15 @@
             app.component("font-awesome-icon", FontAwesomeIcon).mount("#app");
         </script>
 
-        <script async src="https://maps.googleapis.com/maps/api/js?key=REDACTED&libraries=places"></script>
+        <script type="module">
+            const key = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+            if (key) {
+                const s = document.createElement("script");
+                s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`;
+                s.async = true;
+                document.head.appendChild(s);
+            }
+        </script>
 
         <title>speedtest.fi</title>
     </head>

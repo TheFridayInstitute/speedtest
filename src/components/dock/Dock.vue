@@ -102,24 +102,21 @@ const surveyIcon = computed(() => {
                     <!-- Stop (only while running) -->
                     <button
                         v-if="isRunning"
-                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
+                        class="dock-icon-btn"
                         title="Stop"
-                        :style="{ background: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' }"
                         @click="emit('stop')"
                     >
                         <Square class="w-4 h-4" />
-                        <span class="text-lg font-medium">Stop</span>
                     </button>
 
                     <!-- Retake (only when completed, not running) -->
                     <button
                         v-if="testCompleted && !isRunning"
-                        class="dock-icon-btn flex items-center gap-1.5 !w-auto px-3"
+                        class="dock-icon-btn"
                         title="Retake"
                         @click="emit('retake')"
                     >
                         <RotateCcw class="w-4 h-4" />
-                        <span class="text-lg font-medium">Retake</span>
                     </button>
 
                     <!-- Start (only when idle) -->

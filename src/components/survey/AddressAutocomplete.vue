@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { MapPin, LoaderCircle } from "lucide-vue-next";
 import { Button } from "@mkbabb/glass-ui";
 import { Input } from "@mkbabb/glass-ui";
@@ -149,6 +149,11 @@ async function geolocate() {
 // Emit when a place is selected
 watch(() => places.selectedPlace.value, (place) => {
     if (place) emit("update:modelValue", place);
+});
+
+// Auto-request geolocation on mount if no address is set
+onMounted(() => {
+    if (!props.modelValue) geolocate();
 });
 </script>
 

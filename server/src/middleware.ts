@@ -111,9 +111,6 @@ export const rateLimit: MiddlewareHandler = async (c, next) => {
 
 // ── Session resolution ────────────────────────────────────────────────
 
-/** Max age (ms) for strict IP binding — sessions younger than this reject IP mismatches. */
-const SESSION_IP_STRICT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-
 export const resolveSession: MiddlewareHandler = async (c, next) => {
     const token = c.req.header("X-Session-Token");
     if (token) {
@@ -128,18 +125,11 @@ export const resolveSession: MiddlewareHandler = async (c, next) => {
             const sessionIp = session.clientIp as string | undefined;
 
             if (sessionIp && requestIp !== sessionIp) {
-                const ageMs = Date.now() - new Date(session.createdAt as Date).getTime();
-
-                if (ageMs < SESSION_IP_STRICT_WINDOW_MS) {
-                    // Fresh session, different IP — likely hijacked
-                    return c.json({ error: "Session IP mismatch" }, 403);
-                }
-                // Stale session reuse from different IP — allow but log
-                logger.warn("Session IP mismatch (stale)", {
+                // Log mismatch but allow — hard rejection breaks proxied setups
+                logger.warn("Session IP mismatch", {
                     sessionId: token,
                     sessionIp,
                     requestIp,
-                    ageMs,
                 });
             }
 

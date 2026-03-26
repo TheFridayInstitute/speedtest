@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import type { Context, MiddlewareHandler } from "hono";
-import { getDb } from "./db.js";
+import { getDb } from "./db.ts";
+import { logger } from "./logging/index.ts";
 
 // ── CORS ──────────────────────────────────────────────────────────────
 
@@ -12,13 +13,11 @@ const ALLOWED_ORIGINS = new Set(
 );
 
 export function corsHeaders(requestOrigin?: string): Record<string, string> {
-    // In dev, allow any origin; in prod, check the whitelist
-    // In dev, allow any origin
     const isDev = process.env.NODE_ENV !== "production";
     const origin =
-        requestOrigin && (isDev || ALLOWED_ORIGINS.has(requestOrigin) || ALLOWED_ORIGINS.size === 0)
+        requestOrigin && (isDev || ALLOWED_ORIGINS.has(requestOrigin))
             ? requestOrigin
-            : ALLOWED_ORIGINS.values().next().value ?? "*";
+            : ALLOWED_ORIGINS.values().next().value ?? (isDev ? "*" : "");
     return {
         "Access-Control-Allow-Origin": origin,
         "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
@@ -112,6 +111,9 @@ export const rateLimit: MiddlewareHandler = async (c, next) => {
 
 // ── Session resolution ────────────────────────────────────────────────
 
+/** Max age (ms) for strict IP binding — sessions younger than this reject IP mismatches. */
+const SESSION_IP_STRICT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
 export const resolveSession: MiddlewareHandler = async (c, next) => {
     const token = c.req.header("X-Session-Token");
     if (token) {
@@ -122,6 +124,25 @@ export const resolveSession: MiddlewareHandler = async (c, next) => {
             { returnDocument: "after" },
         );
         if (session) {
+            const requestIp = resolveIP(c);
+            const sessionIp = session.clientIp as string | undefined;
+
+            if (sessionIp && requestIp !== sessionIp) {
+                const ageMs = Date.now() - new Date(session.createdAt as Date).getTime();
+
+                if (ageMs < SESSION_IP_STRICT_WINDOW_MS) {
+                    // Fresh session, different IP — likely hijacked
+                    return c.json({ error: "Session IP mismatch" }, 403);
+                }
+                // Stale session reuse from different IP — allow but log
+                logger.warn("Session IP mismatch (stale)", {
+                    sessionId: token,
+                    sessionIp,
+                    requestIp,
+                    ageMs,
+                });
+            }
+
             c.set("sessionId", token);
         }
     }
@@ -131,13 +152,13 @@ export const resolveSession: MiddlewareHandler = async (c, next) => {
 // ── Admin auth ────────────────────────────────────────────────────────
 
 export const adminAuth: MiddlewareHandler = async (c, next) => {
-    // Skip auth in dev mode
-    if (process.env.NODE_ENV !== "production") {
-        await next();
-        return;
-    }
     const token = process.env.ADMIN_TOKEN;
     if (!token) {
+        // In dev without ADMIN_TOKEN, allow unauthenticated access
+        if (process.env.NODE_ENV !== "production") {
+            await next();
+            return;
+        }
         return c.json({ error: "Admin not configured" }, 503);
     }
     const auth = c.req.header("Authorization");

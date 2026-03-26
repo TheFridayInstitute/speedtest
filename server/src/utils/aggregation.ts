@@ -11,7 +11,12 @@ export function buildMatchStage(query: {
     if (query.dateFrom || query.dateTo) {
         match.timestamp = {};
         if (query.dateFrom) match.timestamp.$gte = new Date(query.dateFrom);
-        if (query.dateTo) match.timestamp.$lte = new Date(query.dateTo);
+        if (query.dateTo) {
+            // Date-only strings (YYYY-MM-DD) resolve to midnight — extend to end-of-day
+            const d = new Date(query.dateTo);
+            if (!query.dateTo.includes("T")) d.setUTCHours(23, 59, 59, 999);
+            match.timestamp.$lte = d;
+        }
     }
     if (query.testType) match.testType = query.testType;
     return match;

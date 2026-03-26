@@ -318,7 +318,11 @@ admin.get("/sessions", async (c) => {
     if (dateFrom || dateTo || after) {
         matchStage.createdAt = {};
         if (dateFrom) matchStage.createdAt.$gte = new Date(dateFrom);
-        if (dateTo) matchStage.createdAt.$lte = new Date(dateTo);
+        if (dateTo) {
+            const d = new Date(dateTo);
+            if (!dateTo.includes("T")) d.setUTCHours(23, 59, 59, 999);
+            matchStage.createdAt.$lte = d;
+        }
         if (after) matchStage.createdAt.$lt = new Date(after);
     }
     if (entityId) matchStage["entityLookup.entityId"] = entityId;
@@ -389,7 +393,11 @@ admin.get("/funnel", async (c) => {
     if (dateFrom || dateTo) {
         matchStage.createdAt = {};
         if (dateFrom) matchStage.createdAt.$gte = new Date(dateFrom);
-        if (dateTo) matchStage.createdAt.$lte = new Date(dateTo);
+        if (dateTo) {
+            const d = new Date(dateTo);
+            if (!dateTo.includes("T")) d.setUTCHours(23, 59, 59, 999);
+            matchStage.createdAt.$lte = d;
+        }
     }
 
     const [totalSessions, surveyStats] = await Promise.all([

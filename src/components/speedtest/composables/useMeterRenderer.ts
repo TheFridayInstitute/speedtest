@@ -7,8 +7,7 @@
  */
 
 import { watch, type Ref } from "vue";
-import { NumericAnimation, SmoothProgress, easeOutCubic } from "@mkbabb/keyframes.js";
-import { lerp, clamp } from "@utils/math";
+import { NumericAnimation, SmoothProgress, easeOutCubic, lerp, clamp } from "@mkbabb/keyframes.js";
 import { Canvas } from "../utils/canvas/core";
 import { computeMeterConfig, type MeterConfig } from "../utils/canvas/meter/config";
 import { createRings, drawRings, type RingSet } from "../utils/canvas/meter/rings";

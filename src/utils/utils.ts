@@ -2,10 +2,7 @@
  * DOM, network, and formatting utilities.
  */
 
-/** Promise-based delay for async flows. */
-export function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+export { sleep } from "@mkbabb/keyframes.js";
 
 /** Strip trailing zeros from a numeric string: "22.0" → "22", "5.50" → "5.5" */
 export function stripTrailingZeros(s: string): string {

@@ -4,7 +4,7 @@ import type {
     DNSSpeedtestServer,
     DNSSpeedtestResultData,
 } from "@src/types/server";
-import { sleep } from "@utils/utils";
+import { sleep } from "@mkbabb/keyframes.js";
 
 /** Maximum number of polling attempts before giving up on results. */
 const MAX_ATTEMPTS = 20;

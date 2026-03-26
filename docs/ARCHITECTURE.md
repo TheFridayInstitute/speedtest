@@ -45,50 +45,58 @@ EC2 speedtest servers run separately as lightweight containers (`Dockerfile.spee
 
 ### Vue 3 + Router + Pinia
 
-The frontend is a single-page app built with Vue 3's Composition API. The frontend uses `vue-router` for client-side routing and Pinia for shared state.
+The frontend is a single-page app built with Vue 3's Composition API, using `vue-router` for client-side routing and Pinia for shared state.
 
 **Routes** (`src/router/index.ts`):
 
-- `/` --- speedtest view (test execution)
-- `/survey` --- multi-step survey wizard
-- `/thankyou` --- post-survey thank you
-- `/dashboard/map` --- public hex-binned map
-- `/dashboard/charts` --- public analytics charts
-- `/admin/overview` --- admin summary stats
-- `/admin/data` --- admin results table with filters
-- `/admin/charts` --- admin analytics
-- `/admin/map` --- admin map view
-- `/admin/settings` --- server management, subnet import
+- `/`—speedtest view (test execution)
+- `/survey`—multi-step survey wizard
+- `/thankyou`—post-survey thank you
+- `/dashboard/map`—public hex-binned map
+- `/dashboard/charts`—public analytics charts
+- `/admin/overview`—admin summary stats
+- `/admin/data`—admin results table with filters
+- `/admin/charts`—admin analytics
+- `/admin/map`—admin map view
+- `/admin/settings`—server management, subnet import
+
+Legacy redirects (`/admin/results`, `/admin/sessions`, `/admin/subnets`, `/admin/servers`) point to their current equivalents.
 
 **Layouts** separate the chrome from the content. `AdminDashboardLayout.vue` provides the admin nav tabs; `PublicDashboardLayout.vue` provides the public-facing dashboard shell.
 
 **Pinia stores** (`src/stores/`):
 
-- `useDashboardFilterStore` --- cross-filtering state shared between map, charts, and table. Holds date range, metric selection, entity filters, and geographic bounds. Any component can read/write filters, and all visualization components react.
-- `useAdminDashboardDataStore` --- admin data fetching, pagination, and aggregation.
-- `usePublicDashboardDataStore` --- public dashboard data with cached responses.
+- `useDashboardFilterStore`—cross-filtering state shared between map, charts, and table. Holds date range, metric selection, entity filters, and geographic bounds. Any component can read/write filters, and all visualization components react.
+- `useAdminDashboardDataStore`—admin data fetching, pagination, and aggregation.
+- `usePublicDashboardDataStore`—public dashboard data with cached responses.
 
 ### Glass-UI and Tailwind v4
 
-The design system is built on the `glass-ui` library (`@mkbabb/glass-ui`), consumed as a local file dependency. Glass-ui provides glassmorphic component primitives---backdrop-blur panels, frosted overlays, shimmer effects. Composed with its CSS utility classes rather than reimplementing glass effects.
+The design system is built on `@mkbabb/glass-ui`, consumed as a local file dependency. Glass-ui provides glassmorphic component primitives—backdrop-blur panels, frosted overlays, shimmer effects. We compose with its CSS utility classes rather than reimplementing glass effects.
 
-Tailwind v4 handles utility styling. The entry point is `styles/style.css` which imports Tailwind and extends `@theme` with our design tokens. `styles/tokens.css` defines the color palette, font stack, shadow system, and spacing scale. `styles/glass.css` contains glass-ui overrides specific to this project, and `styles/dock.css` styles the macOS-style dock component.
+Tailwind v4 handles utility styling. The entry point is `styles/style.css` which imports Tailwind and extends `@theme` with design tokens. `styles/tokens.css` defines the color palette, font stack, shadow system, and spacing scale. `styles/animations.css` defines keyframe animations. `styles/glass.css` contains glass-ui overrides specific to this project, and `styles/dock.css` styles the macOS-style dock component.
 
 ### Composables
 
-Shared logic lives in `src/composables/`. The key ones:
+Shared logic lives in `src/composables/`:
 
-- `useSpeedtest` --- wraps the LibreSpeed worker, manages test lifecycle (idle/running/complete), exposes reactive download/upload/ping/jitter values. Handles cleanup on unmount.
-- `useMaplibre` --- initializes MapLibre GL maps with our tile sources, manages layers and event handlers.
-- `useSSE` --- Server-Sent Events client for real-time result updates in the dashboard.
-- `useEChartsTheme` --- generates ECharts theme options from our design tokens.
-- `useGooglePlaces` --- Google Places Autocomplete integration for address input in the survey wizard.
-- `useIPInfo` --- ipinfo.io lookups for client IP geolocation.
-- `useServerManager` --- multi-server selection, latency probing, heartbeat monitoring.
-- `useMeterRenderer` --- canvas-based speed meter with oklch color interpolation and requestAnimationFrame rendering.
-- `useAppNavigation` --- tab navigation state between speedtest, survey, and dashboard views.
+- `useAPI`—typed API client for the Hono backend. Manages session tokens via localStorage, provides `createSession`, `submitResult`, `submitSurvey`, etc.
+- `useSpeedtest`—wraps the LibreSpeed worker, manages test lifecycle (idle/running/complete), exposes reactive download/upload/ping/jitter values. Handles cleanup on unmount.
+- `useIPInfo`—ipinfo.io lookups for client IP geolocation.
+- `useServerManager`—multi-server selection, latency probing, heartbeat monitoring.
+- `useAppNavigation`—tab navigation state between speedtest, survey, and dashboard views.
+- `useGeolocation`—browser Geolocation API wrapper, requests permission once and caches.
+- `useWindowMessaging`—iframe postMessage bridge for embedding in Qualtrics and other hosts.
 
-Feature-specific composables are colocated with their components (e.g., `src/components/dashboard/composables/`, `src/components/dns/composables/`, `src/components/survey/composables/`).
+These are provided at the App level via Vue `provide`/`inject` with typed injection keys (`src/composables/injectionKeys.ts`).
+
+Feature-specific composables are colocated with their components:
+
+- `src/components/dashboard/composables/`—`useMaplibre`, `useEChartsTheme`, `useChartData`, `useDashboardResults`, `useDashboardStats`, `useDashboardSubnets`
+- `src/components/speedtest/composables/`—`useMeterRenderer` (canvas speed meter with oklch color interpolation)
+- `src/components/survey/composables/`—`useGooglePlaces`, `useSurvey`, `useSurveyValidation`, `useSurveyAutoPopulate`
+- `src/components/dns/composables/`—`useDNSSpeedtest`
+- `src/components/dock/composables/`—`useDockState`, `useDockActionBar`, `useDockTransition`, `useLayerTransition`, `usePopupMutex`
 
 ## Backend Architecture
 
@@ -105,57 +113,60 @@ The API server (`server/src/index.ts`) mounts Hono route groups under `/api`:
 | `/api/ip` | `ip.ts` | IP geolocation + CIDR entity lookup |
 | `/api/admin/subnets` | `subnets.ts` | Subnet CRUD, CSV/Google Sheets import |
 | `/api/admin/sync` | `sync.ts` | Google Sheets sync |
+| `/api/admin/servers` | `servers.ts` | Admin server management, EC2 deployment |
 | `/api/admin` | `admin.ts` | Admin stats, session management, survey funnel, provider breakdown |
 | `/api/dashboard` | `dashboard/` | Hex-map, time-series, distributions, summary (split into focused modules) |
-| `/api/events` | `events.ts` | SSE streaming |
-| `/api/servers` | `servers.ts` | Server registry, heartbeat |
+| `/api/events` | `events.ts` | SSE streaming (public + admin-authenticated streams) |
+| `/api/servers` | `servers.ts` | Public server listing |
+| `/api/internal/servers` | `servers.ts` | Heartbeat endpoint for EC2 speedtest instances |
 
 ### Middleware Stack
 
 Middleware is applied globally and per-route in `server/src/middleware.ts`:
 
-1. **Request ID** --- assigns a unique `X-Request-Id` to each request (or preserves the incoming one).
-2. **IP resolution** --- extracts client IP from `X-Forwarded-For`, `X-Real-IP`, or `CF-Connecting-IP` headers. Falls back to socket remote address.
-3. **CORS** --- origin whitelist in production (rejects unknown origins if `ALLOWED_ORIGINS` is empty), permissive in dev.
-4. **Security headers** --- `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, and HSTS in production.
-5. **Body limit** --- 256 KB max request body.
-6. **Rate limiting** --- in-memory per-IP rate limits with method-based tiers. Speedtest `/garbage` endpoint has a separate concurrency limiter (max 5 concurrent streams per IP).
-7. **Response caching** --- TTL-based caching for public dashboard endpoints (60s for hex-map, 30s for time-series, 120s for distributions).
-8. **Session resolution** --- resolves `X-Session-Token` header to a session document. Enforces IP binding: rejects mid-session IP mismatches (< 10 min), warns on stale session reuse from different IPs.
+1. **Request ID**—assigns a unique `X-Request-Id` to each request (or preserves the incoming one).
+2. **IP resolution**—extracts client IP from `X-Forwarded-For`, `X-Real-IP`, or `CF-Connecting-IP` headers. Falls back to socket remote address.
+3. **CORS**—origin whitelist in production (`ALLOWED_ORIGINS`), permissive in dev.
+4. **Security headers**—`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, and HSTS in production.
+5. **Body limit**—256 KB max request body.
+6. **Rate limiting**—in-memory per-IP rate limits with method-based tiers (120/min reads, 30/min writes). The speedtest `/garbage` endpoint has a separate concurrency limiter in `routes/speedtest.ts` (max 5 concurrent streams per IP). Rate limiting is not applied to speedtest routes.
+7. **Response caching**—TTL-based caching for public dashboard endpoints (60s for hex-map, 30s for time-series and summary, 120s for distributions).
+8. **Admin auth**—Bearer token authentication with timing-safe comparison. Applied to admin, subnet, sync, and admin-server routes.
+9. **Session resolution**—resolves `X-Session-Token` header to a session document. Logs a warning on IP mismatch but allows the request through (hard rejection breaks proxied setups).
 
 ### Input Validation
 
 All API routes validate input using Zod schemas defined in `server/src/validation/`. The module is organized by domain:
 
-- `primitives.ts` --- shared types (date, metric, testType, flow, interval enums)
-- `results.ts`, `surveys.ts`, `subnets.ts`, `admin.ts`, `dashboard.ts`, `servers.ts`, `sync.ts`, `ip.ts` --- per-route schemas
-- `helpers.ts` --- `parseBody()`, `parseQuery()`, `isResponse()` utilities
+- `primitives.ts`—shared types (date, metric, testType, flow, interval enums)
+- `results.ts`, `surveys.ts`, `subnets.ts`, `admin.ts`, `dashboard.ts`, `servers.ts`, `sync.ts`, `ip.ts`—per-route schemas
+- `helpers.ts`—`parseBody()`, `parseQuery()`, `isResponse()` utilities
 
 ### Logging & Audit
 
 Structured JSON logging via `server/src/logging/`:
 
-- `logger.ts` --- JSON-line logger with level filtering (`debug`/`info`/`warn`/`error`)
-- `request-id.ts` --- request ID middleware
-- `audit.ts` --- fire-and-forget admin action logging to the `audit_log` MongoDB collection. Records subnet CRUD, imports, server registration, and exports.
+- `logger.ts`—JSON-line logger with level filtering (`debug`/`info`/`warn`/`error`)
+- `request-id.ts`—request ID middleware
+- `audit.ts`—fire-and-forget admin action logging to the `audit_log` MongoDB collection. Records subnet CRUD, imports, server registration, and exports.
 
 ### MongoDB Collections
 
-- `test_sessions` --- one document per test session (created before test starts, updated on completion)
-- `test_results` --- individual test result records with speed metrics, IP, geolocation, entity match
-- `surveys` --- survey response documents (demographics, address, experience questions)
-- `subnets` --- CIDR subnet entries mapped to NC entities (schools, community colleges, LEAs)
-- `speedtest_servers` --- registered speedtest servers with last heartbeat timestamp
-- `ipinfo_cache` --- cached IP geolocation lookups (TTL: 30 days)
-- `shodan_cache` --- cached Shodan lookups (TTL: 7 days)
-- `audit_log` --- admin action audit trail (subnet CRUD, imports, server management)
-- `sync_metadata` --- Google Sheets sync configuration and state
+- `test_sessions`—one document per test session (created before test starts, updated on completion)
+- `test_results`—individual test result records with speed metrics, IP, geolocation, entity match
+- `surveys`—survey response documents (demographics, address, experience questions)
+- `subnets`—CIDR subnet entries mapped to NC entities (schools, community colleges, LEAs)
+- `speedtest_servers`—registered speedtest servers with last heartbeat timestamp
+- `ipinfo_cache`—cached IP geolocation lookups (TTL: 30 days)
+- `shodan_cache`—cached Shodan lookups (TTL: 7 days)
+- `audit_log`—admin action audit trail (subnet CRUD, imports, server management)
+- `sync_metadata`—Google Sheets sync configuration and state
 
 ### CIDR Binary Trie
 
-The `server/src/trie/` module implements a binary trie for IPv4 CIDR longest-prefix-match lookups. Each bit of an IPv4 address is a branching decision (0 = left, 1 = right), giving O(32) lookup time. On startup, the server loads all subnets from MongoDB into the trie via `rebuildTrieFromDb()`. When a result comes in, the client IP is looked up against the trie to match it to an NC entity (school district, community college, etc.).
+The `server/src/trie/` module implements a binary trie for IPv4 CIDR longest-prefix-match lookups. Each bit of an IPv4 address is a branching decision (0 = left, 1 = right), giving O(32) lookup time. On startup, the server loads all subnets from MongoDB into the trie via `rebuildTrieFromDb()`. The IP route and session creation use the trie to match client IPs to NC entities (school district, community college, etc.).
 
-The `manager.ts` module handles trie lifecycle---rebuilding from the database when subnets are added or modified via the admin interface.
+The `manager.ts` module handles trie lifecycle—rebuilding from the database when subnets are added or modified via the admin interface.
 
 ### SSE Event Bus
 
@@ -163,15 +174,15 @@ The `manager.ts` module handles trie lifecycle---rebuilding from the database wh
 
 ## Speed Testing Flow
 
-1. **Session creation** --- client POSTs to `/api/sessions` to get a session token.
-2. **Server selection** --- client probes registered servers by latency, picks the closest. Falls back to the central server.
-3. **LibreSpeed worker** --- the test runs in a Web Worker (`src/utils/librespeed/`). The worker sends XMLHttpRequests to the selected server's speedtest endpoints:
-   - `GET /api/speedtest/garbage` --- download test (server sends random bytes)
-   - `POST /api/speedtest/empty` --- upload test (client sends random bytes)
-   - `GET /api/speedtest/getIP` --- IP detection + ping measurement
-4. **Progress updates** --- the worker posts messages back to the main thread with real-time speed/ping/jitter values. The `useSpeedtest` composable exposes these as reactive refs.
-5. **Result submission** --- on completion, client POSTs results to `/api/results` with the session token. Server performs CIDR entity lookup on the client IP and stores the enriched result.
-6. **SSE broadcast** --- the result submission triggers an SSE event so admin dashboards update in real time.
+1. **Session creation**—client POSTs to `/api/sessions` to get a session token.
+2. **Server selection**—client probes registered servers by latency, picks the closest. Falls back to the central server.
+3. **LibreSpeed worker**—the test runs in a Web Worker (`src/utils/librespeed/`). The worker sends XMLHttpRequests to the selected server's speedtest endpoints:
+   - `GET /api/speedtest/garbage`—download test (server sends random bytes)
+   - `POST /api/speedtest/empty`—upload test (client sends random bytes)
+   - `GET /api/speedtest/getIP`—IP detection + ping measurement
+4. **Progress updates**—the worker posts messages back to the main thread with real-time speed/ping/jitter values. The `useSpeedtest` composable exposes these as reactive refs.
+5. **Result submission**—on completion, client POSTs results to `/api/results` with the session token. The server stores the result and emits an SSE event.
+6. **SSE broadcast**—connected dashboards receive the new result in real time via the `/api/events` SSE endpoint.
 
 ## Data Visualization
 
@@ -179,10 +190,10 @@ The `manager.ts` module handles trie lifecycle---rebuilding from the database wh
 
 Apache ECharts 6 through `vue-echarts` for all chart components in `src/components/dashboard/charts/`:
 
-- `TimeSeriesChart.vue` --- line/area chart of median speeds over time, with brush selection for date range filtering
-- `DistributionChart.vue` --- histogram of speed distributions with configurable bin sizes
-- `BoxPlotChart.vue` --- box-and-whisker plots comparing speed by entity type or provider
-- `MetricGaugeCards.vue` --- summary gauge cards for current metric values
+- `TimeSeriesChart.vue`—line/area chart of median speeds over time, with brush selection for date range filtering
+- `DistributionChart.vue`—histogram of speed distributions with configurable bin sizes
+- `BoxPlotChart.vue`—box-and-whisker plots comparing speed by entity type or provider
+- `MetricGaugeCards.vue`—summary gauge cards for current metric values
 
 The `useEChartsTheme` composable generates theme options from our design tokens so charts match the glassmorphic aesthetic.
 
@@ -196,7 +207,7 @@ The flow:
 3. `h3-js` converts cell IDs to GeoJSON polygon boundaries
 4. MapLibre renders the hexagons as a fill layer with color mapped to the selected metric
 
-Clicking a hex cell filters the charts and table to show only results from that geographic area. This is the Tableau-style cross-filtering---the `useDashboardFilterStore` Pinia store coordinates selection state across all visualization components.
+Clicking a hex cell filters the charts and table to show only results from that geographic area. The `useDashboardFilterStore` Pinia store coordinates selection state across all visualization components.
 
 ### Cross-Filtering
 
@@ -215,8 +226,8 @@ All dashboard components subscribe to the filter store. When the user brushes a 
 
 Production runs two containers defined in `server/compose.yaml`:
 
-- `api` --- the Hono server, built from `server/Dockerfile` (Node.js 22 Alpine, multi-stage build). Listens on port 3000 internally, mapped to `127.0.0.1:3200` on the host.
-- `mongo` --- MongoDB 8, with a health check (`mongosh --eval "db.adminCommand('ping')"`). Data persisted in a named volume.
+- `api`—the Hono server, built from `server/Dockerfile` (Node.js 22 Alpine, multi-stage build). Listens on port 3000 internally, mapped to `127.0.0.1:3200` on the host.
+- `mongo`—MongoDB 8, with a health check (`mongosh --eval "db.adminCommand('ping')"`). Data persisted in a named volume.
 
 The `Dockerfile.speedtest` builds a lightweight variant that only runs the speedtest endpoints (`speedtest-server.ts`). This is what gets deployed to EC2 instances for distributed testing.
 
@@ -229,9 +240,9 @@ Apache on the host machine reverse-proxies to the Docker containers. It handles 
 The `server/src/infra/ec2-deployer.ts` module provisions lightweight speedtest-only EC2 instances. Each instance:
 
 1. Runs a `t3.micro` (or configured type) in the target AWS region
-2. Gets a security group allowing inbound HTTP (port 80/443) and SSH (port 22)
-3. Runs the `Dockerfile.speedtest` container
-4. Sends heartbeat pings to the central API at `/api/internal/servers`
+2. Gets a security group (`speedtest-server-sg`) allowing inbound HTTP (80/443) and SSH (22)
+3. Uses a user-data script that installs Docker and runs a lightweight speedtest container
+4. Sends heartbeat PUTs to the central API at `/api/internal/servers/{serverId}/heartbeat`
 5. Appears in the server selector for users geographically close to that region
 
 ### DNS

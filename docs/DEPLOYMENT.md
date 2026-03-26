@@ -18,9 +18,11 @@ The `scripts/dev.sh` script starts the full local stack:
 
 This starts three processes:
 
-1. **MongoDB** --- local `mongod` on port 27018 (or next available), data in `/tmp/speedtest-mongo-data`
-2. **Backend** --- Hono API via `tsx watch` on port 3200 (or next available), connected to the local MongoDB
-3. **Frontend** --- Vite dev server on port 8080 (or next available), proxies `/api` to the backend
+1. **MongoDB**—local `mongod` on port 27018 (or next available), data in `/tmp/speedtest-mongo-data`
+2. **Backend**—Hono API via `tsx watch` on port 3200 (or next available), connected to the local MongoDB
+3. **Frontend**—Vite dev server on port 8080 (or next available)
+
+> Note: the Vite dev server proxies `/api` to the target set by `VITE_API_TARGET`. This defaults to the production URL (`https://speedtest.mbabb.friday.institute`), so you see real data without a local backend. To proxy to your local backend: `VITE_API_TARGET=http://localhost:3200 ./scripts/dev.sh`
 
 The script auto-finds free ports if the defaults are taken. Override with environment variables:
 
@@ -40,7 +42,7 @@ export MONGODB_URI="mongodb://localhost:27017/speedtest-db"
 npx tsx watch src/index.ts
 ```
 
-The server starts without MongoDB if it isn't available---speedtest endpoints work, but survey/results/IP lookup routes require the database.
+The server starts without MongoDB if it isn't available—speedtest endpoints work, but survey/results/IP lookup routes require the database.
 
 ## Environment Variables
 
@@ -64,10 +66,12 @@ The server starts without MongoDB if it isn't available---speedtest endpoints wo
 | Variable | Required | Description |
 |---|---|---|
 | `VITE_MAPTILER_KEY` | Yes (for maps) | MapTiler API key for vector tile basemaps |
+| `VITE_GOOGLE_MAPS_KEY` | Yes (for survey) | Google Maps API key for Places autocomplete |
+| `VITE_API_TARGET` | No | Override the Vite dev proxy target. Default: `https://speedtest.mbabb.friday.institute` |
 
 ### Docker Compose (`server/compose.yaml`)
 
-The compose file reads `ADMIN_TOKEN`, `ALLOWED_ORIGINS`, `IPINFO_TOKEN`, and `SHODAN_KEY` from the shell environment or `server/.env`. MongoDB runs without authentication in the default config.
+The compose file passes `ADMIN_TOKEN`, `ALLOWED_ORIGINS`, `IPINFO_TOKEN`, and `SHODAN_KEY` from the shell environment or `server/.env`. It also hardcodes `MONGODB_URI` (pointing to the `mongo` service), `GOOGLE_SERVICE_ACCOUNT_KEY` (`/app/auth/service-account.json`), `PORT` (`3000`), and `NODE_ENV` (`production`). MongoDB runs without authentication in the default config.
 
 ## Production Deploy
 
@@ -106,8 +110,8 @@ DEPLOY_HOST=other-host.example.com DEPLOY_PORT=22 ./scripts/deploy.sh
 
 Apache serves the static frontend from `~/speedtest/dist/` and reverse-proxies `/api/*` to the Hono container on `127.0.0.1:3200`. Docker Compose runs two containers:
 
-- `api` --- the Hono server (Node.js 22 Alpine), port 3000 inside the container, mapped to `127.0.0.1:3200` on the host
-- `mongo` --- MongoDB 8 with a health check, data in a named volume (`mongo-data`)
+- `api`—the Hono server (Node.js 22 Alpine), port 3000 inside the container, mapped to `127.0.0.1:3200` on the host
+- `mongo`—MongoDB 8 with a health check, data in a named volume (`mongo-data`)
 
 ### Manual server operations
 
@@ -133,20 +137,47 @@ docker compose up -d --build --force-recreate
 
 ## EC2 Speedtest Server Provisioning
 
-The `server/src/infra/ec2-deployer.ts` module provisions lightweight speedtest-only instances on AWS EC2. Each instance runs the `Dockerfile.speedtest` container, which serves only the LibreSpeed download/upload/ping endpoints and heartbeats to the central API.
+The `server/src/infra/ec2-deployer.ts` module provisions lightweight speedtest-only instances on AWS EC2. Each instance runs an inline Node.js server (generated via user-data) that serves the LibreSpeed download/upload/ping endpoints and heartbeats to the central API.
 
 ### How it works
 
 1. The deployer creates (or reuses) a security group named `speedtest-server-sg` with inbound rules for HTTP (80, 443) and SSH (22)
 2. Finds the latest Amazon Linux 2023 AMI in the target region
 3. Launches a `t3.micro` instance (configurable) with a user-data script that installs Docker and starts the speedtest container
-4. The container registers itself with the central API at `/api/internal/servers` via periodic heartbeat
+4. The instance registers itself with the central API at `/api/internal/servers/{serverId}/heartbeat` via periodic PUT
 
 ### Configuration
 
 EC2 provisioning requires AWS credentials with `ec2:RunInstances`, `ec2:DescribeImages`, `ec2:CreateSecurityGroup`, `ec2:AuthorizeSecurityGroupIngress`, and `ec2:DescribeSecurityGroups` permissions.
 
+### Speedtest server environment variables
+
+These are set via the EC2 user-data script, not `server/.env`:
+
+| Variable | Description |
+|---|---|
+| `CENTRAL_API_URL` | URL of the central API for heartbeat registration |
+| `SERVER_ID` | Unique server identifier |
+| `SERVER_NAME` | Display name |
+| `SERVER_REGION` | Region identifier |
+| `SERVER_SECRET` | Shared secret for heartbeat auth |
+| `SERVER_CAPACITY` | Max concurrent tests (default: 50) |
+
 Deployed servers appear in the admin settings view (`/admin/settings`) and in the client-side server selector. The client pings all registered servers and selects the one with the lowest latency.
+
+## Seed Scripts
+
+Two seed scripts exist for development:
+
+```bash
+# Import subnet CSV data into MongoDB
+cd server && npx tsx src/seed.ts <path-to-csv>
+
+# Generate ~3,000 fake test sessions for dashboard development
+cd server && npx tsx src/seed-dashboard.ts
+```
+
+The dashboard seed generates sessions spread over 90 days, concentrated in NC with some US-wide samples.
 
 ## DNS
 

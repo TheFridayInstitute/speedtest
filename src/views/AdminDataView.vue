@@ -1,33 +1,36 @@
 <template>
     <div class="space-y-4">
-        <!-- Mobile: dropdown, Desktop: underline tabs -->
+        <!-- Mobile: tabs with Filters/Results/Sessions -->
         <div class="sm:hidden w-fit">
             <Select v-model="activeTab">
                 <SelectTrigger class="text-sm w-auto min-w-[5rem]">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem v-for="tab in subTabs" :key="tab.value" :value="tab.value">
+                    <SelectItem v-for="tab in mobileTabs" :key="tab.value" :value="tab.value">
                         {{ tab.label }}
                     </SelectItem>
                 </SelectContent>
             </Select>
         </div>
+        <!-- Desktop: tabs without Filters (sidebar always visible) -->
         <div class="hidden sm:block">
             <UnderlineTabs
-                :options="subTabs"
-                v-model="activeTab"
+                :options="desktopTabs"
+                :model-value="activeTab === 'filters' ? 'results' : activeTab"
                 class="text-base"
+                @update:model-value="activeTab = $event"
             />
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
-            <!-- Shared filter sidebar (always visible, Pinia-backed) -->
-            <ResultsFilters />
+            <!-- Filter sidebar: always visible on desktop, tab-switched on mobile -->
+            <div :class="{ 'hidden sm:block': activeTab !== 'filters' }">
+                <ResultsFilters />
+            </div>
 
-            <!-- Tab content — keyed div forces proper DOM swap on mobile -->
-            <div :key="activeTab">
-                <!-- Results sub-tab -->
+            <!-- Content area: hidden on mobile when filters tab is active -->
+            <div v-if="activeTab !== 'filters'" :key="activeTab">
                 <ResultsTable
                     v-if="activeTab === 'results'"
                     :rows="resultsComposable.rows.value"
@@ -40,7 +43,6 @@
                     @select="onSelectResult"
                 />
 
-                <!-- Sessions sub-tab -->
                 <AdminSessionsTable
                     v-else-if="activeTab === 'sessions'"
                     :sessions="adminStore.sessions"
@@ -80,7 +82,13 @@ function onSelectResult(row: DashboardResultRow) {
     detailOpen.value = true;
 }
 
-const subTabs = [
+const mobileTabs = [
+    { label: "Filters", value: "filters" },
+    { label: "Results", value: "results" },
+    { label: "Sessions", value: "sessions" },
+];
+
+const desktopTabs = [
     { label: "Results", value: "results" },
     { label: "Sessions", value: "sessions" },
 ];
@@ -89,7 +97,6 @@ const filterStore = useDashboardFilterStore();
 const resultsComposable = useDashboardResults();
 const adminStore = useAdminDashboardDataStore();
 
-// Fetch sessions on mount and whenever Pinia filter store changes
 onMounted(() => {
     fetchSessionsFromStore();
 });

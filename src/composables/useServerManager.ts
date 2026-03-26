@@ -140,7 +140,7 @@ export function useServerManager() {
                 const isLocal = s.host === location.hostname || s.host === "localhost";
                 const baseUrl = isLocal
                     ? ""
-                    : `${location.protocol}//${s.host}${s.port !== 443 && s.port !== 80 ? ":" + s.port : ""}`;
+                    : `https://${s.host}${s.port !== 443 && s.port !== 80 ? ":" + s.port : ""}`;
 
                 const config: SpeedtestServer = {
                     name: s.name,

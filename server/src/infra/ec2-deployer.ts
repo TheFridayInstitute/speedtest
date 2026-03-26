@@ -14,8 +14,16 @@ import {
     CreateSecurityGroupCommand,
     AuthorizeSecurityGroupIngressCommand,
     DescribeSecurityGroupsCommand,
+    DescribeInstancesCommand,
     type Instance,
 } from "@aws-sdk/client-ec2";
+import {
+    Route53Client,
+    ChangeResourceRecordSetsCommand,
+} from "@aws-sdk/client-route-53";
+
+const HOSTED_ZONE_ID = "ZVBTLAAD8BV9S";
+const DNS_SUFFIX = "mbabb.friday.institute";
 
 interface DeployOptions {
     region: string;
@@ -29,6 +37,7 @@ interface DeployOptions {
 interface DeployResult {
     instanceId: string;
     publicIp: string | null;
+    hostname: string;
     region: string;
     serverId: string;
 }
@@ -164,20 +173,22 @@ setTimeout(async () => {
     // Base64 encode the server JS to avoid shell quoting issues
     const serverJsB64 = Buffer.from(serverJs).toString("base64");
 
+    const hostname = `speedtest-${name.toLowerCase().replace(/\s+/g, "-")}.${DNS_SUFFIX}`;
+
     const userData = Buffer.from(`#!/bin/bash
 set -ex
 yum update -y
-yum install -y docker
-systemctl enable docker
+yum install -y docker nginx certbot python3-certbot-nginx
+systemctl enable docker nginx
 systemctl start docker
 
-# Write server code to host filesystem
+# Write server code
 mkdir -p /opt/speedtest
 echo '${serverJsB64}' | base64 -d > /opt/speedtest/server.js
 
-# Run container with mounted server code
+# Run speedtest container on port 3000
 docker run -d --restart=always \\
-  -p 80:3000 \\
+  -p 127.0.0.1:3000:3000 \\
   -v /opt/speedtest/server.js:/app/server.js:ro \\
   -e SERVER_ID="${serverId}" \\
   -e SERVER_NAME="${name}" \\
@@ -187,6 +198,31 @@ docker run -d --restart=always \\
   -e PORT=3000 \\
   --name speedtest-server \\
   node:22-alpine sh -c "cd /app && npm init -y && npm install hono @hono/node-server && node server.js"
+
+# Nginx reverse proxy
+cat > /etc/nginx/conf.d/speedtest.conf << 'NGINXEOF'
+server {
+    listen 80;
+    server_name ${hostname};
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINXEOF
+# Remove default server block
+rm -f /etc/nginx/conf.d/default.conf
+systemctl start nginx
+
+# Wait for DNS to propagate then get TLS certificate
+sleep 30
+for i in 1 2 3 4 5; do
+  certbot --nginx -d ${hostname} --non-interactive --agree-tos --register-unsafely-without-email && break
+  sleep 30
+done
 `).toString("base64");
 
     const result = await ec2.send(
@@ -210,6 +246,7 @@ docker run -d --restart=always \\
                         { Key: "Name", Value: `speedtest-${name}` },
                         { Key: "Purpose", Value: "speedtest-server" },
                         { Key: "ServerId", Value: serverId },
+                        { Key: "Hostname", Value: hostname },
                     ],
                 },
             ],
@@ -217,10 +254,44 @@ docker run -d --restart=always \\
     );
 
     const instance: Instance = result.Instances?.[0]!;
+    const instanceId = instance.InstanceId!;
+
+    // Poll for public IP (takes a few seconds after launch)
+    let publicIp: string | null = null;
+    for (let i = 0; i < 12; i++) {
+        await new Promise((r) => setTimeout(r, 5000));
+        const desc = await ec2.send(
+            new DescribeInstancesCommand({ InstanceIds: [instanceId] }),
+        );
+        publicIp = desc.Reservations?.[0]?.Instances?.[0]?.PublicIpAddress ?? null;
+        if (publicIp) break;
+    }
+
+    // Create Route53 DNS record
+    if (publicIp) {
+        const route53 = new Route53Client({ region: "us-east-1" });
+        await route53.send(
+            new ChangeResourceRecordSetsCommand({
+                HostedZoneId: HOSTED_ZONE_ID,
+                ChangeBatch: {
+                    Changes: [{
+                        Action: "UPSERT",
+                        ResourceRecordSet: {
+                            Name: hostname,
+                            Type: "A",
+                            TTL: 60,
+                            ResourceRecords: [{ Value: publicIp }],
+                        },
+                    }],
+                },
+            }),
+        );
+    }
 
     return {
-        instanceId: instance.InstanceId!,
-        publicIp: instance.PublicIpAddress ?? null,
+        instanceId,
+        publicIp,
+        hostname,
         region,
         serverId,
     };

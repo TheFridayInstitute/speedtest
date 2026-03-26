@@ -168,8 +168,8 @@ adminServers.post("/deploy", async (c) => {
             serverId: result.serverId,
             name: body.name,
             region: body.region ?? "us-east-1",
-            host: result.publicIp ?? "pending",
-            port: 80,
+            host: result.hostname ?? result.publicIp ?? "pending",
+            port: 443,
             endpoints: {
                 garbage: "/api/speedtest/garbage",
                 empty: "/api/speedtest/empty",

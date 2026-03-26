@@ -6,7 +6,7 @@
  * in-place affine transforms (translate, scale, rotate).
  */
 
-import { rotate, translate, scale, rotateAboutPoint } from "../math";
+import { rotate, translate, scale, rotateAboutPoint } from "@utils/math";
 import { Canvas, type CanvasColor } from "./core";
 
 /**

@@ -5,7 +5,7 @@
  * shape drawing relative to a center rather than the top-left corner.
  */
 
-import { rotate, translate, scale, rotateAboutPoint } from "../math";
+import { rotate, translate, scale, rotateAboutPoint } from "@utils/math";
 
 /** Color type accepted by canvas rendering contexts. */
 export type CanvasColor = string | CanvasGradient | CanvasPattern;

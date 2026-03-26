@@ -6,7 +6,7 @@
  * and segmented progress bars.
  */
 
-import { slerpPoints, lerp } from "../math";
+import { slerpPoints, lerp } from "@utils/math";
 import type { CanvasColor } from "./core";
 import { Polygon, Arc, Rectangle, Mesh } from "./shapes";
 

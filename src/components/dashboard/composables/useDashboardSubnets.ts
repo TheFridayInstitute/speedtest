@@ -1,6 +1,6 @@
 import { ref, type Ref } from "vue";
 import type { SubnetRow } from "@src/types/dashboard";
-import { authHeaders } from "@src/utils/auth";
+import { authHeaders } from "../utils/auth";
 
 /**
  * CRUD operations for the subnet-to-entity IP lookup table.

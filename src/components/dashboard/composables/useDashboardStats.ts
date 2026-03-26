@@ -1,6 +1,6 @@
 import { ref, type Ref } from "vue";
 import type { DashboardStats } from "@src/types/dashboard";
-import { authHeaders } from "@src/utils/auth";
+import { authHeaders } from "../utils/auth";
 
 /**
  * Fetches aggregate statistics for the dashboard summary cards/charts.

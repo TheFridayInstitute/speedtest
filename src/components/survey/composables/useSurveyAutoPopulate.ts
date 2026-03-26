@@ -1,7 +1,7 @@
 import { watch, type Ref } from "vue";
 import type { IPInfo, LookedUpIP } from "@src/types/dns";
 import type { SurveyFieldConfig, SurveyFormData } from "@src/types/survey";
-import { getByPath } from "@src/utils/dotpath";
+import { getByPath } from "../utils/dotpath";
 
 interface AutoPopulateSources {
     ipInfo: Ref<IPInfo | null>;

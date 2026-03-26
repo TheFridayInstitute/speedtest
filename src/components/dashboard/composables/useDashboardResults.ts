@@ -1,6 +1,6 @@
 import { ref, watch, type Ref } from "vue";
 import type { DashboardFilters, DashboardResultRow } from "@src/types/dashboard";
-import { authHeaders } from "@src/utils/auth";
+import { authHeaders } from "../utils/auth";
 import { useDashboardFilterStore } from "@src/stores/useDashboardFilterStore";
 
 /**
@@ -97,4 +97,4 @@ export function useDashboardResults() {
     return { rows, total, page, pageSize, isLoading, error, filters, fetch };
 }
 
-export { setAdminToken } from "@src/utils/auth";
+export { setAdminToken } from "../utils/auth";

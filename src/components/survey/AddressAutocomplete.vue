@@ -50,7 +50,7 @@ import { ref, watch } from "vue";
 import { MapPin, LoaderCircle } from "lucide-vue-next";
 import { Button } from "@mkbabb/glass-ui";
 import { Input } from "@mkbabb/glass-ui";
-import { useGooglePlaces, waitForGooglePlaces, type ParsedAddress } from "@src/composables/useGooglePlaces";
+import { useGooglePlaces, waitForGooglePlaces, type ParsedAddress } from "./composables/useGooglePlaces";
 import { useGeolocation, type GeoCoordinates } from "@src/composables/useGeolocation";
 import type { Ref } from "vue";
 

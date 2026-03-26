@@ -4,11 +4,10 @@
  */
 
 import { watch, type Ref } from "vue";
-import { Canvas } from "@utils/canvas/core";
-import { computeMeterConfig, type MeterConfig } from "@utils/canvas/meter/config";
-import { createRings, drawRings, type RingSet } from "@utils/canvas/meter/rings";
-import { createDial, drawDial, type DialState } from "@utils/canvas/meter/dial";
-import { createProgressBar, drawProgressBar, type ProgressBarState } from "@utils/canvas/meter/progressBar";
+import { Canvas } from "../utils/canvas/core";
+import { computeMeterConfig, type MeterConfig } from "../utils/canvas/meter/config";
+import { createRings, drawRings, type RingSet } from "../utils/canvas/meter/rings";
+import { createDial, drawDial, type DialState } from "../utils/canvas/meter/dial";
 import { createRenderLoop, smoothAnimate } from "@utils/timing";
 import { lerp, normalize, clamp, easeOutCubic } from "@utils/math";
 import { getComputedVariable } from "@utils/utils";
@@ -31,7 +30,6 @@ export function useMeterRenderer(
     let config: MeterConfig | null = null;
     let rings: RingSet | null = null;
     let dial: DialState | null = null;
-    let bar: ProgressBarState | null = null;
     let renderLoop: ReturnType<typeof createRenderLoop> | null = null;
     let isPlayingCompletion = false;
     let isCompleted = false;
@@ -54,13 +52,11 @@ export function useMeterRenderer(
 
         const bgColor = getComputedVariable("--meter-background-color");
         const dialColor = getComputedVariable("--meter-dial-color");
-        const accentColor = getComputedVariable("--th-accent-opaque");
 
         rings = createRings(config, bgColor, el);
         dial = createDial(config, dialColor);
-        bar = createProgressBar(config, accentColor, bgColor);
 
-        drawFrame(undefined, 0, 0);
+        drawFrame(undefined, 0);
         renderLoop = createRenderLoop({ onUpdate: () => {}, onDraw: () => onDraw() });
 
         if (props.isRunning) {
@@ -74,27 +70,25 @@ export function useMeterRenderer(
                 : "upload"; // default to upload as the last phase
             lastStateName = phase;
             isCompleted = true;
-            drawFrame(phase, 1, 1);
+            drawFrame(phase, 1);
         }
     }
 
     // ── Drawing ───────────────────────────────────────────────────────
 
-    function drawFrame(stateName: string | undefined, t: number, progressT: number): void {
-        if (!canvas || !config || !rings || !dial || !bar) return;
+    function drawFrame(stateName: string | undefined, t: number): void {
+        if (!canvas || !config || !rings || !dial) return;
         canvas.clear();
 
         drawRings(canvas, rings, stateName, t);
         const theta = lerp(Math.max(t, 0), config.startAngle, config.endAngle);
         drawDial(canvas, dial, stateName ? theta : config.startAngle);
-        drawProgressBar(canvas, bar, progressT);
     }
 
     // ── Smooth state tracking ─────────────────────────────────────────
 
     let lastStateName: string | undefined;
     let smoothT = 0;
-    let smoothPT = 0;
 
     function onDraw(): boolean | void {
         if (!config || isPlayingCompletion) return false;
@@ -117,21 +111,19 @@ export function useMeterRenderer(
 
         const amount = props.getSpeedtestStateAmount(name);
         const targetT = normalize(clamp(amount, config.minValue, config.maxValue), config.minValue, config.maxValue);
-        const targetPT = clamp(props.getSpeedtestStateAmount(name, "Progress"), 0, 1);
 
         smoothT += (targetT - smoothT) * 0.08;
-        smoothPT += (targetPT - smoothPT) * 0.08;
 
-        drawFrame(name, smoothT, smoothPT);
+        drawFrame(name, smoothT);
     }
 
     // ── Completion animation ──────────────────────────────────────────
     // Dial spins smoothly, rings stay filled with gradient (no gold)
 
     async function playCompletion(): Promise<void> {
-        if (!canvas || !config || !rings || !dial || !bar || !lastStateName) return;
+        if (!canvas || !config || !rings || !dial || !lastStateName) return;
         isPlayingCompletion = true;
-        const c = canvas, cfg = config, r = rings, d = dial, b = bar, sn = lastStateName;
+        const c = canvas, cfg = config, r = rings, d = dial, sn = lastStateName;
 
         // Smooth 2-revolution spin ending at the endAngle (2500ms)
         const startTheta = cfg.endAngle; // start from where the dial is (full)
@@ -142,14 +134,13 @@ export function useMeterRenderer(
             // Spin the dial: 2 full revolutions, ending at endAngle
             const spinAngle = startTheta + t * Math.PI * 4;
             drawDial(c, d, spinAngle);
-            drawProgressBar(c, b, 1);
             return false;
         }, easeOutCubic);
 
         // Final resting frame — dial at endAngle, rings filled with gradient
         isPlayingCompletion = false;
         isCompleted = true;
-        drawFrame(sn, 1, 1);
+        drawFrame(sn, 1);
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────
@@ -166,7 +157,6 @@ export function useMeterRenderer(
             isPlayingCompletion = false;
             isCompleted = false;
             smoothT = 0;
-            smoothPT = 0;
             renderLoop?.start();
         } else {
             renderLoop?.stop();
@@ -178,7 +168,7 @@ export function useMeterRenderer(
                     playCompletion();
                 } else {
                     // Aborted/stopped — just draw current state, no animation
-                    drawFrame(lastStateName, smoothT, smoothPT);
+                    drawFrame(lastStateName, smoothT);
                 }
             }
         }

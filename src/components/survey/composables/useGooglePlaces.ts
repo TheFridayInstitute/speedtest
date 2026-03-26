@@ -1,5 +1,5 @@
 import { ref, onUnmounted, type Ref } from "vue";
-import type { GeoCoordinates } from "./useGeolocation";
+import type { GeoCoordinates } from "@src/composables/useGeolocation";
 
 export interface ParsedAddress {
     formatted: string;

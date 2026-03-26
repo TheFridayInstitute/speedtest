@@ -69,7 +69,8 @@ import {
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
-import { useEChartsTheme } from "@src/composables/useEChartsTheme";
+import { useEChartsTheme } from "../composables/useEChartsTheme";
+import { CHART_COLORS, METRIC_LABELS, METRIC_UNITS, isLatencyMetric } from "./chartMetrics";
 
 // ── Tree-shake ECharts ────────────────────────────────────────────────
 
@@ -109,37 +110,10 @@ const props = withDefaults(
 
 // ── Metric config ─────────────────────────────────────────────────────
 
-// Static hex colors for Canvas API compatibility — ECharts renders on <canvas>,
-// which does NOT support oklch(), oklab(), color-mix(), or any CSS Color Level 4
-// functions in gradient colorStops. Must use hex or rgb()/rgba() only.
-const CHART_COLORS: Record<string, string> = {
-    download: "#5B6BC0",
-    upload: "#26A69A",
-    ping: "#FFA726",
-    jitter: "#EF5350",
-    all: "#5B6BC0",
-};
-
-const METRIC_COLORS: Record<string, string> = CHART_COLORS;
-
-const METRIC_UNITS: Record<string, string> = {
-    download: "Mbps",
-    upload: "Mbps",
-    ping: "ms",
-    jitter: "ms",
-};
-
-const METRIC_LABELS: Record<string, string> = {
-    download: "Download",
-    upload: "Upload",
-    ping: "Ping",
-    jitter: "Jitter",
-};
-
-const metricColor = computed(() => METRIC_COLORS[props.metric] ?? "#3b82f6");
+const metricColor = computed(() => CHART_COLORS[props.metric] ?? CHART_COLORS.download);
 const metricUnit = computed(() => METRIC_UNITS[props.metric] ?? "");
 const metricLabel = computed(() => METRIC_LABELS[props.metric] ?? props.metric);
-const isLatency = computed(() => props.metric === "ping" || props.metric === "jitter");
+const isLatency = computed(() => isLatencyMetric(props.metric));
 
 // ── Formatting ────────────────────────────────────────────────────────
 

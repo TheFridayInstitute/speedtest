@@ -43,12 +43,12 @@ export function computeMeterConfig(
 
     const outerLineWidth = 3 * emToPixels(fontSize) * dpr;
     const innerLineWidth = outerLineWidth / PHI;
-    const gap = outerLineWidth / PHI;
+    const gap = outerLineWidth / (PHI * 2);
 
     const outerRadius = w / 2 - outerLineWidth / 2;
     const innerRadius = outerRadius - outerLineWidth / 2 - gap - innerLineWidth / 2;
 
-    const dialLength = innerRadius * 0.7;
+    const dialLength = innerRadius * 0.75;
     const dialWidth = outerLineWidth / 3;
     const dotRadius = outerLineWidth / 12;
 

@@ -86,7 +86,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted } from "vue";
 import { Loader2, Maximize2, Map as MapIcon } from "lucide-vue-next";
 import { useDebounceFn } from "@vueuse/core";
 import { Button, Card, Label } from "@mkbabb/glass-ui";
-import { useMaplibre, type HexData } from "@src/composables/useMaplibre";
+import { useMaplibre, type HexData } from "./composables/useMaplibre";
 import { useDashboardFilterStore, type DashboardMetric } from "@src/stores/useDashboardFilterStore";
 import MapTooltip from "./MapTooltip.vue";
 import type { MapTooltipData } from "./MapTooltip.vue";

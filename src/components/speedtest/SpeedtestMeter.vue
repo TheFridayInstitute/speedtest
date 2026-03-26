@@ -11,9 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, reactive, onMounted, onUnmounted } from "vue";
-import { useMeterRenderer } from "@src/composables/useMeterRenderer";
-import type { MeterRendererProps } from "@src/composables/useMeterRenderer";
+import { ref, inject, reactive, watch, nextTick, onMounted, onUnmounted } from "vue";
+import { useDark } from "@vueuse/core";
+import { useMeterRenderer } from "./composables/useMeterRenderer";
+import type { MeterRendererProps } from "./composables/useMeterRenderer";
 import type { UseSpeedtestReturn } from "@src/composables/useSpeedtest";
 
 // ── Inject speedtest composable (provided by App.vue) ─────────────────
@@ -43,13 +44,26 @@ const renderer = useMeterRenderer(meterCanvas, glassCanvas, meterProps);
 
 // ── Lifecycle ──────────────────────────────────────────────────────────
 
+const isDark = useDark();
+
 onMounted(() => renderer.initialize());
 onUnmounted(() => renderer.dispose());
+
+// Re-initialize meter when dark mode toggles to pick up new CSS variable colors.
+// Wait for nextTick + rAF so the browser has repainted with the new .dark class values.
+watch(isDark, () => {
+    nextTick(() => {
+        requestAnimationFrame(() => {
+            renderer.dispose();
+            renderer.initialize();
+        });
+    });
+});
 </script>
 
 <style scoped>
 .speedtest {
     overflow: hidden;
-    margin-bottom: -10%;
+    margin-bottom: var(--meter-overflow-offset);
 }
 </style>

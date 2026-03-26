@@ -29,7 +29,8 @@ import { BoxplotChart } from "echarts/charts";
 import { GridComponent, TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
-import { useEChartsTheme } from "@src/composables/useEChartsTheme";
+import { useEChartsTheme } from "../composables/useEChartsTheme";
+import { CHART_COLORS, METRIC_UNITS, isLatencyMetric } from "./chartMetrics";
 
 // ── Tree-shake ECharts ────────────────────────────────────────────────
 
@@ -63,23 +64,9 @@ const props = withDefaults(
 
 // ── Metric config ─────────────────────────────────────────────────────
 
-const METRIC_COLORS: Record<string, string> = {
-    download: "#3b82f6",
-    upload: "#22c55e",
-    ping: "#f97316",
-    jitter: "#ef4444",
-};
-
-const METRIC_UNITS: Record<string, string> = {
-    download: "Mbps",
-    upload: "Mbps",
-    ping: "ms",
-    jitter: "ms",
-};
-
-const metricColor = computed(() => METRIC_COLORS[props.metric] ?? "#3b82f6");
+const metricColor = computed(() => CHART_COLORS[props.metric] ?? CHART_COLORS.download);
 const metricUnit = computed(() => METRIC_UNITS[props.metric] ?? "");
-const isLatency = computed(() => props.metric === "ping" || props.metric === "jitter");
+const isLatency = computed(() => isLatencyMetric(props.metric));
 
 // ── Formatting ────────────────────────────────────────────────────────
 

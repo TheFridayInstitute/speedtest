@@ -33,7 +33,8 @@ import {
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
 import { useDashboardFilterStore } from "@src/stores/useDashboardFilterStore";
-import { useEChartsTheme } from "@src/composables/useEChartsTheme";
+import { useEChartsTheme } from "../composables/useEChartsTheme";
+import { CHART_COLORS, CHART_COLORS_RGBA, formatMetricValue } from "./chartMetrics";
 
 // ── Tree-shake ECharts ────────────────────────────────────────────────
 
@@ -68,9 +69,11 @@ const props = withDefaults(
     defineProps<{
         buckets: TimeSeriesBucket[];
         loading?: boolean;
+        compact?: boolean;
     }>(),
     {
         loading: false,
+        compact: false,
     },
 );
 
@@ -91,14 +94,7 @@ const chartOption = computed(() => {
     const pingData = props.buckets.map((b) => [b.timestamp, b.ping.avg]);
     const jitterData = props.buckets.map((b) => [b.timestamp, b.jitter.avg]);
 
-    // Chart colors — use hex values for Canvas API compatibility (ECharts renders on Canvas,
-    // which doesn't support oklch/color-mix in gradient colorStops)
-    const chartColors = {
-        download: "#5B6BC0",  // deep indigo
-        upload: "#26A69A",    // teal-emerald
-        ping: "#FFA726",      // warm amber
-        jitter: "#EF5350",    // soft coral
-    };
+    const chartColors = CHART_COLORS;
 
     return {
         tooltip: {
@@ -119,11 +115,8 @@ const chartOption = computed(() => {
                 let html = `<div style="font-weight:600;margin-bottom:4px">${dateStr}</div>`;
                 for (const p of params) {
                     const val = p.value[1] as number;
-                    const isLatency =
-                        p.seriesName === "Ping" || p.seriesName === "Jitter";
-                    const formatted = isLatency
-                        ? `${Math.round(val)} ms`
-                        : `${Math.round(val)} Mbps`;
+                    const metric = (p.seriesName as string).toLowerCase();
+                    const formatted = formatMetricValue(val, metric);
                     html += `<div style="display:flex;align-items:center;gap:6px">`;
                     html += `${p.marker}<span>${p.seriesName}:</span>`;
                     html += `<span style="font-weight:600">${formatted}</span></div>`;
@@ -142,8 +135,8 @@ const chartOption = computed(() => {
         grid: {
             left: 60,
             right: 60,
-            top: 40,
-            bottom: 80,
+            top: props.compact ? 20 : 40,
+            bottom: props.compact ? 20 : 80,
             containLabel: false,
         },
 
@@ -191,13 +184,10 @@ const chartOption = computed(() => {
                 areaStyle: {
                     color: {
                         type: "linear" as const,
-                        x: 0,
-                        y: 0,
-                        x2: 0,
-                        y2: 1,
+                        x: 0, y: 0, x2: 0, y2: 1,
                         colorStops: [
-                            { offset: 0, color: "rgba(91, 107, 192, 0.25)" },
-                            { offset: 1, color: "rgba(91, 107, 192, 0.02)" },
+                            { offset: 0, color: CHART_COLORS_RGBA.download.fill },
+                            { offset: 1, color: CHART_COLORS_RGBA.download.fade },
                         ],
                     },
                 },
@@ -216,13 +206,10 @@ const chartOption = computed(() => {
                 areaStyle: {
                     color: {
                         type: "linear" as const,
-                        x: 0,
-                        y: 0,
-                        x2: 0,
-                        y2: 1,
+                        x: 0, y: 0, x2: 0, y2: 1,
                         colorStops: [
-                            { offset: 0, color: "rgba(38, 166, 154, 0.25)" },
-                            { offset: 1, color: "rgba(38, 166, 154, 0.02)" },
+                            { offset: 0, color: CHART_COLORS_RGBA.upload.fill },
+                            { offset: 1, color: CHART_COLORS_RGBA.upload.fade },
                         ],
                     },
                 },
@@ -258,12 +245,13 @@ const chartOption = computed(() => {
         dataZoom: [
             {
                 type: "slider" as const,
+                show: !props.compact,
                 xAxisIndex: 0,
                 bottom: 10,
                 height: 24,
                 borderColor: "transparent",
                 backgroundColor: "rgba(128,128,128,0.05)",
-                fillerColor: "rgba(91, 107, 192, 0.08)",
+                fillerColor: CHART_COLORS_RGBA.download.fade,
                 handleSize: "60%",
                 handleStyle: {
                     borderColor: "rgba(128,128,128,0.4)",
@@ -285,8 +273,8 @@ const chartOption = computed(() => {
             xAxisIndex: 0,
             brushStyle: {
                 borderWidth: 1,
-                color: "rgba(91, 107, 192, 0.10)",
-                borderColor: "rgba(91, 107, 192, 0.40)",
+                color: CHART_COLORS_RGBA.download.fade,
+                borderColor: CHART_COLORS_RGBA.download.fill,
             },
             outOfBrush: {
                 colorAlpha: 0.3,

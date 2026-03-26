@@ -1,6 +1,7 @@
-import { computed, nextTick, type Ref } from "vue";
+import { computed, nextTick, unref, type Ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import type { UseSpeedtestReturn } from "./useSpeedtest";
+import type { SurveyDockState } from "@src/components/dock/Dock.vue";
 
 export type AppView = "speedtest" | "survey" | "dashboard" | "thankyou";
 
@@ -55,11 +56,20 @@ export function useAppNavigation(opts: AppNavigationOptions) {
         };
     }
 
+    function getWizardRef() {
+        return surveyRef.value?.surveyRef ?? surveyRef.value;
+    }
+
     function onDockBack() {
         const view = currentView.value;
         if (view === "survey") {
-            const survey = surveyRef.value?.surveyRef?.survey ?? surveyRef.value?.survey;
-            if (survey && !survey.isFirstStep.value) {
+            const wizard = getWizardRef();
+            if (unref(wizard?.editingFromReview)) {
+                wizard.returnToReview();
+                return;
+            }
+            const survey = wizard?.survey;
+            if (survey && !unref(survey.isFirstStep)) {
                 survey.prevStep();
             } else {
                 router.push({ name: "speedtest" });
@@ -76,11 +86,15 @@ export function useAppNavigation(opts: AppNavigationOptions) {
         if (view === "speedtest") {
             router.push({ name: "survey" });
         } else if (view === "survey") {
-            const survey = surveyRef.value?.surveyRef?.survey ?? surveyRef.value?.survey;
-            if (survey && !survey.isLastStep.value) {
+            const wizard = getWizardRef();
+            if (unref(wizard?.editingFromReview)) {
+                wizard.returnToReview();
+                return;
+            }
+            const survey = wizard?.survey;
+            if (survey && !unref(survey.isLastStep)) {
                 survey.nextStep();
-            } else if (survey?.isLastStep.value) {
-                const wizard = surveyRef.value?.surveyRef ?? surveyRef.value;
+            } else if (unref(survey?.isLastStep)) {
                 wizard?.submitFromDock?.();
             }
         } else if (view === "thankyou") {
@@ -101,9 +115,8 @@ export function useAppNavigation(opts: AppNavigationOptions) {
     }
 
     function onDockNext() {
-        if (isSpeedtestCompleted.value) {
-            onSpeedtestComplete(parseResults());
-        }
+        // Navigate to survey — speedtest continues in background if still running
+        router.push({ name: "survey" });
     }
 
     function onDockRetake() {
@@ -113,9 +126,23 @@ export function useAppNavigation(opts: AppNavigationOptions) {
         nextTick(() => startSpeedtest());
     }
 
+    /** Reactive survey state for the dock bar UI. */
+    const surveyState = computed<SurveyDockState | undefined>(() => {
+        if (currentView.value !== "survey") return undefined;
+        const wizard = getWizardRef();
+        const survey = wizard?.survey;
+        if (!survey) return undefined;
+        return {
+            isFirstStep: unref(survey.isFirstStep),
+            isLastStep: unref(survey.isLastStep),
+            editingFromReview: unref(wizard?.editingFromReview) ?? false,
+        };
+    });
+
     return {
         currentView,
         canGoBack,
+        surveyState,
         startSpeedtest,
         onDockBack,
         onDockForward,

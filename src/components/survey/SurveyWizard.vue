@@ -1,7 +1,7 @@
 <template>
-    <ScrollPane class="mx-auto w-full max-w-lg">
+    <ScrollPane class="mx-auto w-full max-w-lg overscroll-contain">
         <!-- Progress bar (accent-colored) -->
-        <div class="sticky top-0 z-[2] h-1 w-full overflow-hidden bg-muted">
+        <div class="sticky top-0 z-[var(--z-base)] h-1 w-full overflow-hidden bg-muted">
             <div
                 class="h-full transition-all duration-panel"
                 :style="{
@@ -11,11 +11,11 @@
             />
         </div>
 
-        <ScrollPaneHeader :description="survey.currentStep.value?.description">
+        <ScrollPaneHeader :description="survey.currentStep.value?.description" class="survey-header">
             {{ survey.currentStep.value?.title }}
         </ScrollPaneHeader>
 
-        <div class="flex flex-col gap-4 px-4 sm:px-6 pb-4 pt-2">
+        <div class="flex flex-col gap-4 px-4 sm:px-6 pb-[var(--dock-footer-space)] pt-2">
         <!-- Step content -->
         <Transition name="pane-swap" mode="out-in">
             <div :key="survey.currentStep.value?.id">
@@ -46,44 +46,7 @@
             </div>
         </Transition>
 
-        <!-- Navigation buttons -->
-        <div class="mt-2 flex items-center justify-between">
-            <Button
-                v-if="config.skippable"
-                variant="ghost"
-                class="text-lg"
-                @click="$emit('skip')"
-            >
-                Skip
-            </Button>
-            <span v-else />
-
-            <div class="flex gap-2">
-                <Button
-                    v-if="editingFromReview"
-                    variant="glass"
-                    class="text-lg"
-                    @click="returnToReview"
-                >
-                    Back to Review
-                </Button>
-                <Button
-                    v-else-if="!survey.isFirstStep.value"
-                    variant="glass"
-                    class="text-lg"
-                    @click="survey.prevStep()"
-                >
-                    Back
-                </Button>
-                <Button
-                    variant="accent"
-                    class="text-lg"
-                    @click="editingFromReview ? returnToReview() : onNext()"
-                >
-                    {{ editingFromReview ? 'Done' : survey.isLastStep.value ? 'Submit' : 'Next' }}
-                </Button>
-            </div>
-        </div>
+        <!-- Navigation is handled by the dock bar -->
         </div>
     </ScrollPane>
 </template>
@@ -94,7 +57,7 @@ import type { SurveyConfig, SurveySubmission } from "@src/types/survey";
 import type { IPInfo, LookedUpIP } from "@src/types/dns";
 import type { GeoCoordinates } from "@src/composables/useGeolocation";
 import { useSurvey } from "./composables/useSurvey";
-import { Button, ScrollPane, ScrollPaneHeader } from "@mkbabb/glass-ui";
+import { ScrollPane, ScrollPaneHeader } from "@mkbabb/glass-ui";
 import FlowSelector from "./FlowSelector.vue";
 import SurveyStep from "./SurveyStep.vue";
 import SurveyReview from "./SurveyReview.vue";
@@ -146,10 +109,23 @@ function submitFromDock() {
     emit("submit", survey.buildSubmission());
 }
 
-defineExpose({ survey, submitFromDock });
+const isSkippable = computed(() => !!props.config.skippable);
+
+defineExpose({ survey, submitFromDock, editingFromReview, returnToReview, isSkippable });
 </script>
 
 <style scoped>
+/* ── Survey header: one step smaller than default pane title ── */
+.survey-header :deep(.pane-header-title) {
+    font-size: var(--type-display-1, 2.618rem);
+}
+
+@media (min-width: 640px) {
+    .survey-header :deep(.pane-header-title) {
+        font-size: var(--type-display-2, 3.33rem);
+    }
+}
+
 .pane-swap-enter-active,
 .pane-swap-leave-active {
     transition:

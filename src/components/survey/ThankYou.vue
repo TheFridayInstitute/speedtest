@@ -1,6 +1,6 @@
 <template>
     <ScrollPane class="mx-auto w-full max-w-lg">
-        <ScrollPaneHeader>Thank you!</ScrollPaneHeader>
+        <ScrollPaneHeader>Thank you! 🎉</ScrollPaneHeader>
         <div class="px-4 sm:px-6 pb-4 pt-2">
             <Separator class="mb-4" />
             <div class="text-xl text-muted-foreground">

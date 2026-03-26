@@ -80,10 +80,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import type { SubnetRow } from "@src/types/dashboard";
-import { Button, Card, Input } from "@mkbabb/glass-ui";
 import {
+    Button, Card, Input,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@components/ui/table";
+} from "@mkbabb/glass-ui";
 import SubnetAddDialog from "./SubnetAddDialog.vue";
 import SubnetSyncDialog from "./SubnetSyncDialog.vue";
 

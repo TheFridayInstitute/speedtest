@@ -79,10 +79,10 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import type { ServerHealth } from "@src/stores/useAdminDashboardDataStore";
-import { Button, Card, Input, Badge } from "@mkbabb/glass-ui";
 import {
+    Button, Card, Input, Badge,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@components/ui/table";
+} from "@mkbabb/glass-ui";
 
 defineProps<{
     servers: ServerHealth[];

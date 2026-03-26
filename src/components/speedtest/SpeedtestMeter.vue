@@ -2,10 +2,6 @@
     <section class="speedtest-container relative mx-auto w-full max-w-sm">
         <div class="speedtest relative aspect-square w-full">
             <canvas ref="meterCanvas" class="absolute inset-0 h-full w-full" />
-            <canvas
-                ref="glassCanvas"
-                class="absolute inset-0 h-full w-full pointer-events-none"
-            />
         </div>
     </section>
 </template>
@@ -17,13 +13,7 @@ import { useMeterRenderer } from "./composables/useMeterRenderer";
 import type { MeterRendererProps } from "./composables/useMeterRenderer";
 import { SpeedtestKey } from "@src/composables/injectionKeys";
 
-// ── Inject speedtest composable (provided by App.vue) ─────────────────
-
 const speedtest = inject(SpeedtestKey)!;
-
-// ── Build a reactive props object from the injected composable ─────────
-// useMeterRenderer watches props.currentStateName and props.isRunning,
-// so the object must be reactive (not a new object each render).
 
 const meterProps = reactive<MeterRendererProps>({
     get speedtestData() { return speedtest.data.value; },
@@ -33,14 +23,9 @@ const meterProps = reactive<MeterRendererProps>({
     getStateUnitInfo: speedtest.getStateUnitInfo,
 });
 
-// ── Template refs ──────────────────────────────────────────────────────
-
 const meterCanvas = ref<HTMLCanvasElement | null>(null);
-const glassCanvas = ref<HTMLCanvasElement | null>(null);
 
-// ── Composable — all rendering logic lives here ────────────────────────
-
-const renderer = useMeterRenderer(meterCanvas, glassCanvas, meterProps);
+const renderer = useMeterRenderer(meterCanvas, meterProps);
 
 // ── Lifecycle ──────────────────────────────────────────────────────────
 

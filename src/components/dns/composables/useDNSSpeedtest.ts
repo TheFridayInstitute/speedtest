@@ -4,7 +4,7 @@ import type {
     DNSSpeedtestServer,
     DNSSpeedtestResultData,
 } from "@src/types/server";
-import { sleep } from "@utils/timing";
+import { sleep } from "@utils/utils";
 
 /** Maximum number of polling attempts before giving up on results. */
 const MAX_ATTEMPTS = 20;

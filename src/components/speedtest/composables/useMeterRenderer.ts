@@ -1,15 +1,18 @@
 /**
- * useMeterRenderer — thin orchestrator composable.
- * Delegates drawing to focused meter modules.
+ * useMeterRenderer — orchestrates canvas meter drawing.
+ *
+ * Uses @mkbabb/keyframes.js for all animation:
+ * - SmoothProgress for exponentially-damped live value tracking
+ * - NumericAnimation for completion spin and abort-reset tweens
  */
 
 import { watch, type Ref } from "vue";
+import { NumericAnimation, SmoothProgress, easeOutCubic } from "@mkbabb/keyframes.js";
+import { lerp, clamp } from "@utils/math";
 import { Canvas } from "../utils/canvas/core";
 import { computeMeterConfig, type MeterConfig } from "../utils/canvas/meter/config";
 import { createRings, drawRings, type RingSet } from "../utils/canvas/meter/rings";
 import { createDial, drawDial, type DialState } from "../utils/canvas/meter/dial";
-import { createRenderLoop, smoothAnimate } from "@utils/timing";
-import { lerp, normalize, clamp, easeOutCubic } from "@utils/math";
 import { getComputedVariable } from "@utils/utils";
 import type { SpeedtestData, UnitInfo } from "@src/types/speedtest";
 
@@ -21,18 +24,24 @@ export interface MeterRendererProps {
     getStateUnitInfo: (stateName: string, stateAmount?: number) => UnitInfo;
 }
 
+function normalize(x: number, min: number, max: number): number {
+    return (x - min) / (max - min);
+}
+
 export function useMeterRenderer(
     meterRef: Ref<HTMLCanvasElement | null>,
-    _glassRef: Ref<HTMLCanvasElement | null>,
     props: MeterRendererProps,
 ) {
     let canvas: Canvas | null = null;
     let config: MeterConfig | null = null;
     let rings: RingSet | null = null;
     let dial: DialState | null = null;
-    let renderLoop: ReturnType<typeof createRenderLoop> | null = null;
+    let rafId: number | null = null;
     let isPlayingCompletion = false;
     let isCompleted = false;
+
+    // SmoothProgress for exponentially-damped live value tracking
+    const smooth = new SmoothProgress({ damping: 0.08, snapThreshold: 0.002 });
 
     function initialize(): void {
         const el = meterRef.value;
@@ -57,17 +66,14 @@ export function useMeterRenderer(
         dial = createDial(config, dialColor);
 
         drawFrame(undefined, 0);
-        renderLoop = createRenderLoop({ onUpdate: () => {}, onDraw: () => onDraw() });
 
         if (props.isRunning) {
-            renderLoop.start();
+            startLoop();
         } else if (props.speedtestData) {
-            // Test already completed before this mount (e.g. navigated back).
-            // Determine the last active phase to draw the filled final frame.
             const name = props.currentStateName;
             const phase = (name === "ping" || name === "download" || name === "upload")
                 ? name
-                : "upload"; // default to upload as the last phase
+                : "upload";
             lastStateName = phase;
             isCompleted = true;
             drawFrame(phase, 1);
@@ -85,36 +91,81 @@ export function useMeterRenderer(
         drawDial(canvas, dial, stateName ? theta : config.startAngle);
     }
 
-    // ── Smooth state tracking ─────────────────────────────────────────
+    // ── rAF render loop ───────────────────────────────────────────────
 
     let lastStateName: string | undefined;
-    let smoothT = 0;
+    let lastFrameTime = 0;
 
-    function onDraw(): boolean | void {
-        if (!config || isPlayingCompletion) return false;
+    function startLoop(): void {
+        stopLoop();
+        lastFrameTime = performance.now();
+        rafId = requestAnimationFrame(tick);
+    }
 
-        // Completed state — persist the last frame (no animation needed)
-        if (isCompleted) return false;
+    function stopLoop(): void {
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+    }
 
-        if (!props.speedtestData) return false;
+    function tick(now: number): void {
+        if (isPlayingCompletion || isCompleted) return;
+        if (!config || !props.speedtestData) {
+            rafId = requestAnimationFrame(tick);
+            return;
+        }
+
+        const dt = now - lastFrameTime;
+        lastFrameTime = now;
 
         let name = props.currentStateName;
         if (name !== "ping" && name !== "download" && name !== "upload") {
             name = lastStateName;
         }
-        if (!name) return false;
+        if (!name) {
+            rafId = requestAnimationFrame(tick);
+            return;
+        }
 
         if (name !== lastStateName && lastStateName) {
-            smoothT = Math.max(smoothT * 0.5, 0.02);
+            // Phase transition: partially reset smooth progress
+            smooth.reset(Math.max(smooth.current * 0.5, 0.02));
         }
         lastStateName = name;
 
         const amount = props.getSpeedtestStateAmount(name);
-        const targetT = normalize(clamp(amount, config.minValue, config.maxValue), config.minValue, config.maxValue);
+        const targetT = normalize(
+            clamp(amount, config.minValue, config.maxValue),
+            config.minValue,
+            config.maxValue,
+        );
 
-        smoothT += (targetT - smoothT) * 0.08;
+        smooth.setTarget(targetT);
+        const currentT = smooth.tickDt(dt);
 
-        drawFrame(name, smoothT);
+        drawFrame(name, currentT);
+        rafId = requestAnimationFrame(tick);
+    }
+
+    // ── Tween helper ───────────────────────────────────────────────────
+
+    /** Drive a NumericAnimation over `durationMs`, calling `onFrame` each rAF. */
+    function playTween(
+        anim: NumericAnimation<{ t: number }>,
+        durationMs: number,
+        onFrame: (t: number) => void,
+    ): Promise<void> {
+        return new Promise((resolve) => {
+            const start = performance.now();
+            function frame(now: number) {
+                const progress = Math.min((now - start) / durationMs, 1);
+                onFrame(anim.at(progress).t);
+                if (progress < 1) requestAnimationFrame(frame);
+                else resolve();
+            }
+            requestAnimationFrame(frame);
+        });
     }
 
     // ── Completion animation ──────────────────────────────────────────
@@ -124,15 +175,15 @@ export function useMeterRenderer(
         isPlayingCompletion = true;
         const c = canvas, cfg = config, r = rings, d = dial, sn = lastStateName;
 
-        // Smooth 2-revolution spin ending at the endAngle (2500ms)
-        const startTheta = cfg.endAngle;
-        await smoothAnimate(0, 1, 2500, (_v, t) => {
+        const spinAnim = new NumericAnimation(
+            [{ t: 0 }, { t: 1 }],
+            { timingFunction: easeOutCubic },
+        );
+        await playTween(spinAnim, 2500, (t) => {
             c.clear();
             drawRings(c, r, sn, 1);
-            const spinAngle = startTheta + t * Math.PI * 4;
-            drawDial(c, d, spinAngle);
-            return false;
-        }, easeOutCubic);
+            drawDial(c, d, cfg.endAngle + t * Math.PI * 4);
+        });
 
         isPlayingCompletion = false;
         isCompleted = true;
@@ -146,21 +197,21 @@ export function useMeterRenderer(
         isPlayingCompletion = true;
         const c = canvas, cfg = config, r = rings, d = dial;
         const sn = lastStateName;
-        const startT = smoothT;
+        const startT = smooth.current;
 
-        await smoothAnimate(0, 1, 600, (_v, t) => {
-            const currentT = startT * (1 - t);
+        const resetAnim = new NumericAnimation(
+            [{ t: startT }, { t: 0 }],
+            { timingFunction: easeOutCubic },
+        );
+        await playTween(resetAnim, 600, (t) => {
             c.clear();
-            drawRings(c, r, sn, currentT);
-            const theta = lerp(Math.max(currentT, 0), cfg.startAngle, cfg.endAngle);
-            drawDial(c, d, theta);
-            return false;
-        }, easeOutCubic);
+            drawRings(c, r, sn, t);
+            drawDial(c, d, lerp(Math.max(t, 0), cfg.startAngle, cfg.endAngle));
+        });
 
-        // Fully reset
         isPlayingCompletion = false;
         isCompleted = false;
-        smoothT = 0;
+        smooth.reset(0);
         lastStateName = undefined;
         drawFrame(undefined, 0);
     }
@@ -175,19 +226,17 @@ export function useMeterRenderer(
 
     watch(() => props.isRunning, (running) => {
         if (running) {
-            // Reset for new test (re-take)
             isPlayingCompletion = false;
             isCompleted = false;
-            smoothT = 0;
-            renderLoop?.start();
+            smooth.reset(0);
+            startLoop();
         } else {
-            renderLoop?.stop();
+            stopLoop();
             if (lastStateName && config && props.speedtestData) {
                 const amount = props.getSpeedtestStateAmount(lastStateName);
                 if (amount > 0) {
                     playCompletion();
                 } else {
-                    // Aborted — animate back to default
                     playAbortReset();
                 }
             }
@@ -195,7 +244,7 @@ export function useMeterRenderer(
     });
 
     function dispose(): void {
-        renderLoop?.stop();
+        stopLoop();
     }
 
     return { initialize, dispose };

@@ -16,7 +16,7 @@ import ipRoutes from "./routes/ip.js";
 import subnetRoutes from "./routes/subnets.js";
 import syncRoutes from "./routes/sync.js";
 import adminRoutes from "./routes/admin.js";
-import publicDashboardRoutes from "./routes/public-dashboard.js";
+import publicDashboardRoutes from "./routes/dashboard/index.js";
 import eventRoutes from "./routes/events.js";
 import { publicServers, adminServers } from "./routes/servers.js";
 

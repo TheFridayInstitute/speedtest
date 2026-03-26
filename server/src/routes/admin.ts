@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { getDb } from "../db.js";
 import { adminAuth } from "../middleware.js";
 import { getTrie } from "../trie/manager.js";
+import { buildMatchStage } from "../utils/aggregation.js";
 import type { AppEnv } from "../types.js";
 
 const admin = new Hono<AppEnv>();
@@ -23,13 +24,7 @@ admin.get("/results", async (c) => {
     const entityId = c.req.query("entityId");
 
     // Build aggregation pipeline
-    const matchStage: Record<string, any> = {};
-    if (dateFrom || dateTo) {
-        matchStage.timestamp = {};
-        if (dateFrom) matchStage.timestamp.$gte = new Date(dateFrom);
-        if (dateTo) matchStage.timestamp.$lte = new Date(dateTo);
-    }
-    if (testType) matchStage.testType = testType;
+    const matchStage = buildMatchStage({ dateFrom, dateTo, testType });
 
     const pipeline: any[] = [
         { $match: matchStage },
@@ -82,12 +77,7 @@ admin.get("/results/export", async (c) => {
     const dateFrom = c.req.query("dateFrom");
     const dateTo = c.req.query("dateTo");
 
-    const filter: Record<string, any> = {};
-    if (dateFrom || dateTo) {
-        filter.timestamp = {};
-        if (dateFrom) filter.timestamp.$gte = new Date(dateFrom);
-        if (dateTo) filter.timestamp.$lte = new Date(dateTo);
-    }
+    const filter = buildMatchStage({ dateFrom, dateTo });
 
     const results = await db
         .collection("test_results")
@@ -229,13 +219,7 @@ admin.get("/stats", async (c) => {
     }
 
     // Filtered stats
-    const matchStage: Record<string, any> = {};
-    if (dateFrom || dateTo) {
-        matchStage.timestamp = {};
-        if (dateFrom) matchStage.timestamp.$gte = new Date(dateFrom);
-        if (dateTo) matchStage.timestamp.$lte = new Date(dateTo);
-    }
-    if (testType) matchStage.testType = testType;
+    const matchStage = buildMatchStage({ dateFrom, dateTo, testType });
 
     const pipeline: any[] = [{ $match: matchStage }];
 

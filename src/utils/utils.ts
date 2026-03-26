@@ -4,8 +4,7 @@
  * Unit conversion and color parsing delegate to @mkbabb/value.js.
  */
 
-import { convertToPixels } from "@mkbabb/value.js";
-import { RGBColor } from "@mkbabb/value.js";
+import { convertToPixels, parseCSSColor } from "@mkbabb/value.js";
 
 /** Strip trailing zeros from a numeric string: "22.0" → "22", "5.50" → "5.5" */
 export function stripTrailingZeros(s: string): string {
@@ -52,12 +51,13 @@ export function generateColorStops(
 
 /**
  * Create a semi-transparent version of a color stop.
- * Parses the CSS color via value.js and applies 0.3 alpha.
+ * Parses any CSS color format via value.js and applies 0.3 alpha.
  */
 export function generateInnerColorStops(
     value: [number, string],
 ): [number, string] {
-    const [stop, color] = value;
-    const rgb = RGBColor.fromString(color.trim());
-    return [stop, `rgba(${Math.round(rgb.r)}, ${Math.round(rgb.g)}, ${Math.round(rgb.b)}, 0.3)`];
+    const [stop, cssColor] = value;
+    const color = parseCSSColor(cssColor.trim()).value;
+    color.alpha = 0.3;
+    return [stop, color.toString()];
 }

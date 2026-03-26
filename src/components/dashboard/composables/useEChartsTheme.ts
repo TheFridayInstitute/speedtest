@@ -46,25 +46,25 @@ export function useEChartsTheme() {
             backgroundColor: "transparent",
 
             textStyle: {
-                fontFamily: "inherit",
+                fontFamily: "'Fira Code', monospace",
                 color: foreground,
             },
 
             title: {
                 textStyle: {
                     color: foreground,
-                    fontFamily: "inherit",
+                    fontFamily: "'Fira Code', monospace",
                 },
                 subtextStyle: {
                     color: mutedForeground,
-                    fontFamily: "inherit",
+                    fontFamily: "'Fira Code', monospace",
                 },
             },
 
             legend: {
                 textStyle: {
                     color: mutedForeground,
-                    fontFamily: "inherit",
+                    fontFamily: "'Fira Code', monospace",
                 },
                 pageTextStyle: {
                     color: mutedForeground,
@@ -76,7 +76,7 @@ export function useEChartsTheme() {
                 borderColor: border,
                 textStyle: {
                     color: foreground,
-                    fontFamily: "inherit",
+                    fontFamily: "'Fira Code', monospace",
                 },
                 extraCssText:
                     "backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 16px hsl(0 0% 0% / 0.1);",

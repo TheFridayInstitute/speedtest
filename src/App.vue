@@ -1,7 +1,7 @@
 <template>
     <div class="relative flex h-dvh w-full flex-col overflow-hidden">
         <!-- Header bar: in flow, i button right, mini meter centered -->
-        <div v-if="!isDashboardRoute" class="z-header flex w-full items-center px-2 py-2 shrink-0">
+        <div v-if="!isDashboardRoute" class="z-header flex w-full items-center px-2 pt-2 shrink-0">
             <div class="w-9" />
             <div class="flex-1 flex justify-center">
                 <Transition name="fade" mode="out-in">
@@ -29,7 +29,7 @@
                     class="flex min-h-0 w-full flex-1"
                     :class="viewRoute.name && typeof viewRoute.name === 'string' && (viewRoute.name.startsWith('dashboard') || viewRoute.name.startsWith('admin'))
                         ? ''
-                        : 'items-center justify-center px-2 py-2 sm:px-4 sm:py-4 pb-[var(--dock-footer-space)]'"
+                        : 'items-center justify-center px-2 sm:px-4 pb-[var(--dock-footer-space)]'"
                 >
                     <component
                         :is="Component"
@@ -80,6 +80,7 @@ import { useSpeedtest } from "@src/composables/useSpeedtest";
 import { useAppNavigation } from "@src/composables/useAppNavigation";
 import type { SpeedtestResults } from "@src/composables/useAppNavigation";
 import type { SpeedtestStatus } from "@src/types/speedtest";
+import { SpeedtestKey, APIKey, IPInfoKey, GeolocationKey, ServerManagerKey } from "@src/composables/injectionKeys";
 
 import {
     DEFAULT_TRADITIONAL_SERVERS,
@@ -111,7 +112,7 @@ watch(() => speedtest.isRunning.value, (v) => {
     if (v) isSpeedtestCompleted.value = false;
 });
 
-provide("speedtest", speedtest);
+provide(SpeedtestKey, speedtest);
 
 /** Single reactive object encapsulating speedtest status for UI components. */
 const speedtestStatus = computed<SpeedtestStatus>(() => ({
@@ -131,22 +132,23 @@ const isDark = useDark({ disableTransition: false });
 // ── API client ────────────────────────────────────────────────────────
 
 const api = useAPI();
-provide("api", api);
+provide(APIKey, api);
 
 // ── IP info ────────────────────────────────────────────────────────────
 
 const ipInfoProvider = useIPInfo();
 const { clientIp, ipInfo, lookedUpIp } = ipInfoProvider;
-provide("ipInfoProvider", ipInfoProvider);
+provide(IPInfoKey, ipInfoProvider);
 
 // ── Geolocation (requested lazily when address field is focused) ──────
 
 const geolocation = useGeolocation();
-provide("geolocation", geolocation);
+provide(GeolocationKey, geolocation);
 
 // ── Server manager ─────────────────────────────────────────────────────
 
 const serverManager = useServerManager();
+provide(ServerManagerKey, serverManager);
 
 for (const server of DEFAULT_TRADITIONAL_SERVERS) {
     serverManager.addServer("traditional", server);
@@ -237,14 +239,3 @@ async function submitSpeedtestResults(results: SpeedtestResults) {
     }
 }
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-</style>

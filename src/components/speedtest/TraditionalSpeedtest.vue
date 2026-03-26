@@ -41,10 +41,10 @@ import StartPane from "./StartPane.vue";
 import SpeedtestMeter from "./SpeedtestMeter.vue";
 import SpeedtestResults from "./SpeedtestResults.vue";
 import { Button } from "@mkbabb/glass-ui";
-import type { UseSpeedtestReturn } from "@src/composables/useSpeedtest";
+import { SpeedtestKey } from "@src/composables/injectionKeys";
 
 // ── Injected speedtest instance (owned by App.vue, persists across view changes) ──
-const speedtest = inject<UseSpeedtestReturn>("speedtest")!;
+const speedtest = inject(SpeedtestKey)!;
 
 /** Current phase progress (0–1) for the per-test progress bar. */
 const currentPhaseProgress = computed(() => {
@@ -69,14 +69,3 @@ function startTest(): void {
     speedtest.start();
 }
 </script>
-
-<style scoped>
-.pane-swap-enter-active,
-.pane-swap-leave-active {
-    transition: opacity 0.3s var(--ease-standard);
-}
-.pane-swap-enter-from,
-.pane-swap-leave-to {
-    opacity: 0;
-}
-</style>

@@ -126,18 +126,4 @@ defineExpose({ survey, submitFromDock, editingFromReview, returnToReview, isSkip
     }
 }
 
-.pane-swap-enter-active,
-.pane-swap-leave-active {
-    transition:
-        opacity var(--duration-normal, 0.25s) var(--ease-standard, ease),
-        transform var(--duration-normal, 0.25s) var(--ease-standard, ease);
-}
-.pane-swap-enter-from {
-    opacity: 0;
-    transform: translateX(12px);
-}
-.pane-swap-leave-to {
-    opacity: 0;
-    transform: translateX(-12px);
-}
 </style>

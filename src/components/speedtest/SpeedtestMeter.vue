@@ -15,11 +15,11 @@ import { ref, inject, reactive, watch, nextTick, onMounted, onUnmounted } from "
 import { useDark } from "@vueuse/core";
 import { useMeterRenderer } from "./composables/useMeterRenderer";
 import type { MeterRendererProps } from "./composables/useMeterRenderer";
-import type { UseSpeedtestReturn } from "@src/composables/useSpeedtest";
+import { SpeedtestKey } from "@src/composables/injectionKeys";
 
 // ── Inject speedtest composable (provided by App.vue) ─────────────────
 
-const speedtest = inject<UseSpeedtestReturn>("speedtest")!;
+const speedtest = inject(SpeedtestKey)!;
 
 // ── Build a reactive props object from the injected composable ─────────
 // useMeterRenderer watches props.currentStateName and props.isRunning,

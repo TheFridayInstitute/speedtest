@@ -31,23 +31,3 @@ defineEmits<{
     start: [];
 }>();
 </script>
-
-<style scoped>
-.pane-slide-enter-active,
-.pane-slide-leave-active {
-    transition:
-        opacity var(--duration-panel) var(--ease-standard),
-        max-height var(--duration-panel) var(--ease-standard);
-    overflow: hidden;
-}
-.pane-slide-enter-from,
-.pane-slide-leave-to {
-    opacity: 0;
-    max-height: 0;
-}
-.pane-slide-enter-to,
-.pane-slide-leave-from {
-    opacity: 1;
-    max-height: var(--start-pane-max-height);
-}
-</style>

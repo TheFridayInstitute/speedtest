@@ -75,7 +75,7 @@
             <div class="flex-1 overflow-auto p-4">
                 <RouterView v-slot="{ Component, route: childRoute }">
                     <Transition name="fade" mode="out-in">
-                        <div :key="childRoute.path">
+                        <div :key="childRoute.path" class="h-full">
                             <component :is="Component" />
                         </div>
                     </Transition>
@@ -96,9 +96,8 @@ import { setAdminToken } from "@src/components/dashboard/composables/useDashboar
 const router = useRouter();
 const route = useRoute();
 
-const isDev = import.meta.env.DEV;
 const tokenInput = ref("");
-const hasToken = ref(isDev || !!localStorage.getItem("speedtest-admin-token"));
+const hasToken = ref(!!localStorage.getItem("speedtest-admin-token"));
 
 const tabs = [
     { label: "Overview", value: "admin-overview" },

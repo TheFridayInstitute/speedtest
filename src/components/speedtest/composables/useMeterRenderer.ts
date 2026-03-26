@@ -147,26 +147,6 @@ export function useMeterRenderer(
         rafId = requestAnimationFrame(tick);
     }
 
-    // ── Tween helper ───────────────────────────────────────────────────
-
-    /** Drive a NumericAnimation over `durationMs`, calling `onFrame` each rAF. */
-    function playTween(
-        anim: NumericAnimation<{ t: number }>,
-        durationMs: number,
-        onFrame: (t: number) => void,
-    ): Promise<void> {
-        return new Promise((resolve) => {
-            const start = performance.now();
-            function frame(now: number) {
-                const progress = Math.min((now - start) / durationMs, 1);
-                onFrame(anim.at(progress).t);
-                if (progress < 1) requestAnimationFrame(frame);
-                else resolve();
-            }
-            requestAnimationFrame(frame);
-        });
-    }
-
     // ── Completion animation ──────────────────────────────────────────
 
     async function playCompletion(): Promise<void> {
@@ -174,11 +154,10 @@ export function useMeterRenderer(
         isPlayingCompletion = true;
         const c = canvas, cfg = config, r = rings, d = dial, sn = lastStateName;
 
-        const spinAnim = new NumericAnimation(
+        await new NumericAnimation(
             [{ t: 0 }, { t: 1 }],
-            { timingFunction: easeOutCubic },
-        );
-        await playTween(spinAnim, 2500, (t) => {
+            { timingFunction: easeOutCubic, duration: 2500 },
+        ).play(({ t }) => {
             c.clear();
             drawRings(c, r, sn, 1);
             drawDial(c, d, cfg.endAngle + t * Math.PI * 4);
@@ -198,11 +177,10 @@ export function useMeterRenderer(
         const sn = lastStateName;
         const startT = smooth.current;
 
-        const resetAnim = new NumericAnimation(
+        await new NumericAnimation(
             [{ t: startT }, { t: 0 }],
-            { timingFunction: easeOutCubic },
-        );
-        await playTween(resetAnim, 600, (t) => {
+            { timingFunction: easeOutCubic, duration: 600 },
+        ).play(({ t }) => {
             c.clear();
             drawRings(c, r, sn, t);
             drawDial(c, d, lerp(Math.max(t, 0), cfg.startAngle, cfg.endAngle));

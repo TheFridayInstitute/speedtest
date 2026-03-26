@@ -9,6 +9,8 @@ import {
     EC2Client,
     RunInstancesCommand,
     DescribeImagesCommand,
+    DescribeVpcsCommand,
+    DescribeSubnetsCommand,
     CreateSecurityGroupCommand,
     AuthorizeSecurityGroupIngressCommand,
     DescribeSecurityGroupsCommand,
@@ -33,12 +35,33 @@ interface DeployResult {
 
 const SECURITY_GROUP_NAME = "speedtest-server-sg";
 
-async function getOrCreateSecurityGroup(ec2: EC2Client): Promise<string> {
-    // Check if the security group already exists
+async function getVpcAndSubnet(ec2: EC2Client): Promise<{ vpcId: string; subnetId: string }> {
+    const vpcs = await ec2.send(new DescribeVpcsCommand({}));
+    const vpc = vpcs.Vpcs?.find((v) => v.IsDefault) ?? vpcs.Vpcs?.[0];
+    if (!vpc?.VpcId) throw new Error("No VPC found");
+
+    const subnets = await ec2.send(
+        new DescribeSubnetsCommand({
+            Filters: [
+                { Name: "vpc-id", Values: [vpc.VpcId] },
+                { Name: "map-public-ip-on-launch", Values: ["true"] },
+            ],
+        }),
+    );
+    const subnet = subnets.Subnets?.[0];
+    if (!subnet?.SubnetId) throw new Error("No public subnet found in VPC");
+
+    return { vpcId: vpc.VpcId, subnetId: subnet.SubnetId };
+}
+
+async function getOrCreateSecurityGroup(ec2: EC2Client, vpcId: string): Promise<string> {
     try {
         const desc = await ec2.send(
             new DescribeSecurityGroupsCommand({
-                Filters: [{ Name: "group-name", Values: [SECURITY_GROUP_NAME] }],
+                Filters: [
+                    { Name: "group-name", Values: [SECURITY_GROUP_NAME] },
+                    { Name: "vpc-id", Values: [vpcId] },
+                ],
             }),
         );
         if (desc.SecurityGroups?.length) {
@@ -52,12 +75,12 @@ async function getOrCreateSecurityGroup(ec2: EC2Client): Promise<string> {
         new CreateSecurityGroupCommand({
             GroupName: SECURITY_GROUP_NAME,
             Description: "Speedtest server: HTTP, HTTPS, SSH",
+            VpcId: vpcId,
         }),
     );
 
     const groupId = create.GroupId!;
 
-    // Allow inbound on ports 80, 443, 22
     for (const port of [80, 443, 22]) {
         await ec2.send(
             new AuthorizeSecurityGroupIngressCommand({
@@ -102,8 +125,10 @@ export async function deploySpeedtestServer(opts: DeployOptions): Promise<Deploy
 
     const ec2 = new EC2Client({ region });
 
+    const { vpcId, subnetId } = await getVpcAndSubnet(ec2);
+
     const [sgId, amiId] = await Promise.all([
-        getOrCreateSecurityGroup(ec2),
+        getOrCreateSecurityGroup(ec2, vpcId),
         getLatestAmiId(ec2),
     ]);
 
@@ -199,6 +224,7 @@ SERVEREOF
             InstanceType: instanceType as any,
             MinCount: 1,
             MaxCount: 1,
+            SubnetId: subnetId,
             SecurityGroupIds: [sgId],
             KeyName: keyName,
             UserData: userData,

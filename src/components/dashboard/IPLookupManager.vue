@@ -61,148 +61,31 @@
         </Table>
 
         <!-- Add Subnet Dialog -->
-        <Dialog :open="showAdd" @update:open="showAdd = $event">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Add Subnet</DialogTitle>
-                    <DialogDescription>
-                        Enter a CIDR-notation IP block to map to an entity.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div class="space-y-3 py-2">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Prefix</Label>
-                            <Input v-model="newSubnet.prefix" placeholder="152.27.20.0" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Prefix Length</Label>
-                            <Input v-model.number="newSubnet.prefixLength" type="number" placeholder="24" />
-                        </div>
-                    </div>
-
-                    <!-- CIDR preview -->
-                    <div v-if="newSubnet.prefix" class="rounded-lg bg-muted/50 px-3 py-2 font-mono text-sm">
-                        {{ newSubnet.prefix }}/{{ newSubnet.prefixLength }}
-                    </div>
-
-                    <Separator />
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Entity Name</Label>
-                            <Input v-model="newSubnet.entityName" placeholder="Alamance CC" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Entity ID</Label>
-                            <Input v-model="newSubnet.entityId" placeholder="CC1" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Entity Type</Label>
-                            <Select v-model="newSubnet.entityType">
-                                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="LEA">LEA (School District)</SelectItem>
-                                    <SelectItem value="CHARTER">Charter School</SelectItem>
-                                    <SelectItem value="Community College">Community College</SelectItem>
-                                    <SelectItem value="University">University</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Network Type</Label>
-                            <Select v-model="newSubnet.networkType">
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="LAN">LAN</SelectItem>
-                                    <SelectItem value="WAN">WAN</SelectItem>
-                                    <SelectItem value="WiFi">WiFi</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
-
-                <DialogFooter>
-                    <Button variant="ghost" @click="showAdd = false">Cancel</Button>
-                    <Button variant="accent" :disabled="!newSubnet.prefix" @click="onAdd">Add Subnet</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <SubnetAddDialog
+            :open="showAdd"
+            @update:open="showAdd = $event"
+            @add="onAdd"
+        />
 
         <!-- Sync from Sheets Dialog -->
-        <Dialog :open="showSync" @update:open="showSync = $event">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Sync from Google Sheets</DialogTitle>
-                    <DialogDescription>
-                        Configure a Google Sheets spreadsheet to sync subnet data from.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div class="space-y-3 py-2">
-                    <div>
-                        <Label class="text-xs text-muted-foreground">Spreadsheet ID</Label>
-                        <Input v-model="syncConfig.spreadsheetId" placeholder="1a2b3c4d..." class="font-mono" />
-                    </div>
-                    <div>
-                        <Label class="text-xs text-muted-foreground">Sheet Range</Label>
-                        <Input v-model="syncConfig.range" placeholder="Sheet1" />
-                    </div>
-
-                    <Separator />
-                    <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Column Mapping</p>
-
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Prefix</Label>
-                            <Input v-model="syncConfig.mapping.prefix" placeholder="A" class="text-center" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Length</Label>
-                            <Input v-model="syncConfig.mapping.prefixLength" placeholder="B" class="text-center" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Net Type</Label>
-                            <Input v-model="syncConfig.mapping.networkType" placeholder="C" class="text-center" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Entity Name</Label>
-                            <Input v-model="syncConfig.mapping.entityName" placeholder="D" class="text-center" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Entity Type</Label>
-                            <Input v-model="syncConfig.mapping.entityType" placeholder="E" class="text-center" />
-                        </div>
-                        <div>
-                            <Label class="text-xs text-muted-foreground">Entity ID</Label>
-                            <Input v-model="syncConfig.mapping.entityId" placeholder="F" class="text-center" />
-                        </div>
-                    </div>
-                </div>
-
-                <DialogFooter>
-                    <Button variant="ghost" @click="showSync = false">Cancel</Button>
-                    <Button variant="accent" :disabled="!syncConfig.spreadsheetId" @click="onSync">Start Sync</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <SubnetSyncDialog
+            :open="showSync"
+            :backend-connected="backendConnected"
+            @update:open="showSync = $event"
+            @sync="onSync"
+        />
     </Card>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import type { SubnetRow } from "@src/types/dashboard";
-import {
-    Button, Card, Input, Label, Separator,
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from "@mkbabb/glass-ui";
+import { Button, Card, Input } from "@mkbabb/glass-ui";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@components/ui/table";
+import SubnetAddDialog from "./SubnetAddDialog.vue";
+import SubnetSyncDialog from "./SubnetSyncDialog.vue";
 
 defineProps<{
     subnets: SubnetRow[];
@@ -221,41 +104,12 @@ const showAdd = ref(false);
 const showSync = ref(false);
 const backendConnected = ref(false);
 
-const newSubnet = reactive({
-    prefix: "",
-    prefixLength: 24,
-    entityName: "",
-    entityId: "",
-    entityType: "",
-    networkType: "LAN",
-});
-
-const syncConfig = reactive({
-    spreadsheetId: "",
-    range: "Sheet1",
-    mapping: {
-        prefix: "A",
-        prefixLength: "B",
-        networkType: "C",
-        entityName: "D",
-        entityType: "E",
-        entityId: "F",
-    },
-});
-
-function onAdd() {
-    if (newSubnet.prefix) {
-        emit("add", { ...newSubnet });
-        showAdd.value = false;
-        Object.assign(newSubnet, {
-            prefix: "", prefixLength: 24, entityName: "", entityId: "", entityType: "", networkType: "LAN",
-        });
-    }
+function onAdd(data: any) {
+    emit("add", data);
 }
 
 function onSync() {
     emit("sync");
-    showSync.value = false;
 }
 
 onMounted(async () => {

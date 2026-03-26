@@ -10,9 +10,11 @@
             <!-- Shared filter sidebar (always visible, Pinia-backed) -->
             <ResultsFilters />
 
-            <!-- Results sub-tab -->
-            <template v-if="activeTab === 'results'">
+            <!-- Tab content — keyed div forces proper DOM swap on mobile -->
+            <div :key="activeTab">
+                <!-- Results sub-tab -->
                 <ResultsTable
+                    v-if="activeTab === 'results'"
                     :rows="resultsComposable.rows.value"
                     :total="resultsComposable.total.value"
                     :page="resultsComposable.page.value"
@@ -22,11 +24,10 @@
                     @export="onExport"
                     @select="onSelectResult"
                 />
-            </template>
 
-            <!-- Sessions sub-tab -->
-            <template v-else-if="activeTab === 'sessions'">
+                <!-- Sessions sub-tab -->
                 <AdminSessionsTable
+                    v-else-if="activeTab === 'sessions'"
                     :sessions="adminStore.sessions"
                     :total="adminStore.sessionsTotal"
                     :page="adminStore.sessionsPage"
@@ -35,7 +36,7 @@
                     @update:page="onSessionsPageChange"
                     @update:ip-filter="onIpFilter"
                 />
-            </template>
+            </div>
         </div>
 
         <ResultDetailSheet v-model:open="detailOpen" :row="selectedRow" />

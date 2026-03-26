@@ -22,54 +22,17 @@
             <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
 
-        <!-- Controls overlay (top-right) -->
-        <Card class="absolute right-3 top-3 z-20 w-56 space-y-3 p-3">
-            <!-- Metric selector -->
-            <div>
-                <Label class="mb-1 block text-xs text-muted-foreground">Metric</Label>
-                <div class="grid grid-cols-4 gap-1">
-                    <Button
-                        v-for="m in metricOptions"
-                        :key="m.value"
-                        :variant="activeMetric === m.value ? 'default' : 'ghost'"
-                        class="h-7 px-1 text-xs"
-                        @click="activeMetric = m.value"
-                    >
-                        {{ m.label }}
-                    </Button>
-                </div>
-            </div>
-
-            <!-- H3 resolution slider -->
-            <div>
-                <Label class="mb-1 block text-xs text-muted-foreground">
-                    H3 Resolution: {{ h3Resolution }}
-                </Label>
-                <input
-                    v-model.number="h3Resolution"
-                    type="range"
-                    :min="4"
-                    :max="7"
-                    :step="1"
-                    class="w-full accent-primary"
-                />
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                    <span>4 (coarse)</span>
-                    <span>7 (fine)</span>
-                </div>
-            </div>
-
-            <!-- Fit to data button -->
-            <Button
-                variant="ghost"
-                class="h-7 w-full text-xs"
-                :disabled="hexData.length === 0"
-                @click="maplibre.fitToBounds()"
-            >
-                <Maximize2 class="mr-1 h-3 w-3" />
-                Fit to data
-            </Button>
-        </Card>
+        <!-- Controls overlay (top-right, collapsible) -->
+        <DashboardMapControls
+            :active-metric="activeMetric"
+            :h3-resolution="h3Resolution"
+            :controls-open="controlsOpen"
+            :hex-data-length="hexData.length"
+            @update:active-metric="activeMetric = $event"
+            @update:h3-resolution="h3Resolution = $event"
+            @update:controls-open="controlsOpen = $event"
+            @fit-to-data="maplibre.fitToBounds()"
+        />
 
         <!-- Tooltip -->
         <MapTooltip
@@ -83,22 +46,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from "vue";
-import { Loader2, Maximize2, Map as MapIcon } from "lucide-vue-next";
-import { useDebounceFn } from "@vueuse/core";
-import { Button, Card, Label } from "@mkbabb/glass-ui";
+import { Loader2, Map as MapIcon } from "lucide-vue-next";
+import { useDebounceFn, useMediaQuery } from "@vueuse/core";
+import { Card } from "@mkbabb/glass-ui";
 import { useMaplibre, type HexData } from "./composables/useMaplibre";
 import { useDashboardFilterStore, type DashboardMetric } from "@src/stores/useDashboardFilterStore";
+import DashboardMapControls from "./DashboardMapControls.vue";
 import MapTooltip from "./MapTooltip.vue";
 import type { MapTooltipData } from "./MapTooltip.vue";
-
-// ── Props ──────────────────────────────────────────────────────────────
-
-const props = withDefaults(
-    defineProps<{
-        mode?: "public" | "admin";
-    }>(),
-    { mode: "public" },
-);
 
 // ── API Key check ─────────────────────────────────────────────────────
 
@@ -117,6 +72,11 @@ const activeMetric = ref<DashboardMetric>("download");
 const h3Resolution = ref(5);
 const hexData = ref<HexData[]>([]);
 const isFetching = ref(false);
+
+// Controls collapse state — auto-collapse on mobile
+const isMobile = useMediaQuery("(max-width: 639px)");
+const controlsOpen = ref(true);
+watch(isMobile, (mobile) => { controlsOpen.value = !mobile; }, { immediate: true });
 const fetchError = ref<string | null>(null);
 
 const tooltip = reactive<{
@@ -130,13 +90,6 @@ const tooltip = reactive<{
     y: 0,
     data: null,
 });
-
-const metricOptions: { value: DashboardMetric; label: string }[] = [
-    { value: "download", label: "DL" },
-    { value: "upload", label: "UL" },
-    { value: "ping", label: "Ping" },
-    { value: "jitter", label: "Jit" },
-];
 
 // ── Data fetching ──────────────────────────────────────────────────────
 

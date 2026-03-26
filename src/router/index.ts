@@ -31,12 +31,12 @@ const routes: RouteRecordRaw[] = [
             {
                 path: "map",
                 name: "dashboard-map",
-                component: () => import("@src/views/PublicMapView.vue"),
+                component: () => import("@src/views/MapView.vue"),
             },
             {
                 path: "charts",
                 name: "dashboard-charts",
-                component: () => import("@src/views/PublicChartsView.vue"),
+                component: () => import("@src/views/ChartsView.vue"),
             },
         ],
     },
@@ -64,12 +64,12 @@ const routes: RouteRecordRaw[] = [
             {
                 path: "charts",
                 name: "admin-charts",
-                component: () => import("@src/views/AdminChartsView.vue"),
+                component: () => import("@src/views/ChartsView.vue"),
             },
             {
                 path: "map",
                 name: "admin-map",
-                component: () => import("@src/views/AdminMapView.vue"),
+                component: () => import("@src/views/MapView.vue"),
             },
             {
                 path: "settings",

@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-4">
         <!-- Compact filter row -->
-        <div class="flex items-center gap-3 text-sm">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
             <Input
                 type="date"
                 class="w-36"
@@ -36,7 +36,7 @@
         <!-- Embedded mini chart (30-day trend) -->
         <Card class="p-4">
             <h3 class="mb-2 text-sm font-medium text-muted-foreground">30-Day Trend</h3>
-            <div class="aspect-[3/1] min-h-[200px] w-full">
+            <div class="h-48 sm:h-56 w-full">
                 <TimeSeriesChart :buckets="timeSeries" :loading="loading" :compact="true" />
             </div>
         </Card>
@@ -77,28 +77,20 @@ import ResultsTable from "@src/components/dashboard/ResultsTable.vue";
 import { TimeSeriesChart } from "@src/components/dashboard/charts";
 import { useDashboardResults } from "@src/components/dashboard/composables/useDashboardResults";
 import { useDashboardStats } from "@src/components/dashboard/composables/useDashboardStats";
-import type { TimeSeriesBucket } from "@src/components/dashboard/charts";
+import { useChartData } from "@src/components/dashboard/composables/useChartData";
 
 const router = useRouter();
 const filterStore = useDashboardFilterStore();
 const statsComposable = useDashboardStats();
 const resultsComposable = useDashboardResults();
 
-const timeSeries = ref<TimeSeriesBucket[]>([]);
+const { timeSeries, fetchTimeSeries } = useChartData();
 const loading = ref(false);
 
-async function fetchTimeSeries() {
+async function loadTimeSeries() {
     loading.value = true;
     try {
-        const params = filterStore.apiQueryParams.toString();
-        const url = `/api/dashboard/time-series${params ? `?${params}` : ""}`;
-        const resp = await fetch(url);
-        if (resp.ok) {
-            const data = await resp.json();
-            timeSeries.value = Array.isArray(data) ? data : data.buckets ?? [];
-        }
-    } catch {
-        timeSeries.value = [];
+        await fetchTimeSeries();
     } finally {
         loading.value = false;
     }
@@ -106,7 +98,7 @@ async function fetchTimeSeries() {
 
 onMounted(() => {
     statsComposable.fetch();
-    fetchTimeSeries();
+    loadTimeSeries();
 });
 
 function onExport() {

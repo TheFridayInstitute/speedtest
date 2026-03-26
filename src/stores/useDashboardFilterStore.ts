@@ -4,10 +4,20 @@ import { ref, computed } from "vue";
 export type TimeInterval = "hourly" | "daily" | "weekly" | "monthly";
 export type DashboardMetric = "download" | "upload" | "ping" | "jitter";
 
+function daysAgo(n: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().slice(0, 10);
+}
+
+function today(): string {
+    return new Date().toISOString().slice(0, 10);
+}
+
 export const useDashboardFilterStore = defineStore("dashboardFilters", () => {
     // ── Time ─────────────────────────────────────────────────────────
-    const dateFrom = ref<string | null>(null);
-    const dateTo = ref<string | null>(null);
+    const dateFrom = ref<string | null>(daysAgo(30));
+    const dateTo = ref<string | null>(today());
     const timeInterval = ref<TimeInterval>("daily");
 
     // ── Classification ───────────────────────────────────────────────

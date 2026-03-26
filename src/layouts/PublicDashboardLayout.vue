@@ -43,7 +43,7 @@
         <div class="flex-1 overflow-auto p-4">
             <RouterView v-slot="{ Component, route: childRoute }">
                 <Transition name="fade" mode="out-in">
-                    <div :key="childRoute.path">
+                    <div :key="childRoute.path" class="h-full">
                         <component :is="Component" />
                     </div>
                 </Transition>

@@ -40,7 +40,7 @@ export default defineConfig((mode) => {
     // API proxy — in dev, proxy to the production API by default so we
     // see real data. Override with VITE_API_TARGET for local backend dev.
     const apiTarget =
-        process.env.VITE_API_TARGET || "https://speedtest.mbabb.fi.ncsu.edu";
+        process.env.VITE_API_TARGET || "https://speedtest.mbabb.friday.institute";
     const serverConfig = {
         proxy: {
             "/api": {

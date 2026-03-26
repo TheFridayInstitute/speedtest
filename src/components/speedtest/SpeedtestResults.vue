@@ -9,11 +9,13 @@
             <div
                 v-for="metric in completedMetrics"
                 :key="metric.id"
-                class="inline-flex items-baseline gap-1 rounded-full bg-card/60 backdrop-blur-sm px-3 py-1 text-sm font-medium shadow-sm"
+                class="inline-flex flex-col items-center rounded-full bg-card/60 backdrop-blur-sm px-3 py-1 shadow-sm leading-none"
             >
-                <span class="mr-0.5 text-muted-foreground">{{ metric.label }}</span>
-                <span class="font-mono text-base" :style="{ color: metricColor(metric.id) }">{{ resultFor(metric.id).amount }}</span>
-                <span class="text-xs text-muted-foreground">{{ resultFor(metric.id).unit || metric.defaultUnit }}</span>
+                <span class="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{{ metric.label }}</span>
+                <div class="flex items-baseline gap-0.5">
+                    <span class="font-mono text-sm font-semibold tabular-nums" :style="{ color: metricColor(metric.id) }">{{ resultFor(metric.id).amount }}</span>
+                    <span class="text-[9px] text-muted-foreground">{{ resultFor(metric.id).unit || metric.defaultUnit }}</span>
+                </div>
             </div>
         </TransitionGroup>
 

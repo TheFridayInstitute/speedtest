@@ -25,7 +25,7 @@
         <RouterView v-slot="{ Component, route: viewRoute }">
             <Transition name="fade" mode="out-in">
                 <div
-                    :key="viewRoute.path"
+                    :key="transitionKey(viewRoute)"
                     class="flex min-h-0 w-full flex-1"
                     :class="viewRoute.name && typeof viewRoute.name === 'string' && (viewRoute.name.startsWith('dashboard') || viewRoute.name.startsWith('admin'))
                         ? ''
@@ -99,6 +99,18 @@ const isDashboardRoute = computed(() => {
     const name = route.name;
     return typeof name === "string" && (name.startsWith("dashboard") || name.startsWith("admin"));
 });
+
+/**
+ * Transition key: group layout routes together so the layout shell doesn't
+ * re-animate when switching between child views (e.g. admin/overview → admin/data).
+ * Only the content inside the layout transitions, not the layout itself.
+ */
+function transitionKey(viewRoute: { path: string; name?: string | symbol | null | undefined }): string {
+    const name = typeof viewRoute.name === "string" ? viewRoute.name : "";
+    if (name.startsWith("admin")) return "/admin";
+    if (name.startsWith("dashboard")) return "/dashboard";
+    return viewRoute.path;
+}
 
 // ── Speedtest composable (lives at app level so it survives view changes) ──
 

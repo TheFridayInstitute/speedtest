@@ -39,9 +39,15 @@
             <AppHeader />
         </nav>
 
-        <!-- Content -->
+        <!-- Content — transitions between dashboard sub-views -->
         <div class="flex-1 overflow-auto p-4">
-            <RouterView />
+            <RouterView v-slot="{ Component, route: childRoute }">
+                <Transition name="fade" mode="out-in">
+                    <div :key="childRoute.path">
+                        <component :is="Component" />
+                    </div>
+                </Transition>
+            </RouterView>
         </div>
     </div>
 </template>

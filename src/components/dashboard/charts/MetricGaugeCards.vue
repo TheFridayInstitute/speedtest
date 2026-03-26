@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onBeforeUnmount } from "vue";
 import { Card } from "@mkbabb/glass-ui";
+import { CHART_COLORS } from "./chartMetrics";
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -128,14 +129,7 @@ const cards = computed(() => {
     const s = props.summary;
     const av = animatedValues.value;
 
-        // Read chart colors from CSS custom properties with hex fallbacks
-    const root = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
-    const colors = {
-        download: root?.getPropertyValue("--chart-download").trim() || "#5B6BC0",
-        upload: root?.getPropertyValue("--chart-upload").trim() || "#26A69A",
-        ping: root?.getPropertyValue("--chart-ping").trim() || "#FFA726",
-        jitter: root?.getPropertyValue("--chart-jitter").trim() || "#EF5350",
-    };
+    const colors = CHART_COLORS;
 
     const base: {
         key: string;

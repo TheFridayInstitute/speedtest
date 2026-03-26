@@ -17,6 +17,7 @@
 import { computed } from "vue";
 import { Card } from "@mkbabb/glass-ui";
 import type { DashboardStats } from "@src/types/dashboard";
+import { CHART_COLORS } from "./charts/chartMetrics";
 
 const props = defineProps<{ stats: DashboardStats | null }>();
 
@@ -25,9 +26,9 @@ const cards = computed(() => {
     if (!s) return [];
     return [
         { label: "Total Tests", value: s.totalResults.toLocaleString(), unit: "", color: "" },
-        { label: "Avg Download", value: Math.round(s.averages.download), unit: "Mbps", color: "#5B6BC0" },
-        { label: "Avg Upload", value: Math.round(s.averages.upload), unit: "Mbps", color: "#26A69A" },
-        { label: "Avg Ping", value: Math.round(s.averages.ping), unit: "ms", color: "#FFA726" },
+        { label: "Avg Download", value: Math.round(s.averages.download), unit: "Mbps", color: CHART_COLORS.download },
+        { label: "Avg Upload", value: Math.round(s.averages.upload), unit: "Mbps", color: CHART_COLORS.upload },
+        { label: "Avg Ping", value: Math.round(s.averages.ping), unit: "ms", color: CHART_COLORS.ping },
     ];
 });
 </script>

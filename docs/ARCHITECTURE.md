@@ -105,8 +105,8 @@ The API server (`server/src/index.ts`) mounts Hono route groups under `/api`:
 | `/api/ip` | `ip.ts` | IP geolocation + CIDR entity lookup |
 | `/api/admin/subnets` | `subnets.ts` | Subnet CRUD, CSV/Google Sheets import |
 | `/api/admin/sync` | `sync.ts` | Google Sheets sync |
-| `/api/admin` | `admin.ts` | Admin stats, session management |
-| `/api/dashboard` | `public-dashboard.ts` | Hex-map, time-series, distributions, summary |
+| `/api/admin` | `admin.ts` | Admin stats, session management, survey funnel, provider breakdown |
+| `/api/dashboard` | `dashboard/` | Hex-map, time-series, distributions, summary (split into focused modules) |
 | `/api/events` | `events.ts` | SSE streaming |
 | `/api/servers` | `servers.ts` | Server registry, heartbeat |
 
@@ -114,20 +114,42 @@ The API server (`server/src/index.ts`) mounts Hono route groups under `/api`:
 
 Middleware is applied globally and per-route in `server/src/middleware.ts`:
 
-1. **IP resolution** --- extracts client IP from `X-Forwarded-For`, `X-Real-IP`, or `CF-Connecting-IP` headers. Falls back to socket remote address.
-2. **CORS** --- origin whitelist in production, permissive in dev.
-3. **Body limit** --- 256 KB max request body.
-4. **Rate limiting** --- in-memory per-IP rate limits with method-based tiers. Skipped for speedtest routes (they need high throughput).
-5. **Response caching** --- TTL-based caching for public dashboard endpoints (60s for hex-map, 30s for time-series, 120s for distributions).
-6. **Session resolution** --- resolves `X-Session-Token` header to a session document.
+1. **Request ID** --- assigns a unique `X-Request-Id` to each request (or preserves the incoming one).
+2. **IP resolution** --- extracts client IP from `X-Forwarded-For`, `X-Real-IP`, or `CF-Connecting-IP` headers. Falls back to socket remote address.
+3. **CORS** --- origin whitelist in production (rejects unknown origins if `ALLOWED_ORIGINS` is empty), permissive in dev.
+4. **Security headers** --- `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, and HSTS in production.
+5. **Body limit** --- 256 KB max request body.
+6. **Rate limiting** --- in-memory per-IP rate limits with method-based tiers. Speedtest `/garbage` endpoint has a separate concurrency limiter (max 5 concurrent streams per IP).
+7. **Response caching** --- TTL-based caching for public dashboard endpoints (60s for hex-map, 30s for time-series, 120s for distributions).
+8. **Session resolution** --- resolves `X-Session-Token` header to a session document. Enforces IP binding: rejects mid-session IP mismatches (< 10 min), warns on stale session reuse from different IPs.
+
+### Input Validation
+
+All API routes validate input using Zod schemas defined in `server/src/validation/`. The module is organized by domain:
+
+- `primitives.ts` --- shared types (date, metric, testType, flow, interval enums)
+- `results.ts`, `surveys.ts`, `subnets.ts`, `admin.ts`, `dashboard.ts`, `servers.ts`, `sync.ts`, `ip.ts` --- per-route schemas
+- `helpers.ts` --- `parseBody()`, `parseQuery()`, `isResponse()` utilities
+
+### Logging & Audit
+
+Structured JSON logging via `server/src/logging/`:
+
+- `logger.ts` --- JSON-line logger with level filtering (`debug`/`info`/`warn`/`error`)
+- `request-id.ts` --- request ID middleware
+- `audit.ts` --- fire-and-forget admin action logging to the `audit_log` MongoDB collection. Records subnet CRUD, imports, server registration, and exports.
 
 ### MongoDB Collections
 
-- `sessions` --- one document per test session (created before test starts, updated on completion)
-- `results` --- individual test result records with speed metrics, IP, geolocation, entity match
+- `test_sessions` --- one document per test session (created before test starts, updated on completion)
+- `test_results` --- individual test result records with speed metrics, IP, geolocation, entity match
 - `surveys` --- survey response documents (demographics, address, experience questions)
 - `subnets` --- CIDR subnet entries mapped to NC entities (schools, community colleges, LEAs)
-- `servers` --- registered speedtest servers with last heartbeat timestamp
+- `speedtest_servers` --- registered speedtest servers with last heartbeat timestamp
+- `ipinfo_cache` --- cached IP geolocation lookups (TTL: 30 days)
+- `shodan_cache` --- cached Shodan lookups (TTL: 7 days)
+- `audit_log` --- admin action audit trail (subnet CRUD, imports, server management)
+- `sync_metadata` --- Google Sheets sync configuration and state
 
 ### CIDR Binary Trie
 

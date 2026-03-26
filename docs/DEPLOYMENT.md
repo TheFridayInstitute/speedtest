@@ -53,7 +53,9 @@ The server starts without MongoDB if it isn't available---speedtest endpoints wo
 | `IPINFO_TOKEN` | No | ipinfo.io API key for IP geolocation enrichment |
 | `SHODAN_KEY` | No | Shodan API key for network intelligence lookups |
 | `GOOGLE_SERVICE_ACCOUNT_KEY` | No | Path to Google service account JSON (for Sheets sync) |
-| `ALLOWED_ORIGINS` | No | Comma-separated allowed CORS origins. Empty = allow all |
+| `ALLOWED_ORIGINS` | Yes (prod) | Comma-separated allowed CORS origins. Empty in production rejects all cross-origin requests. |
+| `SERVER_SECRET` | No | Shared secret for speedtest server heartbeat authentication |
+| `LOG_LEVEL` | No | Minimum log level: `debug`, `info` (default in prod), `warn`, `error` |
 | `PORT` | No | API listen port. Default: `3200` (dev), `3000` (Docker) |
 | `NODE_ENV` | No | `production` or `development` |
 

@@ -3,28 +3,30 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import "dotenv/config";
 
-import type { AppEnv } from "./types.js";
-import { getDb } from "./db.js";
-import { corsHeaders, rateLimit, resolveSession, resolveIP, responseCache } from "./middleware.js";
-import { rebuildTrieFromDb } from "./trie/manager.js";
+import type { AppEnv } from "./types.ts";
+import { getDb } from "./db.ts";
+import { corsHeaders, rateLimit, resolveSession, resolveIP, responseCache } from "./middleware.ts";
+import { rebuildTrieFromDb } from "./trie/manager.ts";
+import { logger, requestId } from "./logging/index.ts";
 
-import speedtestRoutes from "./routes/speedtest.js";
-import sessionRoutes from "./routes/sessions.js";
-import resultRoutes from "./routes/results.js";
-import surveyRoutes from "./routes/surveys.js";
-import ipRoutes from "./routes/ip.js";
-import subnetRoutes from "./routes/subnets.js";
-import syncRoutes from "./routes/sync.js";
-import adminRoutes from "./routes/admin.js";
-import publicDashboardRoutes from "./routes/dashboard/index.js";
-import eventRoutes from "./routes/events.js";
-import { publicServers, adminServers } from "./routes/servers.js";
+import speedtestRoutes from "./routes/speedtest.ts";
+import sessionRoutes from "./routes/sessions.ts";
+import resultRoutes from "./routes/results.ts";
+import surveyRoutes from "./routes/surveys.ts";
+import ipRoutes from "./routes/ip.ts";
+import subnetRoutes from "./routes/subnets.ts";
+import syncRoutes from "./routes/sync.ts";
+import adminRoutes from "./routes/admin.ts";
+import publicDashboardRoutes from "./routes/dashboard/index.ts";
+import eventRoutes from "./routes/events.ts";
+import { publicServers, adminServers } from "./routes/servers.ts";
 
 const app = new Hono<AppEnv>();
 
 // ── Global middleware ─────────────────────────────────────────────────
 
-// Resolve client IP on all requests
+// Request ID + client IP resolution
+app.use("*", requestId);
 app.use("*", async (c, next) => {
     c.set("clientIp", resolveIP(c));
     await next();
@@ -42,6 +44,17 @@ app.use("*", async (c, next) => {
     const origin = c.req.header("Origin") ?? "";
     for (const [key, value] of Object.entries(corsHeaders(origin))) {
         c.res.headers.set(key, value);
+    }
+});
+
+// Security headers
+app.use("*", async (c, next) => {
+    await next();
+    c.res.headers.set("X-Content-Type-Options", "nosniff");
+    c.res.headers.set("X-Frame-Options", "DENY");
+    c.res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    if (process.env.NODE_ENV === "production") {
+        c.res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     }
 });
 
@@ -93,7 +106,13 @@ app.notFound((c) => c.json({ error: "Not found" }, 404));
 
 // Global error handler
 app.onError((err, c) => {
-    console.error(err);
+    logger.error("Unhandled error", {
+        error: err.message,
+        stack: err.stack,
+        path: c.req.path,
+        method: c.req.method,
+        requestId: c.get("requestId"),
+    });
     return c.json({ error: "Internal server error" }, 500);
 });
 
@@ -109,6 +128,10 @@ async function main() {
         if (!process.env.MONGODB_URI) {
             throw new Error("MONGODB_URI is required in production");
         }
+        const origins = (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean);
+        if (origins.length === 0) {
+            logger.warn("ALLOWED_ORIGINS is empty — CORS will reject all cross-origin requests in production");
+        }
     }
 
     const port = parseInt(process.env.PORT ?? "3200");
@@ -118,21 +141,20 @@ async function main() {
 
     // Start HTTP server immediately (speedtest endpoints work without DB)
     serve({ fetch: app.fetch, port }, (info: { port: number }) => {
-        console.log(`Speedtest API running on http://localhost:${info.port}`);
+        logger.info("Server started", { port: info.port });
     });
 
     // Connect to MongoDB and build trie (non-blocking)
     try {
         const db = await getDb();
         const trieSize = await rebuildTrieFromDb(db);
-        console.log(`Initial trie: ${trieSize} entries`);
+        logger.info("Initial trie built", { entries: trieSize });
     } catch (err) {
-        console.warn("[WARN] MongoDB not available at startup:", (err as Error).message);
-        console.warn("[WARN] Speedtest endpoints work, but survey/results/IP lookup require MongoDB");
+        logger.warn("MongoDB not available at startup", { error: (err as Error).message });
     }
 }
 
 main().catch((err) => {
-    console.error("Failed to start:", err);
+    logger.error("Failed to start", { error: (err as Error).message });
     process.exit(1);
 });

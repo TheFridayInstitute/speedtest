@@ -65,9 +65,12 @@
             </Transition>
         </div>
 
-        <!-- Bottom area: current test progress bar + active number — animate away on complete -->
-        <Transition name="bottom-area">
-            <div v-if="!allComplete" class="flex flex-col items-center w-full">
+        <!-- Bottom area: current test progress bar + active number — fades out on complete but preserves space -->
+        <div
+            class="flex flex-col items-center w-full transition-opacity"
+            :class="allComplete ? 'opacity-0 pointer-events-none' : 'opacity-100'"
+            :style="{ transitionDuration: 'var(--duration-panel)' }"
+        >
                 <!-- Current test progress bar -->
                 <div class="z-10 -mt-1 mb-2 h-2.5 w-4/5 max-w-xs rounded-full" :style="{ background: 'var(--meter-background-color)' }">
                     <div
@@ -81,7 +84,7 @@
                 </div>
 
                 <!-- Active metric display -->
-                <div class="flex h-[5.5rem] w-full max-w-[18rem] flex-col items-center justify-center rounded-2xl bg-card/40 backdrop-blur-sm px-4">
+                <div class="flex h-[5.5rem] w-full max-w-[18rem] flex-col items-center justify-center rounded-2xl bg-card/40 backdrop-blur-sm px-2">
                     <Transition name="metric-swap" mode="out-in">
                         <!-- Loading dots -->
                         <div
@@ -114,8 +117,7 @@
                         <div v-else key="blank" />
                     </Transition>
                 </div>
-            </div>
-        </Transition>
+        </div>
     </section>
 </template>
 
@@ -198,21 +200,6 @@ defineExpose({ finishedCount });
 </script>
 
 <style scoped>
-/* ── Subtle gold shimmer (toned down) ── */
-.gold-shimmer-subtle {
-    background: linear-gradient(90deg, #c9a84c, #dcc275, #c9a84c);
-    background-size: 300% 100%;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    animation: shimmer-subtle 8s linear infinite;
-}
-
-@keyframes shimmer-subtle {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
 /* ── Gradient text (uses the dl→ul gradient from tokens) ── */
 .gradient-text {
     background: var(--progress-bar-gradient);
@@ -221,37 +208,12 @@ defineExpose({ finishedCount });
     color: transparent;
 }
 
-/* ── Badge entrance animation ──────────────────────── */
-.badge-enter-active {
-    animation: badge-in 600ms var(--ease-standard);
-}
-.badge-leave-active {
-    animation: badge-in 300ms var(--ease-standard) reverse;
-}
-
-@keyframes badge-in {
-    0% {
-        opacity: 0;
-        transform: translateY(1rem) scale(0.8) rotate(-3deg);
-    }
-    60% {
-        opacity: 1;
-        transform: translateY(-0.15rem) scale(1.02) rotate(1.5deg);
-    }
-    80% {
-        transform: translateY(0.05rem) scale(0.99) rotate(-0.5deg);
-    }
-    100% {
-        transform: translateY(0) scale(1) rotate(0);
-    }
-}
-
 /* ── Active metric swap transition ────────────────── */
 .metric-swap-enter-active {
-    transition: all 0.3s var(--ease-standard);
+    transition: all var(--duration-normal) var(--ease-standard);
 }
 .metric-swap-leave-active {
-    transition: all 0.2s var(--ease-standard);
+    transition: all var(--duration-fast) var(--ease-standard);
 }
 .metric-swap-enter-from {
     opacity: 0;
@@ -262,30 +224,12 @@ defineExpose({ finishedCount });
     transform: translateY(-0.5rem) scale(0.95);
 }
 
-/* ── Bottom area (progress bar + number) slides away on complete ── */
-.bottom-area-enter-active {
-    transition: all 0.4s var(--ease-standard);
-}
-.bottom-area-leave-active {
-    transition: all 0.5s var(--ease-standard);
-}
-.bottom-area-enter-from {
-    opacity: 0;
-    max-height: 0;
-    transform: translateY(1rem);
-}
-.bottom-area-leave-to {
-    opacity: 0;
-    max-height: 0;
-    transform: translateY(1rem);
-}
-
 /* ── Complete badge entrance ──────────────────────── */
 .complete-overlay-enter-active {
-    transition: all 0.5s var(--ease-standard);
+    transition: all var(--duration-panel) var(--ease-standard);
 }
 .complete-overlay-leave-active {
-    transition: all 0.3s var(--ease-standard);
+    transition: all var(--duration-normal) var(--ease-standard);
 }
 .complete-overlay-enter-from {
     opacity: 0;

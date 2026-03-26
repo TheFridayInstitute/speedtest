@@ -207,32 +207,6 @@
     animation: metric-bounce 600ms ease-out;
 }
 
-/* ── Gold shimmer text ───────────────────────────── */
-
-@keyframes gold-shimmer-slide {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-@layer components {
-    .gold-shimmer,
-    .gold-shimmer-text {
-        background: linear-gradient(
-            90deg,
-            var(--color-gold-dark),
-            var(--color-gold-light),
-            var(--color-gold-mid),
-            var(--color-gold-light),
-            var(--color-gold-dark)
-        );
-        background-size: 300% 100%;
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        animation: gold-shimmer-slide 4s linear infinite;
-    }
-}
-
 /* ── Shimmer pulse for in-progress numbers ───────── */
 
 @keyframes shimmer-pulse {

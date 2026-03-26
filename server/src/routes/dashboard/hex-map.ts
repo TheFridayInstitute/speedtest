@@ -1,26 +1,19 @@
 import { Hono } from "hono";
 import { latLngToCell } from "h3-js";
-import { getDb } from "../../db.js";
-import { buildMatchStage, buildSessionFilter } from "../../utils/aggregation.js";
-import type { AppEnv } from "../../types.js";
+import { getDb } from "../../db.ts";
+import { buildMatchStage, buildSessionFilter } from "../../utils/aggregation.ts";
+import type { AppEnv } from "../../types.ts";
+import { hexMapQuerySchema, parseQuery, isResponse } from "../../validation/index.ts";
 
 type MetricField = "download" | "upload" | "ping" | "jitter";
 
 const hexMap = new Hono<AppEnv>();
 
 hexMap.get("/", async (c) => {
+    const query = parseQuery(c, hexMapQuerySchema);
+    if (isResponse(query)) return query;
+    const { dateFrom, dateTo, testType, provider, entityId, resolution, metric } = query;
     const db = await getDb();
-
-    const dateFrom = c.req.query("dateFrom");
-    const dateTo = c.req.query("dateTo");
-    const testType = c.req.query("testType");
-    const provider = c.req.query("provider");
-    const entityId = c.req.query("entityId");
-    const resolution = Math.min(
-        Math.max(parseInt(c.req.query("resolution") ?? "5", 10), 4),
-        7,
-    );
-    const metric = (c.req.query("metric") ?? "download") as MetricField;
 
     const matchStage = buildMatchStage({ dateFrom, dateTo, testType });
 
@@ -73,18 +66,20 @@ hexMap.get("/", async (c) => {
         },
     });
 
-    const results = await db
-        .collection("test_results")
-        .aggregate(pipeline)
-        .toArray();
+    // Cap results to prevent OOM on large datasets
+    pipeline.push({ $limit: 100_000 });
 
-    // Compute H3 indices in memory and aggregate
+    const cursor = db
+        .collection("test_results")
+        .aggregate(pipeline);
+
+    // Compute H3 indices via cursor iteration (no .toArray())
     const hexAgg = new Map<
         string,
         { count: number; sum: number; min: number; max: number }
     >();
 
-    for (const r of results) {
+    for await (const r of cursor) {
         const lat = r.lat as number;
         const lng = r.lng as number;
         const val = r.metricValue as number;

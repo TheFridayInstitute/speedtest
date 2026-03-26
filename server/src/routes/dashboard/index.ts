@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../../types.js";
+import type { AppEnv } from "../../types.ts";
 
-import hexMapRoute from "./hex-map.js";
-import timeSeriesRoute from "./time-series.js";
-import distributionsRoute from "./distributions.js";
-import summaryRoute from "./summary.js";
+import hexMapRoute from "./hex-map.ts";
+import timeSeriesRoute from "./time-series.ts";
+import distributionsRoute from "./distributions.ts";
+import summaryRoute from "./summary.ts";
 
 const dashboard = new Hono<AppEnv>();
 

@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { getDb } from "../../db.js";
-import { buildMatchStage, buildSessionFilter } from "../../utils/aggregation.js";
-import type { AppEnv } from "../../types.js";
+import { getDb } from "../../db.ts";
+import { buildMatchStage, buildSessionFilter } from "../../utils/aggregation.ts";
+import type { AppEnv } from "../../types.ts";
+import { dashboardQuerySchema, parseQuery, isResponse } from "../../validation/index.ts";
 
 const summary = new Hono<AppEnv>();
 
@@ -11,14 +12,10 @@ function round2(n: number | null | undefined): number {
 }
 
 summary.get("/", async (c) => {
+    const query = parseQuery(c, dashboardQuerySchema);
+    if (isResponse(query)) return query;
+    const { dateFrom, dateTo, testType, provider, entityId, h3Cells } = query;
     const db = await getDb();
-
-    const dateFrom = c.req.query("dateFrom");
-    const dateTo = c.req.query("dateTo");
-    const testType = c.req.query("testType");
-    const provider = c.req.query("provider");
-    const entityId = c.req.query("entityId");
-    const h3Cells = c.req.query("h3Cells");
 
     const matchStage = buildMatchStage({ dateFrom, dateTo, testType });
 

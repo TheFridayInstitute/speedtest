@@ -1,9 +1,8 @@
 import { Hono } from "hono";
-import { getDb } from "../../db.js";
-import { buildMatchStage, buildSessionFilter } from "../../utils/aggregation.js";
-import type { AppEnv } from "../../types.js";
-
-type MetricField = "download" | "upload" | "ping" | "jitter";
+import { getDb } from "../../db.ts";
+import { buildMatchStage, buildSessionFilter } from "../../utils/aggregation.ts";
+import type { AppEnv } from "../../types.ts";
+import { timeSeriesQuerySchema, parseQuery, isResponse } from "../../validation/index.ts";
 
 const timeSeries = new Hono<AppEnv>();
 
@@ -13,16 +12,10 @@ function round2(n: number | null | undefined): number {
 }
 
 timeSeries.get("/", async (c) => {
+    const query = parseQuery(c, timeSeriesQuerySchema);
+    if (isResponse(query)) return query;
+    const { dateFrom, dateTo, testType, interval, h3Cells, provider, entityId, metric } = query;
     const db = await getDb();
-
-    const dateFrom = c.req.query("dateFrom");
-    const dateTo = c.req.query("dateTo");
-    const testType = c.req.query("testType");
-    const interval = c.req.query("interval") ?? "daily";
-    const h3Cells = c.req.query("h3Cells");
-    const provider = c.req.query("provider");
-    const entityId = c.req.query("entityId");
-    const metric = c.req.query("metric") as MetricField | undefined;
 
     const matchStage = buildMatchStage({ dateFrom, dateTo, testType });
 
@@ -32,7 +25,18 @@ timeSeries.get("/", async (c) => {
         weekly: "week",
         monthly: "month",
     };
-    const unit = dateTruncUnit[interval] ?? "day";
+
+    // Auto-upgrade interval when the date range would produce too many buckets
+    let effectiveInterval = interval;
+    if (dateFrom && dateTo) {
+        const rangeMs = new Date(dateTo).getTime() - new Date(dateFrom).getTime();
+        const rangeDays = rangeMs / 86_400_000;
+        if (effectiveInterval === "hourly" && rangeDays > 21) effectiveInterval = "daily";
+        if (effectiveInterval === "daily" && rangeDays > 500) effectiveInterval = "weekly";
+        if (effectiveInterval === "weekly" && rangeDays > 1095) effectiveInterval = "monthly";
+    }
+
+    const unit = dateTruncUnit[effectiveInterval] ?? "day";
 
     const pipeline: any[] = [{ $match: matchStage }];
 
@@ -98,7 +102,11 @@ timeSeries.get("/", async (c) => {
         };
     }
 
-    pipeline.push({ $group: groupFields }, { $sort: { _id: 1 } });
+    pipeline.push(
+        { $group: groupFields },
+        { $sort: { _id: 1 } },
+        { $limit: 1000 },
+    );
 
     const results = await db
         .collection("test_results")
@@ -113,7 +121,7 @@ timeSeries.get("/", async (c) => {
         jitter: { avg: round2(r.jitterAvg), count: r.jitterCount },
     }));
 
-    return c.json({ buckets });
+    return c.json({ buckets, interval: effectiveInterval });
 });
 
 export default timeSeries;

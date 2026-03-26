@@ -7,9 +7,8 @@
  */
 
 import { lerp } from "@mkbabb/keyframes.js";
-import { slerpPoints } from "@utils/math";
 import type { CanvasColor } from "./core";
-import { Polygon, Arc, Rectangle, Mesh } from "./shapes";
+import { Arc, Mesh } from "./shapes";
 
 /**
  * Create an arc with rounded end caps.
@@ -76,84 +75,6 @@ export function setRoundedArcColor(mesh: Mesh, color: CanvasColor) {
 }
 
 /**
- * Create a rectangle with rounded (slerped) end caps.
- *
- * Returns a Mesh of [leftCap, bar, rightCap] with a custom draw()
- * method that animates the bar width based on parameter t ∈ [0, 1].
- *
- * @param leftX — left edge X
- * @param leftY — top edge Y
- * @param width — total bar width
- * @param height — bar height
- * @param fillColor — fill color
- */
-export function roundedRectangle(
-    leftX: number,
-    leftY: number,
-    width: number,
-    height: number,
-    fillColor: CanvasColor,
-): Mesh {
-    const slump = -0.3;
-    const r = Math.abs((leftY - height) / 2);
-
-    const leftSide = [
-        [leftX, leftY],
-        [leftX, leftY - height],
-    ];
-    const rightSide = [
-        [leftX + width, leftY],
-        [leftX + width, leftY - height],
-    ];
-
-    width -= 2 * r;
-
-    const slerpsLeft = slerpPoints(leftSide[0], leftSide[1], 1);
-    const slerpsRight = slerpPoints(rightSide[1], rightSide[0], -1);
-
-    const startCap = new Polygon(slerpsLeft, null, null, fillColor);
-    const bar = new Rectangle(leftX, leftY, width, height, fillColor);
-    const endCap = new Polygon(slerpsRight, null, null, fillColor);
-
-    const shiftX = -width / 2;
-    const shiftY = height / 2;
-
-    startCap.translate(shiftX - slump, shiftY);
-    endCap.translate(shiftX - 2 * r, shiftY);
-    bar.translate(shiftX, -shiftY);
-
-    const roundedBarMesh = new Mesh(startCap, bar, endCap);
-    const [cX, cY] = bar.centroid;
-
-    /**
-     * Custom draw for animated bar fill.
-     * t ∈ [0, 1] controls the visible width of the bar.
-     */
-    roundedBarMesh.draw = function (ctx, t) {
-        const w = t * width;
-
-        const [tcX, tcY] = bar.centroid;
-        const sX = tcX - cX - bar.width / 2;
-        const sY = tcY - cY - bar.height / 2;
-
-        bar.translate(-sX, -sY);
-        bar.width = w;
-        bar.translate(sX, sY);
-
-        t = -(1 - t) * width + slump;
-
-        endCap.translate(t, 0);
-        for (const shape of this.shapes) {
-            shape.draw(ctx);
-        }
-        endCap.translate(-t, 0);
-        return this;
-    };
-
-    return roundedBarMesh;
-}
-
-/**
  * Create a canvas linear gradient from an array of color stops.
  *
  * @param canvas — the canvas element (used for dimensions)
@@ -181,59 +102,3 @@ export function generateGradient(
     return gradient;
 }
 
-/**
- * Create a segmented progress bar from an array of colors.
- *
- * Each segment is a roundedRectangle. The returned mesh has a custom
- * draw() that fills segments sequentially based on t ∈ [0, 1].
- *
- * @param leftX — left edge X
- * @param leftY — top edge Y
- * @param width — total bar width
- * @param height — bar height
- * @param colors — array of CSS color strings, one per segment
- */
-export function progressBarIntervals(
-    leftX: number,
-    leftY: number,
-    width: number,
-    height: number,
-    colors: string[],
-): Mesh {
-    const shapes: Mesh[] = [];
-    let step = 0;
-    const w = width / colors.length - height / colors.length;
-
-    for (const color of colors) {
-        const tw = w + height;
-        const rRect = roundedRectangle(leftX, leftY, tw, height, color);
-        rRect.translate(-width / 2 + tw / 2 + step, 0);
-        shapes.push(rRect);
-        step += w;
-    }
-
-    const intervalMesh = new Mesh(...shapes);
-
-    /**
-     * Custom draw that fills segments sequentially.
-     * t ∈ [0, 1] controls total fill progress across all segments.
-     */
-    intervalMesh.draw = function (ctx, t) {
-        const n = this.shapes.length;
-        const step = 1 / n;
-        let s = t;
-
-        for (const shape of this.shapes) {
-            if (s > 0) {
-                const v = s - step > 0 ? 1 : s / step;
-                shape.draw(ctx, v);
-                s -= step;
-            } else {
-                break;
-            }
-        }
-        return this;
-    };
-
-    return intervalMesh;
-}

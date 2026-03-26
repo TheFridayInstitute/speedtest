@@ -19,23 +19,24 @@
                 </p>
             </StartPane>
 
-            <!-- Meter + results -->
-            <div v-else key="meter" class="space-y-3">
+            <!-- Meter + results: results wraps meter via slot -->
+            <SpeedtestResults
+                v-else
+                key="meter"
+                :test-states="speedtest.testStates"
+                :ping-result="speedtest.pingResult.value"
+                :download-result="speedtest.downloadResult.value"
+                :upload-result="speedtest.uploadResult.value"
+                :current-test-progress="currentPhaseProgress"
+            >
                 <SpeedtestMeter />
-
-                <SpeedtestResults
-                    :test-states="speedtest.testStates"
-                    :ping-result="speedtest.pingResult.value"
-                    :download-result="speedtest.downloadResult.value"
-                    :upload-result="speedtest.uploadResult.value"
-                />
-            </div>
+            </SpeedtestResults>
         </Transition>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, watch } from "vue";
+import { ref, computed, inject, watch } from "vue";
 import StartPane from "./StartPane.vue";
 import SpeedtestMeter from "./SpeedtestMeter.vue";
 import SpeedtestResults from "./SpeedtestResults.vue";
@@ -44,6 +45,13 @@ import type { UseSpeedtestReturn } from "@src/composables/useSpeedtest";
 
 // ── Injected speedtest instance (owned by App.vue, persists across view changes) ──
 const speedtest = inject<UseSpeedtestReturn>("speedtest")!;
+
+/** Current phase progress (0–1) for the per-test progress bar. */
+const currentPhaseProgress = computed(() => {
+    const name = speedtest.currentStateName.value;
+    if (!name) return 0;
+    return speedtest.getSpeedtestStateAmount(name, "Progress");
+});
 
 // Show the start pane unless the speedtest is (or has been) running
 const showStartPane = ref(!speedtest.isRunning.value && speedtest.data.value == null);

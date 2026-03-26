@@ -1,75 +1,137 @@
 <template>
-    <section class="info-progress-container">
-        <div class="info-container">
+    <section class="relative flex flex-col items-center w-full">
+        <!-- Completed metrics: badges colored by metric type -->
+        <TransitionGroup
+            name="badge"
+            tag="div"
+            class="flex flex-wrap items-center justify-center gap-3 min-h-[2rem]"
+        >
             <div
-                v-for="metric in metrics"
+                v-for="metric in completedMetrics"
                 :key="metric.id"
-                class="info"
-                :class="{ 'metric-complete': isFinished(metric.id) }"
+                class="inline-flex items-baseline gap-1 rounded-full bg-card/60 backdrop-blur-sm px-3 py-1 text-sm font-medium shadow-sm"
+            >
+                <span class="mr-0.5 text-muted-foreground">{{ metric.label }}</span>
+                <span class="font-mono text-base" :style="{ color: metricColor(metric.id) }">{{ resultFor(metric.id).amount }}</span>
+                <span class="text-xs text-muted-foreground">{{ resultFor(metric.id).unit || metric.defaultUnit }}</span>
+            </div>
+        </TransitionGroup>
+
+        <!-- Overall progress bar: between completed items and meter -->
+        <div class="relative z-10 mb-4 mt-3 h-1 w-full max-w-[16rem] rounded-full bg-muted/30">
+            <div
+                class="h-full rounded-full transition-all duration-700 ease-out"
+                :style="{
+                    width: `${progressPercent}%`,
+                    background: 'var(--progress-bar-gradient)',
+                }"
+            />
+            <!-- Circle thumbs for completed stages -->
+            <div
+                v-for="(metric, i) in metrics"
+                :key="`thumb-${metric.id}`"
+                class="absolute top-1/2 -translate-y-1/2 transition-all duration-500"
+                :style="{ left: `${((i + 1) / metrics.length) * 100}%` }"
             >
                 <div
-                    class="header"
-                    :style="{
-                        fontSize: isFinished(metric.id) ? 'var(--text-xl)' : 'var(--text-lg)',
-                        transition: 'font-size 0.3s var(--ease-standard)',
-                    }"
-                >{{ metric.label }}</div>
-
-                <div
-                    class="unit-container"
-                    :class="{
-                        'shimmer-in-progress': isActive(metric.id),
-                    }"
+                    v-if="isFinished(metric.id)"
+                    class="group relative -ml-1.5 h-3 w-3 rounded-full border-2 border-background shadow-sm cursor-default"
+                    :style="{ background: 'var(--progress-bar-gradient)' }"
                 >
-                    <!-- Loading dots: only when metric just started (no data yet) -->
-                    <div
-                        v-if="isStarted(metric.id)"
-                        class="amount font-mono flex items-center justify-center"
-                    >
-                        <LoadingDots />
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded-lg bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        {{ metric.label }}: {{ resultFor(metric.id).amount }} {{ resultFor(metric.id).unit || metric.defaultUnit }}
                     </div>
-
-                    <!-- Active / finished: show the number -->
-                    <template v-else-if="resultFor(metric.id).amount">
-                        <div
-                            class="amount font-mono"
-                            :class="{ 'gold-shimmer-text': isFinished(metric.id) }"
-                            :aria-label="metric.ariaLabel"
-                        >
-                            {{ resultFor(metric.id).amount }}
-                        </div>
-                        <div
-                            class="unit italic"
-                            :class="{ 'gold-shimmer-text': isFinished(metric.id) }"
-                        >
-                            {{ resultFor(metric.id).unit || metric.defaultUnit }}
-                        </div>
-                    </template>
-
-                    <!-- Not started yet: blank -->
-                    <div v-else class="amount font-mono">&nbsp;</div>
                 </div>
             </div>
         </div>
 
-        <div ref="progressBarEl" class="progress-bar-container"></div>
+        <!-- Meter canvas (rendered by parent via slot) -->
+        <div class="relative w-full">
+            <slot />
+
+            <!-- "Complete!" overlay — on top of the meter canvas, not over the badges -->
+            <Transition name="complete-overlay">
+                <div
+                    v-if="allComplete"
+                    class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+                >
+                    <div
+                        class="rounded-2xl bg-card/60 backdrop-blur-sm px-6 py-3 shadow-lg pointer-events-auto"
+                        style="transform: rotate(-2deg)"
+                    >
+                        <span class="gold-shimmer-subtle text-6xl font-bold">Complete!</span>
+                    </div>
+                </div>
+            </Transition>
+        </div>
+
+        <!-- Bottom area: current test progress bar + active number — animate away on complete -->
+        <Transition name="bottom-area">
+            <div v-if="!allComplete" class="flex flex-col items-center w-full">
+                <!-- Current test progress bar -->
+                <div class="z-10 -mt-1 mb-2 h-2.5 w-4/5 max-w-xs rounded-full" :style="{ background: 'var(--meter-background-color)' }">
+                    <div
+                        class="h-full rounded-full transition-all duration-300 ease-out"
+                        :style="{
+                            width: `${props.currentTestProgress * 100}%`,
+                            minWidth: props.currentTestProgress > 0 ? '0.625rem' : '0',
+                            background: 'var(--th-accent-opaque)',
+                        }"
+                    />
+                </div>
+
+                <!-- Active metric display -->
+                <div class="flex h-[5.5rem] w-full max-w-[18rem] flex-col items-center justify-center rounded-2xl bg-card/40 backdrop-blur-sm px-4">
+                    <Transition name="metric-swap" mode="out-in">
+                        <!-- Loading dots -->
+                        <div
+                            v-if="activeMetric && isStarted(activeMetric.id)"
+                            :key="`dots-${activeMetric.id}`"
+                            class="flex flex-col items-center gap-1"
+                        >
+                            <div class="text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ activeMetric.label }}</div>
+                            <LoadingDots />
+                        </div>
+
+                        <!-- Active value -->
+                        <div
+                            v-else-if="activeMetric && hasData(activeMetric.id)"
+                            :key="`value-${activeMetric.id}`"
+                            class="flex flex-col items-center gap-0.5"
+                        >
+                            <div class="text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ activeMetric.label }}</div>
+                            <div class="flex items-baseline gap-1.5">
+                                <span class="font-mono text-4xl font-semibold leading-tight tabular-nums">
+                                    {{ resultFor(activeMetric.id).amount }}
+                                </span>
+                                <span class="text-lg font-medium text-muted-foreground italic">
+                                    {{ resultFor(activeMetric.id).unit || activeMetric.defaultUnit }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Blank -->
+                        <div v-else key="blank" />
+                    </Transition>
+                </div>
+            </div>
+        </Transition>
     </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
-import type { ComputedRef } from "vue";
+import { computed } from "vue";
 import LoadingDots from "@src/components/LoadingDots.vue";
-import { createProgressBar, animateProgressBarWrapper } from "@utils/timing";
-import { getComputedVariable } from "@utils/utils";
 import { TestState } from "@src/types/speedtest";
 import type { TestStateObject, UnitInfo } from "@src/types/speedtest";
+import { CHART_COLORS } from "@src/components/dashboard/charts/chartMetrics";
 
 const props = defineProps<{
     testStates: TestStateObject;
     pingResult: UnitInfo;
     downloadResult: UnitInfo;
     uploadResult: UnitInfo;
+    currentTestProgress: number;
 }>();
 
 // ── Static metric definitions ──────────────────────────────────────────
@@ -80,33 +142,29 @@ const metrics = [
     { id: "upload", label: "Upload", ariaLabel: "upload-speed", defaultUnit: "Mbps" },
 ] as const;
 
-// ── Progress bar DOM ref ───────────────────────────────────────────────
-
-const progressBarEl = ref<HTMLElement | null>(null);
-
 // ── Helpers ────────────────────────────────────────────────────────────
-
-function isInProgress(metricId: string): boolean {
-    const state = props.testStates[metricId];
-    return (
-        state === TestState.notStarted ||
-        state === TestState.started ||
-        state === TestState.active
-    );
-}
 
 function isStarted(metricId: string): boolean {
     return props.testStates[metricId] === TestState.started;
 }
 
-/** Currently measuring — has data flowing in. */
-function isActive(metricId: string): boolean {
-    return props.testStates[metricId] === TestState.active;
-}
-
 function isFinished(metricId: string): boolean {
     const state = props.testStates[metricId];
     return state === TestState.finished || state === TestState.drawFinished;
+}
+
+function isActiveOrStarted(metricId: string): boolean {
+    const state = props.testStates[metricId];
+    return state === TestState.started || state === TestState.active;
+}
+
+function hasData(metricId: string): boolean {
+    const result = resultFor(metricId);
+    return result.amount != null && result.amount !== "";
+}
+
+function metricColor(metricId: string): string {
+    return CHART_COLORS[metricId] ?? CHART_COLORS.download;
 }
 
 function resultFor(metricId: string): UnitInfo {
@@ -116,157 +174,125 @@ function resultFor(metricId: string): UnitInfo {
     return {};
 }
 
-/**
- * Animate the DOM progress bar forward by one segment.
- * Called reactively when a metric finishes.
- */
-function advanceProgressBar(): void {
-    if (progressBarEl.value) {
-        animateProgressBarWrapper(progressBarEl.value, 1000, 3);
-    }
-}
+// ── Computed metric lists ───────────────────────────────────────────────
 
-// ── Expose the advance function so parent can call it if needed ────────
+const completedMetrics = computed(() =>
+    metrics.filter((m) => isFinished(m.id)),
+);
 
-defineExpose({ advanceProgressBar });
+const activeMetric = computed(() =>
+    metrics.find((m) => isActiveOrStarted(m.id)) ?? null,
+);
 
-// ── Watch for metric state transitions to advance progress bar ─────────
+const allComplete = computed(() =>
+    metrics.every((m) => isFinished(m.id)),
+);
 
-const finishedCount: ComputedRef<number> = computed(() => {
-    let count = 0;
-    for (const m of metrics) {
-        const state = props.testStates[m.id];
-        if (state === TestState.finished || state === TestState.drawFinished) {
-            count++;
-        }
-    }
-    return count;
-});
+const progressPercent = computed(() =>
+    (completedMetrics.value.length / metrics.length) * 100,
+);
 
-// Use a simple watch to advance bar when finished count increases.
-let lastFinished = 0;
-watch(finishedCount, (count) => {
-    if (count > lastFinished) {
-        advanceProgressBar();
-        lastFinished = count;
-    }
-});
+const finishedCount = computed(() => completedMetrics.value.length);
 
-// ── Mount: create the DOM progress bar ─────────────────────────────────
-
-onMounted(() => {
-    if (progressBarEl.value) {
-        const borderRadius = getComputedVariable("--border-radius-primary");
-        const gradient = getComputedVariable("--progress-bar-gradient");
-
-        createProgressBar(
-            progressBarEl.value,
-            [gradient],
-            {
-                styles: {
-                    "border-top-left-radius": borderRadius,
-                    "border-bottom-left-radius": borderRadius,
-                },
-            },
-            {
-                styles: {
-                    "border-top-right-radius": borderRadius,
-                    "border-bottom-right-radius": borderRadius,
-                },
-            },
-        );
-    }
-});
+defineExpose({ finishedCount });
 </script>
 
 <style scoped>
-/* ── Info & progress layout ─────────────────────────── */
-.info-progress-container .info-container {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
+/* ── Subtle gold shimmer (toned down) ── */
+.gold-shimmer-subtle {
+    background: linear-gradient(90deg, #c9a84c, #dcc275, #c9a84c);
+    background-size: 300% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: shimmer-subtle 8s linear infinite;
 }
 
-.info-progress-container .info {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
+@keyframes shimmer-subtle {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
-.info-progress-container .header {
-    padding: 0.25rem 0;
+/* ── Gradient text (uses the dl→ul gradient from tokens) ── */
+.gradient-text {
+    background: var(--progress-bar-gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
 }
 
-.info-progress-container .unit-container {
-    padding: 0.5rem;
-    height: 100%;
-    width: 100%;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    border-radius: var(--radius);
-    text-align: left;
+/* ── Badge entrance animation ──────────────────────── */
+.badge-enter-active {
+    animation: badge-in 600ms var(--ease-standard);
+}
+.badge-leave-active {
+    animation: badge-in 300ms var(--ease-standard) reverse;
 }
 
-.info-progress-container .unit-container .dot-container {
-    height: 100%;
-    width: 100%;
+@keyframes badge-in {
+    0% {
+        opacity: 0;
+        transform: translateY(1rem) scale(0.8) rotate(-3deg);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-0.15rem) scale(1.02) rotate(1.5deg);
+    }
+    80% {
+        transform: translateY(0.05rem) scale(0.99) rotate(-0.5deg);
+    }
+    100% {
+        transform: translateY(0) scale(1) rotate(0);
+    }
 }
 
-.info-progress-container .progress-bar-container {
-    margin: 0.75rem 0 0;
-    min-height: 1rem;
+/* ── Active metric swap transition ────────────────── */
+.metric-swap-enter-active {
+    transition: all 0.3s var(--ease-standard);
+}
+.metric-swap-leave-active {
+    transition: all 0.2s var(--ease-standard);
+}
+.metric-swap-enter-from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.95);
+}
+.metric-swap-leave-to {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
 }
 
-/* ── Progress bar ──────────────────────────────────── */
-.progress-bar-container {
-    display: flex;
-    position: relative;
-    height: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-    flex-direction: row;
+/* ── Bottom area (progress bar + number) slides away on complete ── */
+.bottom-area-enter-active {
+    transition: all 0.4s var(--ease-standard);
+}
+.bottom-area-leave-active {
+    transition: all 0.5s var(--ease-standard);
+}
+.bottom-area-enter-from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(1rem);
+}
+.bottom-area-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(1rem);
 }
 
-.progress-bar-container :deep(.progress-bar) {
-    height: 1rem;
-    width: 0;
-    border-radius: 0;
+/* ── Complete badge entrance ──────────────────────── */
+.complete-overlay-enter-active {
+    transition: all 0.5s var(--ease-standard);
 }
-
-/* ── Unit container ────────────────────────────────── */
-.unit-container {
-    --font-size-lg: 2rem;
-    --font-size-sm: calc(var(--font-size-lg) * 0.5);
-    display: flex;
-    position: relative;
-    margin: 0;
-    box-sizing: border-box;
-    flex-direction: column;
-    text-align: left;
-    transition: all var(--ease-in-out) 1000ms;
+.complete-overlay-leave-active {
+    transition: all 0.3s var(--ease-standard);
 }
-
-.unit-container.in-progress {
-    color: hsl(var(--foreground));
+.complete-overlay-enter-from {
+    opacity: 0;
+    transform: translateY(1rem) rotate(-2deg) scale(0.8);
 }
-
-.unit-container.shimmer-in-progress .amount,
-.unit-container.shimmer-in-progress .unit {
-    color: hsl(var(--foreground) / 0.4);
-    animation: shimmer-pulse 1.5s ease-in-out infinite;
-}
-
-.unit-container .amount {
-    font-size: var(--font-size-lg);
-    line-height: 1.1;
-}
-
-.unit-container .unit {
-    font-size: var(--font-size-sm);
-    font-family: var(--font-mono);
-    line-height: 1.2;
+.complete-overlay-leave-to {
+    opacity: 0;
+    transform: translateY(-0.5rem) rotate(-2deg) scale(0.9);
 }
 </style>

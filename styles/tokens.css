@@ -18,9 +18,9 @@
     --ul-color-1: lab(72% 30 55);
     --ul-color-2: lab(58% 45 50);
 
-    --th-accent: lab(92% 88.80 20 / 82.70%);
-    --th-accent-opaque: lab(92% 88.80 20);
-    --th-accent-hover: lab(82% 78 18 / 90%);
+    --th-accent: lab(72% 30 55 / 82.70%);
+    --th-accent-opaque: lab(72% 30 55);
+    --th-accent-hover: lab(62% 35 50 / 90%);
 
     --meter-background-color: rgb(0 0 0 / 0.12);
     --meter-dial-color: hsl(var(--foreground) / 0.6);

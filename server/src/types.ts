@@ -6,6 +6,7 @@ export type AppEnv = {
     Variables: {
         sessionId: string | undefined;
         clientIp: string;
+        requestId: string;
         db: Db;
     };
 };

@@ -11,10 +11,10 @@
                 :key="metric.id"
                 class="inline-flex flex-col items-center rounded-full bg-card/60 backdrop-blur-sm px-3 py-1 shadow-sm leading-none"
             >
-                <span class="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{{ metric.label }}</span>
+                <span class="text-micro uppercase text-muted-foreground">{{ metric.label }}</span>
                 <div class="flex items-baseline gap-0.5">
-                    <span class="font-mono text-sm font-semibold tabular-nums" :style="{ color: metricColor(metric.id) }">{{ resultFor(metric.id).amount }}</span>
-                    <span class="text-[9px] text-muted-foreground">{{ resultFor(metric.id).unit || metric.defaultUnit }}</span>
+                    <span class="text-mono-small font-semibold tabular-nums" :style="{ color: metricColor(metric.id) }">{{ resultFor(metric.id).amount }}</span>
+                    <span class="text-micro text-muted-foreground">{{ resultFor(metric.id).unit || metric.defaultUnit }}</span>
                 </div>
             </div>
         </TransitionGroup>
@@ -90,7 +90,7 @@
                             :key="`dots-${activeMetric.id}`"
                             class="flex flex-col items-center gap-1"
                         >
-                            <div class="text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ activeMetric.label }}</div>
+                            <div class="text-mono-caption text-muted-foreground">{{ activeMetric.label }}</div>
                             <LoadingDots />
                         </div>
 
@@ -100,12 +100,12 @@
                             :key="`value-${activeMetric.id}`"
                             class="flex flex-col items-center gap-0.5"
                         >
-                            <div class="text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ activeMetric.label }}</div>
+                            <div class="text-mono-caption text-muted-foreground">{{ activeMetric.label }}</div>
                             <div class="flex items-baseline gap-1.5">
-                                <span class="font-mono text-4xl font-semibold leading-tight tabular-nums">
+                                <span class="font-mono-code text-display font-semibold leading-tight tabular-nums">
                                     {{ resultFor(activeMetric.id).amount }}
                                 </span>
-                                <span class="text-lg font-medium text-muted-foreground italic">
+                                <span class="text-subheading text-muted-foreground italic">
                                     {{ resultFor(activeMetric.id).unit || activeMetric.defaultUnit }}
                                 </span>
                             </div>

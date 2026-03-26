@@ -8,10 +8,10 @@
         />
         <template v-for="metric in metrics" :key="metric.id">
             <div v-if="metric.show" class="flex flex-col items-center leading-none shrink-0">
-                <span class="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{{ metric.label }}</span>
+                <span class="text-micro uppercase text-muted-foreground">{{ metric.label }}</span>
                 <div class="flex items-baseline gap-0.5">
-                    <span class="font-mono text-sm font-semibold tabular-nums" :style="{ color: metric.color }">{{ metric.amount }}</span>
-                    <span class="text-[9px] text-muted-foreground">{{ metric.unit }}</span>
+                    <span class="text-mono-small font-semibold tabular-nums" :style="{ color: metric.color }">{{ metric.amount }}</span>
+                    <span class="text-micro text-muted-foreground">{{ metric.unit }}</span>
                 </div>
             </div>
         </template>

@@ -1,8 +1,14 @@
 /**
- * DOM and network utilities.
+ * DOM, network, and formatting utilities.
  */
 
 import { sleep } from "@utils/timing";
+
+/** Strip trailing zeros from a numeric string: "22.0" → "22", "5.50" → "5.5" */
+export function stripTrailingZeros(s: string): string {
+    if (!s.includes(".")) return s;
+    return s.replace(/\.?0+$/, "");
+}
 
 /** Execute a function only once; subsequent calls return the cached result. */
 export function once(func: (...args: any) => any) {

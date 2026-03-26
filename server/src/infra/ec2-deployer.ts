@@ -129,7 +129,41 @@ export async function deploySpeedtestServer(opts: DeployOptions): Promise<Deploy
         getLatestAmiId(ec2),
     ]);
 
-    // User-data script: install Docker, pull and run speedtest server
+    // User-data script: install Docker, write server JS to host, mount into container
+    const serverJs = `
+const { serve } = require('@hono/node-server');
+const { Hono } = require('hono');
+const crypto = require('crypto');
+const app = new Hono();
+let currentLoad = 0;
+app.all('/api/speedtest/empty', (c) => { c.header('Cache-Control', 'no-store'); return c.body(null, 200); });
+app.get('/api/speedtest/garbage', (c) => {
+  const ckSize = Math.min(parseInt(c.req.query('ckSize') || '4', 10) || 4, 1024);
+  currentLoad++;
+  const chunks = [];
+  for (let i = 0; i < ckSize; i++) chunks.push(crypto.randomBytes(1024 * 1024));
+  currentLoad = Math.max(0, currentLoad - 1);
+  c.header('Content-Type', 'application/octet-stream');
+  c.header('Cache-Control', 'no-store');
+  return c.body(Buffer.concat(chunks));
+});
+app.get('/api/speedtest/getIP', (c) => {
+  const ip = c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || '127.0.0.1';
+  return c.json({ processedString: ip, rawIspInfo: null });
+});
+app.get('/health', (c) => c.json({ status: 'ok', serverId: process.env.SERVER_ID, currentLoad, uptime: process.uptime() }));
+serve({ fetch: app.fetch, port: parseInt(process.env.PORT || '3000') }, (info) => console.log('Speedtest server on port ' + info.port));
+setInterval(async () => {
+  try { await fetch(process.env.CENTRAL_API_URL + '/api/internal/servers/' + process.env.SERVER_ID + '/heartbeat', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Server-Secret': process.env.SERVER_SECRET || '' }, body: JSON.stringify({ currentLoad, capacity: 50 }) }); } catch {}
+}, 30000);
+setTimeout(async () => {
+  try { await fetch(process.env.CENTRAL_API_URL + '/api/internal/servers/' + process.env.SERVER_ID + '/heartbeat', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Server-Secret': process.env.SERVER_SECRET || '' }, body: JSON.stringify({ currentLoad: 0, capacity: 50 }) }); } catch {}
+}, 5000);
+`.trim();
+
+    // Base64 encode the server JS to avoid shell quoting issues
+    const serverJsB64 = Buffer.from(serverJs).toString("base64");
+
     const userData = Buffer.from(`#!/bin/bash
 set -ex
 yum update -y
@@ -137,9 +171,14 @@ yum install -y docker
 systemctl enable docker
 systemctl start docker
 
-# Run the speedtest-only server
+# Write server code to host filesystem
+mkdir -p /opt/speedtest
+echo '${serverJsB64}' | base64 -d > /opt/speedtest/server.js
+
+# Run container with mounted server code
 docker run -d --restart=always \\
   -p 80:3000 \\
+  -v /opt/speedtest/server.js:/app/server.js:ro \\
   -e SERVER_ID="${serverId}" \\
   -e SERVER_NAME="${name}" \\
   -e SERVER_REGION="${region}" \\
@@ -147,72 +186,7 @@ docker run -d --restart=always \\
   ${serverSecret ? `-e SERVER_SECRET="${serverSecret}"` : ""} \\
   -e PORT=3000 \\
   --name speedtest-server \\
-  node:22-alpine sh -c "
-    npm init -y && npm install hono @hono/node-server dotenv &&
-    cat > server.js << 'SERVEREOF'
-const { serve } = require('@hono/node-server');
-const { Hono } = require('hono');
-const crypto = require('crypto');
-
-const app = new Hono();
-let currentLoad = 0;
-
-app.all('/api/speedtest/empty', (c) => {
-  c.header('Cache-Control', 'no-store');
-  return c.body(null, 200);
-});
-
-app.get('/api/speedtest/garbage', (c) => {
-  const ckSize = Math.min(parseInt(c.req.query('ckSize') || '4', 10) || 4, 1024);
-  currentLoad++;
-  const chunks = [];
-  for (let i = 0; i < ckSize; i++) {
-    chunks.push(crypto.randomBytes(1024 * 1024));
-  }
-  currentLoad = Math.max(0, currentLoad - 1);
-  c.header('Content-Type', 'application/octet-stream');
-  c.header('Cache-Control', 'no-store');
-  return c.body(Buffer.concat(chunks));
-});
-
-app.get('/api/speedtest/getIP', (c) => {
-  const ip = c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || '127.0.0.1';
-  return c.json({ processedString: ip, rawIspInfo: null });
-});
-
-app.get('/health', (c) => c.json({
-  status: 'ok',
-  serverId: process.env.SERVER_ID,
-  currentLoad,
-  uptime: process.uptime()
-}));
-
-serve({ fetch: app.fetch, port: parseInt(process.env.PORT || '3000') }, (info) => {
-  console.log('Speedtest server running on port ' + info.port);
-});
-
-// Heartbeat
-setInterval(async () => {
-  try {
-    await fetch(process.env.CENTRAL_API_URL + '/api/internal/servers/' + process.env.SERVER_ID + '/heartbeat', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Server-Secret': process.env.SERVER_SECRET || '' },
-      body: JSON.stringify({ currentLoad, capacity: 50 })
-    });
-  } catch {}
-}, 30000);
-setTimeout(async () => {
-  try {
-    await fetch(process.env.CENTRAL_API_URL + '/api/internal/servers/' + process.env.SERVER_ID + '/heartbeat', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Server-Secret': process.env.SERVER_SECRET || '' },
-      body: JSON.stringify({ currentLoad: 0, capacity: 50 })
-    });
-  } catch {}
-}, 5000);
-SERVEREOF
-    node server.js
-  "
+  node:22-alpine sh -c "cd /app && npm init -y && npm install hono @hono/node-server && node server.js"
 `).toString("base64");
 
     const result = await ec2.send(

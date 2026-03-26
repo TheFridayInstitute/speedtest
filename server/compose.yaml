@@ -10,10 +10,15 @@ services:
       IPINFO_TOKEN: ${IPINFO_TOKEN}
       SHODAN_KEY: ${SHODAN_KEY}
       GOOGLE_SERVICE_ACCOUNT_KEY: /app/auth/service-account.json
+      CENTRAL_API_URL: ${CENTRAL_API_URL}
+      SERVER_SECRET: ${SERVER_SECRET}
+      EC2_KEY_NAME: ${EC2_KEY_NAME}
+      AWS_SHARED_CREDENTIALS_FILE: /root/.aws/credentials
       PORT: "3000"
       NODE_ENV: production
     volumes:
       - ./auth:/app/auth:ro
+      - ~/.aws:/root/.aws:ro
     depends_on:
       mongo:
         condition: service_healthy

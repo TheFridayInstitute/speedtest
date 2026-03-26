@@ -82,7 +82,7 @@
                 </div>
 
                 <!-- Active metric display -->
-                <div class="flex h-[5.5rem] w-full max-w-[18rem] flex-col items-center justify-center rounded-2xl bg-card/40 backdrop-blur-sm px-1">
+                <div class="flex h-[5.5rem] w-fit flex-col items-center justify-center rounded-2xl bg-card/40 backdrop-blur-sm px-6">
                     <Transition name="metric-swap" mode="out-in">
                         <!-- Loading dots -->
                         <div
